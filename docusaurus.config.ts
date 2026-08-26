@@ -6,7 +6,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'WAF Project Docs',
-  tagline: 'System notes, architecture, and traffic flow reference',
+  tagline: 'Documentation for the WAF project',
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -17,20 +17,15 @@ const config: Config = {
   // Set the production url of your site here
   url: 'https://jakkaret.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
+  // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/Docs-for-WAF-project/',
 
   // GitHub pages deployment config.
-  organizationName: 'jakkaret',
-  projectName: 'Docs-for-WAF-project',
+  organizationName: 'jakkaret', // Usually your GitHub org/user name.
+  projectName: 'Docs-for-WAF-project', // Usually your repo name.
   deploymentBranch: 'gh-pages',
-  trailingSlash: false,
 
   onBrokenLinks: 'throw',
-
-  markdown: {
-    mermaid: true,
-  },
-  themes: ['@docusaurus/theme-mermaid'],
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -46,8 +41,22 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
+          editUrl:
+            'https://github.com/jakkaret/Docs-for-WAF-project/tree/main/',
         },
-        blog: false,
+        blog: {
+          showReadingTime: true,
+          feedOptions: {
+            type: ['rss', 'atom'],
+            xslt: true,
+          },
+          editUrl:
+            'https://github.com/jakkaret/Docs-for-WAF-project/tree/main/',
+          // Useful options to enforce blogging best practices
+          onInlineTags: 'warn',
+          onInlineAuthors: 'warn',
+          onUntruncatedBlogPosts: 'warn',
+        },
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -56,6 +65,7 @@ const config: Config = {
   ],
 
   themeConfig: {
+    // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     colorMode: {
       respectPrefersColorScheme: true,
@@ -69,7 +79,7 @@ const config: Config = {
       items: [
         {
           type: 'docSidebar',
-          sidebarId: 'docsSidebar',
+          sidebarId: 'tutorialSidebar',
           position: 'left',
           label: 'Docs',
         },
@@ -82,8 +92,27 @@ const config: Config = {
     },
     footer: {
       style: 'dark',
-      links: [],
-      copyright: `Copyright © ${new Date().getFullYear()} jakkaret. Built with Docusaurus.`,
+      links: [
+        {
+          title: 'Docs',
+          items: [
+            {
+              label: 'Intro',
+              to: '/docs/intro',
+            },
+          ],
+        },
+        {
+          title: 'More',
+          items: [
+            {
+              label: 'GitHub',
+              href: 'https://github.com/jakkaret/Docs-for-WAF-project',
+            },
+          ],
+        },
+      ],
+      copyright: `Copyright © ${new Date().getFullYear()} WAF Project Docs. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
