@@ -1,0 +1,27 @@
+---
+sidebar_position: 2
+title: Traffic Flow
+---
+
+import TrafficFlowAnimation from '@site/src/components/TrafficFlowAnimation';
+
+# Traffic Flow
+
+ภาพรวมทิศทาง 1 request จาก Client ผ่าน WAF ไปถึง Origin แล้วย้อนกลับ
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant W as WAF
+    participant O as Origin
+
+    C->>W: 1. ส่ง request
+    W->>W: 2. ตรวจสอบ (rule / rate-limit / bot check)
+    W->>O: 3. forward request (ผ่านเงื่อนไข)
+    O->>W: 4. ส่ง response กลับ
+    W->>C: 5. ส่ง response ถึง client
+```
+
+## ดูแบบ Interactive
+
+<TrafficFlowAnimation />
