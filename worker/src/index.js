@@ -108,6 +108,7 @@ export default {
         body: JSON.stringify({
           system_instruction: { parts: { text: SYSTEM_INSTRUCTION } },
           contents,
+          tools: [{ googleSearch: {} }],
           generationConfig: {
             maxOutputTokens: MAX_OUTPUT_TOKENS,
             temperature: 0.3,

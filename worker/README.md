@@ -11,7 +11,16 @@ Deployed at: **https://waf-docs-chat-proxy.cloudflaretestt.workers.dev**
 
 `POST /chat` with `{ message, history }` → forwards to Gemini
 (`gemini-flash-lite-latest`) with a system instruction grounded in the
-site's own content (`src/knowledge.js`) → returns `{ reply }`.
+site's own content (`src/knowledge.js`), plus a live Google Search tool
+(`tools: [{ googleSearch: {} }]`) for related-but-external questions
+(CVEs of components used, general WAF/CDN/web-security topics) → returns
+`{ reply }`.
+
+The system instruction tells the model: site's own knowledge base is
+always authoritative for claims about this system; web search may only
+be used for context outside the knowledge base but still in the
+WAF/CDN/web-security domain; anything further out of scope gets a
+"not something I can help with" answer instead of an open-ended search.
 
 - CORS locked to `https://jakkaret.github.io` (see `ALLOWED_ORIGINS` in `src/index.js`)
 - Rate limited to 8 requests/60s per client IP (native Workers Rate Limiting binding — the real abuse control, since CORS alone doesn't stop a direct/non-browser caller)
