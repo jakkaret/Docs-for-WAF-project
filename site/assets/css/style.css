@@ -34,7 +34,7 @@
   --font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
 
   --radius: 3px;
-  --shell-max: 1180px;
+  --shell-max: clamp(1180px, 78vw, 1600px);
   --sidebar-w: 268px;
 }
 
