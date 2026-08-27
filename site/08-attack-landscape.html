@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ภูมิทัศน์การโจมตี 2025–26 — WAF + CDN Platform Docs</title>
+<meta name="description" content="รายงานวิจัยจาก 120+ แหล่งอ้างอิง: การโจมตีเว็บไซต์ในโลกจริง วิวัฒนาการการป้องกัน และข้อจำกัดของกลไกป้องกันปัจจุบันในยุค AI">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html" aria-current="page"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>08 · ภูมิทัศน์การโจมตี 2025–2026</p>
+      <h1>ทำไมต้องมี WAF: สาเหตุ วิวัฒนาการ และข้อจำกัดของการป้องกันในยุค AI</h1>
+      <p class="lede">รวบรวมและตรวจสอบจาก 120+ แหล่งอ้างอิงผ่าน Exa Research (2 subagent เฉพาะทาง) ประกอบกับความรู้พื้นฐานด้านความปลอดภัยเว็บแอปพลิเคชัน</p>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> สาเหตุพื้นฐานที่ทำให้เกิดการโจมตี</h2>
+      <ul class="check-list">
+        <li><b style="color:#fff">Trust boundary ที่พัง</b> — server เชื่อข้อมูลจากฝั่ง client โดยไม่ตรวจสอบเพียงพอ รากของ SQLi และ XSS</li>
+        <li><b style="color:#fff">Human error</b> — misconfiguration, รหัสผ่านอ่อนแอ, ไม่อัปเดตแพตช์ทันเวลา</li>
+        <li><b style="color:#fff">แรงจูงใจทางเศรษฐกิจ</b> — ข้อมูลมีมูลค่าสูงในตลาดมืด, botnet เช่าใช้ได้ราคาถูก (Attack-as-a-Service)</li>
+        <li><b style="color:#fff">ความซับซ้อนของระบบ</b> — microservices, third-party library จำนวนมาก ขยาย attack surface</li>
+        <li><b style="color:#fff">Legacy code</b> — เขียนก่อน threat model ปัจจุบันจะเป็นที่รู้จัก</li>
+      </ul>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> วิวัฒนาการการป้องกันตามยุค — ต่อประเภทการโจมตี</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ประเภท</th><th>สาเหตุ</th><th>วิวัฒนาการการป้องกัน</th><th>ผลลัพธ์</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">SQL Injection</b></td><td>ต่อ input เข้า SQL command ตรง ๆ</td><td>Prepared Statements → WAF signature filtering</td><td>ลดมากในระบบสมัยใหม่ ยังพบใน legacy</td></tr>
+          <tr><td><b style="color:#fff">XSS</b></td><td>แสดงผล input โดยไม่ escape</td><td>Output encoding → CSP → framework auto-escape (React/Vue)</td><td>ลดมากในเว็บที่ใช้ framework สมัยใหม่</td></tr>
+          <tr><td><b style="color:#fff">CSRF</b></td><td>cookie ส่งอัตโนมัติไม่ตรวจ origin</td><td>CSRF token manual → SameSite cookie (default Lax)</td><td>แทบหมดไปเมื่อตั้งค่าถูกต้อง</td></tr>
+          <tr><td><b style="color:#fff">DDoS</b></td><td>ทรัพยากรจำกัด, protocol ไม่ตรวจแหล่งที่มา</td><td>Rate limiting → CDN/Anycast → ML behavioral detection</td><td>ขนาดโจมตีใหญ่ขึ้นเรื่อย ๆ (Mirai) แต่ CDN ดูดซับได้ดีขึ้น</td></tr>
+          <tr><td><b style="color:#fff">Credential Stuffing</b></td><td>ใช้รหัสผ่านซ้ำข้ามเว็บ</td><td>Rate limiting → CAPTCHA → MFA → Passkey/WebAuthn</td><td>MFA เริ่มถูก AiTM phishing บายพาสได้</td></tr>
+          <tr><td><b style="color:#fff">Supply Chain</b></td><td>Dependency tree ใหญ่เกินตรวจสอบ</td><td>SBOM, Dependency scanning, Package signing</td><td>เพิ่งเริ่ม mainstream ยังเป็นจุดอ่อนสำคัญ</td></tr>
+          <tr><td><b style="color:#fff">Zero-day / RCE</b></td><td>Memory safety / logic flaw ที่ยังไม่รู้จัก</td><td>Patch management, virtual patching, sandboxing</td><td>ไม่มีป้องกันสมบูรณ์ 100% ลดผลกระทบด้วย defense-in-depth</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:.9rem">แนวโน้มรวม: <b style="color:#fff">ก่อนปี 2010</b> เน้น perimeter defense (firewall ชั้นเดียว) — <b style="color:#fff">หลังปี 2010</b> เปลี่ยนไปใช้ defense-in-depth + zero trust + shift-left security</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> การโจมตียุคใหม่ (2025–2026)</h2>
+
+      <h3><span class="idx">3.1</span> การโจมตีที่ขับเคลื่อนด้วย AI</h3>
+      <div class="grid cols-3">
+        <div class="card"><h4>AI-generated phishing</h4><p>click-through 54% เทียบ 12% ของฟิชชิงมนุษย์เขียน — โจมตีสถาบันการเงินเพิ่มขึ้น 1,265% ตั้งแต่ปี 2022</p></div>
+        <div class="card"><h4>Prompt Injection</h4><p>อันดับ 1 OWASP Top 10 for LLM 2025 · สำเร็จ 50–84% · แอปผสาน LLM 86% มีช่องโหว่ (จาก 36 แอปที่ตรวจ)</p></div>
+        <div class="card"><h4>AI-assisted vuln discovery</h4><p>DARPA AI Cyber Challenge: พบช่องโหว่ 54 รายการใน 54 ล้านบรรทัดภายใน 4 ชม. · Mean Time To Exploit ติดลบ 7 วัน</p></div>
+      </div>
+
+      <h3 style="margin-top:1.8rem"><span class="idx">3.2</span> Autonomous AI Attack Agent</h3>
+      <div class="callout risk">
+        <span class="cap">กรณี GTG-1002 (พ.ย. 2025)</span>
+        <p>กลุ่มที่ได้รับการสนับสนุนจากรัฐจีนใช้ Claude เป็นตัวขับเคลื่อนหลักโจมตีองค์กรทั่วโลก ~30 แห่งแบบอัตโนมัติ 80–90% ด้วยความเร็วหลายพัน request/วินาที — กรณีแรกที่เปิดเผยต่อสาธารณะว่า LLM เป็นศูนย์กลางควบคุมปฏิบัติการโจมตีจริง</p>
+      </div>
+      <p>ระยะเวลาจาก initial access ถึง exploitation ลดลงจาก <b style="color:#fff">8+ ชั่วโมง</b> (2022) เหลือ <b style="color:var(--signal-risk)">22 วินาที</b> (2025) — CrowdStrike รายงานการโจมตีที่ใช้ AI เพิ่มขึ้น 89% ปีต่อปี</p>
+
+      <h3 style="margin-top:1.8rem"><span class="idx">3.3</span> API Security Threats</h3>
+      <div class="stat-row">
+        <div class="stat"><span class="num"><span data-count="40" data-suffix="%+">0</span></span><span class="lbl">ช่องโหว่ API ทั้งหมดเป็น BOLA</span></div>
+        <div class="stat"><span class="num"><span data-count="44" data-suffix="%">0</span></span><span class="lbl">bot ขั้นสูงมุ่งเป้าที่ API</span></div>
+        <div class="stat"><span class="num"><span data-count="90" data-suffix="%">0</span></span><span class="lbl">การโจมตีเว็บเกี่ยวข้องกับ API</span></div>
+        <div class="stat"><span class="num"><span data-count="4" data-suffix="B+">0</span></span><span class="lbl">USD/ปี สูญเสียจาก API fraud (การเงิน)</span></div>
+      </div>
+      <p style="font-size:.9rem">BOLA ติดอันดับ 1 ใน OWASP API Security Top 10 — เหตุการณ์จริง: ธนาคารกลางรัสเซียสูญเสีย 2 พันล้านดอลลาร์จากการ exploit BOLA (2016)</p>
+
+      <h3 style="margin-top:1.8rem"><span class="idx">3.4</span> Deepfake-Enabled Social Engineering</h3>
+      <p>กรณี Arup: สูญ <b style="color:var(--signal-risk)">25.6 ล้านดอลลาร์</b> จากวิดีโอคอลเสียงโคลนจากคลิปต้นฉบับเพียง 3 วินาที · Q1 2025 deepfake vishing เพิ่มขึ้น 1,633%</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> ข้อจำกัดของกลไกป้องกันปัจจุบัน</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>กลไก</th><th>ป้องกันอะไร</th><th>วิธีบายพาส / ข้อจำกัดจริง</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">WAF</b></td><td>กรอง payload อันตราย</td><td>Encoding/obfuscation, protocol manipulation, payload fragmentation/padding</td></tr>
+          <tr><td><b style="color:#fff">MFA แบบดั้งเดิม</b></td><td>credential รั่วไหลอย่างเดียว</td><td>AiTM phishing (Evilginx, EvilProxy) ขโมย session token หลังผ่าน MFA — เพิ่มขึ้น 146%/ปี, ~40,000 ครั้ง/วัน</td></tr>
+          <tr><td><b style="color:#fff">Session token/cookie</b></td><td>หลักฐานยืนยันตัวตน</td><td>Infostealer (LummaC2, RedLine) ขโมยคุกกี้ 94 พันล้านตัวในปี 2025</td></tr>
+          <tr><td><b style="color:#fff">Rate limiting</b></td><td>brute force, DDoS</td><td>Distributed traffic กระจายหลาย PoP, burst attack สั้นกว่า static threshold</td></tr>
+          <tr><td><b style="color:#fff">CAPTCHA</b></td><td>แยกมนุษย์กับ bot</td><td>LLM multimodal แก้ได้เองอัตโนมัติ สำเร็จสูงถึง 99%</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout risk">
+        <span class="cap">ประเด็นสำคัญที่สุด</span>
+        <p>จุดศูนย์กลางภัยคุกคามย้ายไปที่ <b>"post-authentication token theft"</b> — MFA ป้องกันได้แค่ช่วงเวลายืนยันตัวตนเท่านั้น เมื่อ session token ถูกขโมยไปหลังจากนั้น MFA จะไม่มีผลใด ๆ อีก · <b>88%</b> ของการรั่วไหลข้อมูลเว็บแอปปี 2025 เกี่ยวข้องกับ credential/session token ที่ถูกขโมย</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> บทสรุปและแนวโน้ม</h2>
+      <ol class="flow">
+        <li data-step="1"><strong>การโจมตีคลาสสิกลดลงชัดเจน</strong><p>SQLi/XSS/CSRF ในระบบที่ใช้ framework สมัยใหม่ แต่ยังเป็นปัญหาในระบบ legacy</p></li>
+        <li data-step="2"><strong>ศูนย์กลางภัยคุกคามย้ายไปที่ post-authentication token theft</strong><p>แทนการขโมย credential แบบเดิม ทำให้ MFA ดั้งเดิมหมดประสิทธิภาพ</p></li>
+        <li data-step="3"><strong>AI เป็นทั้งเครื่องมือโจมตีและป้องกัน</strong><p>ฝั่งโจมตีปรับตัวเร็วกว่าฝั่งป้องกันในปัจจุบัน</p></li>
+        <li data-step="4"><strong>API คือพื้นที่การโจมตีหลักใหม่</strong><p>BOLA ยังเป็นจุดอ่อนที่พบบ่อยที่สุด — ตรงกับเหตุผลที่ระบบนี้มี vAmPI + bola_guard.py</p></li>
+        <li data-step="5"><strong>คำแนะนำเชิงปฏิบัติ</strong><p>เปลี่ยนจาก OTP/Push ไปใช้ phishing-resistant MFA (FIDO2/Passkey) ร่วมกับตรวจ device compliance และ behavioral detection แบบ real-time</p></li>
+      </ol>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> แหล่งอ้างอิงสำคัญ</h2>
+      <ul class="check-list">
+        <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/12-API_Testing/02-API_Broken_Object_Level_Authorization" target="_blank" rel="noopener">OWASP — Broken Object Level Authorization</a></li>
+        <li><a href="https://www.obsidiansecurity.com/blog/prompt-injection" target="_blank" rel="noopener">Obsidian Security — Prompt Injection</a></li>
+        <li><a href="https://www.cybersecuritydive.com/news/cybercrime-ai-ransomware-mcp-malwarebytes/811360/" target="_blank" rel="noopener">Cybersecurity Dive — GTG-1002 AI-orchestrated attack</a></li>
+        <li><a href="https://www.startupdefense.io/blog/adversary-in-the-middle-phishing-mfa-bypass" target="_blank" rel="noopener">Startup Defense — AiTM Phishing MFA Bypass</a></li>
+        <li><a href="https://brandefense.io/blog/mfa-doesnt-protect-you-cookies-give-you-away-the-rise-of-session-hijacking/" target="_blank" rel="noopener">Brandefense — Session Hijacking vs MFA</a></li>
+        <li><a href="https://deepstrike.io/blog/bot-attack-statistics" target="_blank" rel="noopener">Deepstrike — Bot Attack Statistics</a></li>
+        <li><a href="https://thehackernews.com/2026/05/2026-year-of-ai-assisted-attacks.html" target="_blank" rel="noopener">The Hacker News — 2026: Year of AI-Assisted Attacks</a></li>
+      </ul>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:1rem">รายงานนี้จัดทำจากการค้นคว้าข้อมูลสาธารณะผ่าน Exa Research ณ วันที่ 27 สิงหาคม 2026 — สถิติอ้างอิงจากแหล่งข่าวและงานวิจัยที่เผยแพร่ในช่วงปี 2025–2026 อาจเปลี่ยนแปลงได้ตามข้อมูลใหม่</p>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./07-web-origin-testbed.html"><span class="dir">← ก่อนหน้า</span><strong>07 · Web Origin Testbed</strong></a>
+      <a class="next" href="./index.html"><span class="dir">กลับหน้าแรก →</span><strong>00 · ภาพรวมระบบ</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CDN + GeoDNS — WAF + CDN Platform Docs</title>
+<meta name="description" content="Multi-region CDN (SG/JP/TH) + GeoDNS — เขียนเสร็จและผ่านทุก test แล้ว แต่ยังไม่เคย deploy บน production">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html" aria-current="page"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>02 · CDN + GEODNS</p>
+      <h1>Multi-region CDN: เขียนเสร็จ ผ่านทุก test — แต่ยังไม่เคย deploy จริง</h1>
+      <p class="lede">ส่วนต่อขยายของแพลตฟอร์มให้ client แต่ละภูมิภาค (SG/JP/TH) ถูก route ไปยัง edge ที่ใกล้ที่สุดผ่าน GeoDNS โดยแต่ละ edge ทำหน้าที่ทั้ง cache และ WAF ในตัว</p>
+      <p class="meta-line"><span><b>โค้ดอยู่ที่:</b> /root/waf_project/cdn/ (Main Node)</span><span><b>เอกสารต้นทาง:</b> CDN_BUILD_SHEET.md, NEXT_STEPS.md</span></p>
+    </header>
+
+    <div class="callout" style="margin-top:-1rem">
+      <span class="cap">สำคัญ — ต้องแยกสองสถานะ</span>
+      <p>โค้ดของฟีเจอร์นี้ <b>"เขียนเสร็จและผ่านการทดสอบแล้ว"</b> แต่ <b>"ไม่ได้รันอยู่จริงบน production"</b> — สองอย่างนี้คนละสถานะกันโดยสิ้นเชิง</p>
+    </div>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> เทคโนโลยีที่ใช้</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ส่วนประกอบ</th><th>เทคโนโลยี</th></tr></thead>
+        <tbody>
+          <tr><td>Edge reverse proxy + WAF</td><td><span class="mono">owasp/modsecurity-crs:nginx</span> × 3 instance (SG/JP/TH)</td></tr>
+          <tr><td>GeoDNS resolver</td><td>Python <span class="mono">dnslib</span> — custom DNS server ตอบ A record ตาม client IP</td></tr>
+          <tr><td>Control API</td><td>FastAPI + SQLite (<span class="mono">control.db</span>)</td></tr>
+          <tr><td>Purge API</td><td>FastAPI — ลบ cache file ตาม MD5 ของ cache key</td></tr>
+          <tr><td>Stats collector</td><td>Python — tail access log ต่อ region, expose <span class="mono">/metrics</span></td></tr>
+          <tr><td>Cache store</td><td>Nginx <span class="mono">proxy_cache</span> แยก volume ต่อ region</td></tr>
+          <tr><td>Network</td><td>Docker bridge <span class="mono">cdn-net</span> (172.28.0.0/16) เชื่อม <span class="mono">waf-net</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal" id="capabilities">
+      <h2><span class="idx">§2</span> สถานะ — เขียนเสร็จ vs รันอยู่จริง</h2>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">ผ่าน test บน dev</button>
+        <button class="status-pill warn" data-status="warn">ยังไม่ deploy production</button>
+      </div>
+      <div class="grid cols-2">
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Health check ทั้ง 3 edge + purge-api</strong><span class="status-pill ok">ผ่าน test</span></div><p>ตอบ <span class="mono">ok</span> ครบทุกตัวบนเครื่อง dev</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Cache MISS → HIT</strong><span class="status-pill ok">ผ่าน test</span></div><p>request แรก MISS, request ที่สอง HIT ทำงานถูกต้อง</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Purge cache ข้าม 3 region</strong><span class="status-pill ok">ผ่าน test</span></div><p><span class="mono">total_removed=3</span> พร้อมกันทุกภูมิภาค</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Bypass policy</strong><span class="status-pill ok">ผ่าน test</span></div><p>query string, <span class="mono">Cache-Control: no-cache</span>, session cookie, Authorization header → บังคับ BYPASS ถูกต้อง</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>WAF ทำงานหลัง cache layer</strong><span class="status-pill ok">ผ่าน test</span></div><p>ทดสอบ <span class="mono">/testattack</span> ได้ 403 แม้อยู่หลัง cache</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>GeoDNS auto-select region</strong><span class="status-pill ok">ผ่าน test</span></div><p>probe IP วง 172.28.11/22/33.x ตอบ region SG/JP/TH ถูกต้องตามลำดับ</p></div>
+      </div>
+      <p style="margin-top:1rem">คำสั่งทดสอบใน build sheet ระบุ path <span class="mono">/Users/boss/project/waf_project/cdn</span> — <b style="color:#fff">เครื่อง dev บน local Mac ไม่ใช่ production จริง</b></p>
+
+      <h3 style="margin-top:2rem"><span class="idx">ยืนยันแล้วว่า "ไม่ได้รันอยู่" บน production</span></h3>
+      <div class="grid cols-2">
+        <div class="card"><h4>Main Node (178.104.53.123)</h4><p><span class="mono">docker ps -a --filter name=cdn-</span> ไม่มี container <span class="mono">cdn-*</span> เลยแม้แต่ตัวเดียว</p></div>
+        <div class="card"><h4>Edge Node (45.154.26.91)</h4><p>มี container ขึ้นต้น <span class="mono">cdn-</span> จริง แต่เป็นคนละชุดจาก <span class="mono">/root/edge_node/</span> — edge เดี่ยวธรรมดา <b style="color:#fff">ไม่ใช่</b> ส่วนหนึ่งของ multi-region stack</p></div>
+      </div>
+
+      <div class="callout risk" style="margin-top:1.4rem">
+        <span class="cap">Dashboard ผูกกับโมเดล 2-node ไม่ใช่ SG/JP/TH</span>
+        <p>อ่าน <span class="mono">dashboard/backend/api/cdn.py</span> ที่รันจริง — <span class="mono">REGIONS_META</span> มีแค่ <span class="mono">TH</span> (Edge Node จริง) กับ <span class="mono">MAIN</span> (Main Node จริง) เท่านั้น ไม่ตรงกับที่ build sheet บันทึกว่าแก้เป็น SG/JP/TH แล้ว — นอกจากนี้ <span class="mono">GET /api/cdn/latency</span> ส่งค่า <b>hardcode ทั้งหมด</b> (Bangkok 14ms, Singapore 35ms, Tokyo 68ms ฯลฯ) ไม่ได้วัดจาก edge จริง เป็น mock data สำหรับ demo UI</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> หลักการทำงาน</h2>
+      <h3><span class="idx">3.1</span> GeoDNS routing (geodns/server.py)</h3>
+      <ol class="flow">
+        <li data-step="1"><strong>DNS server ฟัง UDP/TCP 53</strong><p>ใช้ library <span class="mono">dnslib</span> ภายใน container</p></li>
+        <li data-step="2"><strong>อ่าน client_ip</strong><p>เมื่อได้รับ query สำหรับ <span class="mono">cdn.local</span></p></li>
+        <li data-step="3"><strong>เทียบ REGION_CIDRS</strong><p>SG=172.28.11.0/24, JP=172.28.22.0/24, TH=172.28.33.0/24 — ไม่ตรงเงื่อนไขไหน fallback เป็น TH</p></li>
+        <li data-step="4"><strong>health_check_loop() ทุก 10 วิ</strong><p>เก็บสถานะใน NODE_STATUS</p></li>
+        <li data-step="5"><strong>Failover ตาม priority</strong><p>SG/JP → TH, TH → SG ถ้า region ที่เลือก DOWN</p></li>
+        <li data-step="6"><strong>ตอบ A record + TTL 20s</strong><p>ให้ client re-resolve บ่อยพอรับ failover ได้เร็ว</p></li>
+      </ol>
+
+      <div class="diagram"><pre>[Client] --DNS query cdn.local--> [GeoDNS :5533]
+                                       |  (เลือก region ตาม client IP + health status)
+                                       v
+                              A record ชี้ไป [Edge ตาม region: SG:8081 / JP:8082 / TH:8086]
+
+[Client] --HTTP request--> [Edge Nginx + ModSecurity]
+                                |
+                          (เช็ค cache ก่อน)
+                          MISS --> proxy ไปยัง [Origin: waf-nginx:8080 (DVWA หลัง WAF หลัก)]
+                                       |
+                                  ตอบกลับ + เก็บลง cache
+                          HIT  --> ตอบจาก cache ทันที ไม่แตะ origin
+
+[Dashboard] --POST /purge--> [purge-api :8090] --ลบ cache file--> [ทุก region ที่ระบุ]</pre></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> แนวทางพัฒนาต่อ</h2>
+      <ol class="flow">
+        <li data-step="1"><strong>Deploy ของจริง</strong><p><span class="mono">docker compose -f docker-compose-cdn.yml up -d --build</span> บน production แล้วรัน test suite ซ้ำ</p></li>
+        <li data-step="2"><strong>เชื่อม dashboard เข้ากับ SG/JP/TH จริง</strong><p>แก้ REGIONS_META, ลบ hardcoded latency แทนด้วยการวัดจริง (มี pattern ให้ใช้แล้วสำหรับ TH/MAIN)</p></li>
+        <li data-step="3"><strong>แทนที่ CIDR จำลองด้วย GeoIP จริง</strong><p>ผูก <span class="mono">choose_region_for_ip()</span> เข้ากับ MaxMind GeoLite2</p></li>
+        <li data-step="4"><strong>Distributed rate limiting</strong><p>Redis+Lua (มี waf-redis รันอยู่แล้วบน Main Node พร้อมใช้งาน) — ตาม NEXT_STEPS.md Phase 4</p></li>
+      </ol>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./01-waf-engine.html"><span class="dir">← ก่อนหน้า</span><strong>01 · WAF Engine</strong></a>
+      <a class="next" href="./03-dashboard-backend.html"><span class="dir">ถัดไป →</span><strong>03 · Dashboard Backend + API</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

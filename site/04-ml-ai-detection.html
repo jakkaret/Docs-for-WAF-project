@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ML + AI Detection — WAF + CDN Platform Docs</title>
+<meta name="description" content="Random Forest + Isolation Forest เทรนจากข้อมูลจริง ~60,000 samples, Gemini AI Copilot, explainability engine — ผลการเทรนจริงพร้อมตัวเลข">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html" aria-current="page"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>04 · ML + AI DETECTION</p>
+      <h1>โมเดล ML จริง ไม่ใช่ mock — บวก AI Copilot ที่มี fallback ทุกจุด</h1>
+      <p class="lede">สองระบบแยกบทบาท: <b style="color:#fff">ML Anomaly Detection</b> (Random Forest + Isolation Forest) ให้คะแนนความเสี่ยงและ<em>เสนอ</em>กฎใหม่ กับ <b style="color:#fff">Gemini AI Layer</b> สำหรับอธิบาย/แชท/สรุปรายงาน — ไม่ทับซ้อนกัน</p>
+      <p class="meta-line"><span><b>ทำงานที่:</b> ml_api :5000 (standalone) + Dashboard Backend :8070</span></p>
+    </header>
+
+    <section class="block reveal">
+      <div class="stat-row">
+        <div class="stat"><span class="num"><span data-count="80.47" data-decimals="2" data-suffix="%">0</span></span><span class="lbl">Accuracy</span></div>
+        <div class="stat"><span class="num"><span data-count="98.97" data-decimals="2" data-suffix="%">0</span></span><span class="lbl">Benign recall (FP แค่ 77/7,454)</span></div>
+        <div class="stat"><span class="num"><span data-count="62.26" data-decimals="2" data-suffix="%">0</span></span><span class="lbl">Attack recall (พลาด ~38%)</span></div>
+        <div class="stat"><span class="num"><span data-count="98.39" data-decimals="2" data-suffix="%">0</span></span><span class="lbl">Attack precision</span></div>
+      </div>
+      <p style="font-size:.85rem">เทรนจาก 60,106 samples (train 45,079 / test 15,027) — Random Forest (n_estimators=200, max_depth=20) + Isolation Forest (n_estimators=150) · ยืนยันจาก <span class="mono">eval_results.json</span> จริง</p>
+      <p style="font-size:.85rem"><b style="color:#fff">Feature ที่มีน้ำหนักมากสุด:</b> <span class="mono">keyword_matches</span> (31.3%), <span class="mono">special_char_ratio</span> (21.1%), <span class="mono">special_char_count</span> (18.8%) — โมเดลพึ่งพา keyword/regex signal เป็นหลัก</p>
+    </section>
+
+    <section class="block reveal" id="capabilities">
+      <h2><span class="idx">§1</span> ความสามารถ</h2>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">ทำงานจริง</button>
+        <button class="status-pill debt" data-status="debt">ข้อจำกัด/dead code</button>
+      </div>
+      <div class="grid cols-2">
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>13-feature engineering</strong><span class="status-pill ok">ทำงานจริง</span></div><p>decode URL 2 ชั้นก่อนสกัด — ครอบคลุม SQLi/XSS/Path Traversal/RCE/SSRF/SSTI/NoSQL/Log4j-JNDI</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>predict-and-suggest</strong><span class="status-pill ok">ทำงานจริง</span></div><p>เจอ anomaly → auto-generate SecRule ผ่าน <span class="mono">auto_rule_generator.py</span> → บันทึกเป็น pending rule ใน DynamoDB</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Human-in-the-loop โดยตั้งใจ</strong><span class="status-pill ok">ทำงานจริง</span></div><p><b>ไม่มี auto-block</b> — admin ต้อง approve/reject ทุกกฎที่ ML เสนอ ตรงตาม proposal ที่ระบุว่า auto-block เสี่ยง false positive สูง</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>AI Copilot chat</strong><span class="status-pill ok">ทำงานจริง</span></div><p>ดึง telemetry สดจาก ClickHouse ฝัง system prompt ทุกครั้ง, scope ตาม origin ที่ user ดูแลจริง, failover 4 โมเดล + fallback แบบไม่ใช้ AI</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Explainability Engine (แยกจาก ML/AI)</strong><span class="status-pill ok">ทำงานจริง</span></div><p>regex signature-matching ล้วน ๆ (ไม่ใช่ SHAP/LIME) แปล rule ID → คำอธิบายไทย+remediation <b>ไม่มีค่าใช้จ่าย API</b></p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>explain_attack() cache</strong><span class="status-pill ok">ทำงานจริง</span></div><p>TTL 5 นาทีต่อ signature (method+url+rule_id+attack_type) ลดเรียกซ้ำ, มี fallback ข้อความสำเร็จรูปถ้า Gemini ล่ม</p></div>
+
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>Attack recall แค่ 62%</strong><span class="status-pill debt">ข้อจำกัด</span></div><p>พลาดตรวจจับจริงเกือบ 4 ใน 10 — แต่ ModSecurity CRS ยังเป็นด่านหลัก ML เป็นชั้นเสริมเท่านั้น</p></div>
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>Entropy feature เป็น dead code</strong><span class="status-pill debt">Dead code</span></div><p><span class="mono">calculate_shannon_entropy()</span> มีอยู่จริงแต่ไม่ถูกใส่เข้า <span class="mono">FEATURE_COLUMNS</span> ที่โมเดลเทรนจริง</p></div>
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>Daily-cron cost control ไม่ implement</strong><span class="status-pill debt">ช่องว่างจาก proposal</span></div><p>proposal ต้องการเรียก Gemini วันละครั้งผ่าน cron แต่โค้ดจริงเป็น on-demand endpoint ล้วน — ค่าใช้จ่าย API อาจสูงกว่าแผนถ้า traffic โจมตีสูง</p></div>
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>ไม่มี closed-loop retraining</strong><span class="status-pill debt">ช่องว่าง</span></div><p>ผล approve/reject ของแอดมินไม่ถูกป้อนกลับไปเทรนโมเดลใหม่ (ยืนยันด้วย grep ทั้ง repo)</p></div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> หลักการทำงาน — 3 เส้นทาง</h2>
+      <div class="grid cols-3">
+        <div class="card"><h4>เส้นทาง 1 — Manual prediction</h4><p>แอดมิน/ระบบส่ง (url,method,body) → <span class="mono">/predict-and-suggest</span> → 13 features → RF+IF ให้คะแนน → เจอ anomaly → generate SecRule → pending rule → approve → sync เข้า WAF จริง</p></div>
+        <div class="card"><h4>เส้นทาง 2 — Blocked → คำอธิบายอัตโนมัติ</h4><p>ModSecurity บล็อกจริง (403) → log ClickHouse → explainability_service จับคู่ rule ID ทันที (ไม่มีค่าใช้จ่าย) → อาจเรียก Gemini สรุปสั้นเพิ่มสำหรับ Telegram</p></div>
+        <div class="card"><h4>เส้นทาง 3 — AI Copilot chat</h4><p>แอดมินพิมพ์คำถาม → ดึง origin/domain ที่ scope ไว้ → query ClickHouse สด 24 ชม. → ฝัง telemetry เข้า prompt → ไล่โมเดล 4 ตัวถ้าโดน rate limit</p></div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> Scenario: SQL Injection เข้า login endpoint</h2>
+      <p><span class="mono">GET /api/v1/auth/login?id=1' OR '1'='1' --</span></p>
+      <ol class="flow">
+        <li data-step="1"><strong>ModSecurity CRS จับได้ทันที</strong><p>rule กลุ่ม 942xxx match pattern <span class="mono">or\s+['\"]?1['\"]?\s*=\s*['\"]?1</span> → บล็อก 403 ก่อนถึง origin</p></li>
+        <li data-step="2"><strong>Log เข้า ClickHouse</strong><p><span class="mono">access_logs</span></p></li>
+        <li data-step="3"><strong>Explainability engine อธิบายทันที</strong><p>confidence 0.95 → "ตรวจพบรูปแบบ SQL Injection... แนะนำ Parameterized Queries" — ไม่เรียก Gemini</p></li>
+        <li data-step="4"><strong>Telegram alert (แยกกัน)</strong><p><span class="mono">gemini_service.explain_attack()</span> อาจถูกเรียกสรุปเป็นประโยคไทยสั้น ๆ</p></li>
+        <li data-step="5"><strong>แอดมินวิเคราะห์ด้วย ML</strong><p>กด "วิเคราะห์ด้วย ML" → RF ให้ attack_probability สูง, IF ให้ anomaly_score ติดลบ → เสนอกฎใหม่เข้าคิว</p></li>
+        <li data-step="6"><strong>Approve → deploy</strong><p>คุ้มครองล่วงหน้าแม้ยังไม่เจอ payload แบบนี้จาก IP อื่นมาก่อน</p></li>
+      </ol>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./03-dashboard-backend.html"><span class="dir">← ก่อนหน้า</span><strong>03 · Dashboard Backend + API</strong></a>
+      <a class="next" href="./05-tunnel-system.html"><span class="dir">ถัดไป →</span><strong>05 · Tunnel System</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

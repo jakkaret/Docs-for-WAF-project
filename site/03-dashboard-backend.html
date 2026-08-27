@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Backend + API — WAF + CDN Platform Docs</title>
+<meta name="description" content="FastAPI + React SPA multi-tenant — auth 3 ช่องทาง, ownership isolation, PII masking engine, rate limiting แบบ sliding-window">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html" aria-current="page"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>03 · DASHBOARD BACKEND + API</p>
+      <h1>Backend เดียวเสิร์ฟทั้ง REST API และ React SPA</h1>
+      <p class="lede">ระบบจัดการ WAF/CDN แบบ multi-tenant — ผู้ใช้แต่ละคนเพิ่ม "origin" ของตัวเองให้ WAF คุ้มครอง โดยข้อมูลแยกด้วย <span class="mono">admin_user_id</span> ที่ผูกกับทุก origin/domain</p>
+      <p class="meta-line"><span><b>ทำงานที่:</b> Main Node — uvicorn main:app :8000</span><span><b>โค้ด:</b> /root/waf_project/dashboard/</span></p>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> เทคโนโลยีที่ใช้</h2>
+      <div class="grid cols-2">
+        <div class="card"><h4>Backend</h4><div class="tech-tags">
+          <span>FastAPI</span><span>Uvicorn (reload=True)</span><span>python-jose (JWT HS256)</span>
+          <span>argon2-cffi</span><span>boto3 → DynamoDB</span><span>slowapi</span><span>redis-py</span><span>dnspython</span><span>httpx</span>
+        </div></div>
+        <div class="card"><h4>Frontend</h4><div class="tech-tags">
+          <span>React 18 + TypeScript</span><span>Vite 5</span><span>TailwindCSS</span><span>TanStack Query v5</span>
+          <span>Zustand</span><span>axios</span><span>react-router-dom v6</span><span>recharts</span><span>Playwright (E2E)</span>
+        </div></div>
+      </div>
+    </section>
+
+    <section class="block reveal" id="capabilities">
+      <h2><span class="idx">§2</span> ความสามารถ (ยืนยันจาก endpoint จริงใน openapi.json)</h2>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">ทำงานจริง</button>
+        <button class="status-pill warn" data-status="warn">เขียนเสร็จ ไม่ต่อสาย</button>
+        <button class="status-pill debt" data-status="debt">หนี้เทคนิค</button>
+      </div>
+      <div class="grid cols-2">
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Authentication 3 ช่องทาง</strong><span class="status-pill ok">ทำงานจริง</span></div><p>Local (argon2), Google OAuth 2.0, Telegram Login Widget — JWT เก็บใน HttpOnly cookie (มีคอมเมนต์ในโค้ดว่านี่คือ security fix ที่แก้แล้ว เพราะ token ใน URL หลุดไปอยู่ history/log ได้)</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Origins &amp; Domains CRUD</strong><span class="status-pill ok">ทำงานจริง</span></div><p>quota 5 origin active/บัญชี (ค่า default), soft-delete + restore, verify DNS ด้วย CNAME หรือ TXT record 2 วิธี</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Ownership isolation ทุก endpoint</strong><span class="status-pill ok">ทำงานจริง</span></div><p><span class="mono">verify_origin_ownership</span> บังคับเช็ค <span class="mono">admin_user_id</span> ก่อนเสมอ ป้องกัน BOLA/IDOR ข้าม tenant</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Rate Limiting (sliding-window)</strong><span class="status-pill ok">ทำงานจริง</span></div><p>Redis + Lua script (atomic) — <b>fail-open by design</b>: Redis ล่ม → ปล่อยผ่านทุก request แทนบล็อกทั้งหมด</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>PII Masking Engine</strong><span class="status-pill ok">ทำงานจริง</span></div><p>เช็คบัตรประชาชนไทยด้วย checksum จริง, บัตรเครดิตด้วย Luhn algorithm, zero-knowledge hash สำหรับค้นหาโดยไม่เก็บค่าจริง — ออกแบบรองรับ PDPA/GDPR</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Telegram Alerts</strong><span class="status-pill ok">ทำงานจริง</span></div><p>ผูกบัญชีด้วย one-time code 6 หลัก (หมดอายุ 5 นาที) frontend poll ทุก 3 วิ</p></div>
+
+        <div class="card finding" data-status="warn"><div class="finding-head"><strong>DNS auto-verification worker</strong><span class="status-pill warn">ไม่ต่อสาย</span></div><p><span class="mono">dns_verification_worker.py</span> เขียน loop สมบูรณ์ (scan ทุก 10 วิ) แต่ <span class="mono">main.py</span> startup ไม่เคยเรียก <span class="mono">asyncio.create_task()</span> ให้มัน — verify เกิดเฉพาะตอนกดปุ่มเอง</p></div>
+        <div class="card finding" data-status="warn"><div class="finding-head"><strong>Admin approval flow</strong><span class="status-pill warn">ไม่ครบตามคอมเมนต์</span></div><p>คอมเมนต์บอกว่าต้องมี approval แต่โค้ดจริงแค่ downgrade role เป็น viewer เงียบ ๆ ไม่มี flow อนุมัติจริง</p></div>
+
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>Reload mode เปิดใน production</strong><span class="status-pill debt">หนี้เทคนิค</span></div><p><span class="mono">uvicorn.run(..., reload=True)</span> เหมาะกับ dev มากกว่า — กิน CPU เพิ่มและอาจ restart โดยไม่ตั้งใจ</p></div>
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>Settings เก็บเป็นไฟล์ JSON</strong><span class="status-pill debt">หนี้เทคนิค</span></div><p><span class="mono">data/system_settings.json</span> ไม่ใช่ DynamoDB — scale หลาย instance แล้วค่าจะไม่ sync กัน</p></div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> หลักการทำงาน</h2>
+      <h3><span class="idx">3.1</span> Auth flow (local login)</h3>
+      <ol class="flow">
+        <li data-step="1"><strong>Client ส่ง email/password</strong><p><span class="mono">POST /api/auth/login</span></p></li>
+        <li data-step="2"><strong>ดึง user จาก DynamoDB</strong><p><span class="mono">waf_users</span> table ผ่าน GSI <span class="mono">EmailIndex</span> ก่อน ถ้าไม่มี fallback ไป scan</p></li>
+        <li data-step="3"><strong>ตรวจรหัสผ่านด้วย argon2</strong><p><span class="mono">verify()</span></p></li>
+        <li data-step="4"><strong>สร้าง JWT</strong><p>หมดอายุตาม <span class="mono">JWT_EXPIRE_MINUTES</span> (default 60 นาที) เซ็นด้วย HS256</p></li>
+        <li data-step="5"><strong>ส่งกลับ</strong><p>ทั้งใน response body และ HttpOnly cookie (samesite=lax, secure เมื่อ FORCE_HTTPS=true)</p></li>
+      </ol>
+
+      <div class="table-wrap" style="margin-top:1.6rem"><table>
+        <thead><tr><th>ชั้น RBAC check</th><th>รายละเอียด</th></tr></thead>
+        <tbody>
+          <tr><td>1. อ่าน token</td><td><span class="mono">Authorization: Bearer</span> header ก่อน ถ้าไม่มี fallback ไปอ่าน cookie</td></tr>
+          <tr><td>2. Decode JWT</td><td>invalid/expired → 401</td></tr>
+          <tr><td>3. ดึง user เต็มจาก DynamoDB</td><td>ยืนยันว่า user ยังมีอยู่จริง ไม่ใช่เชื่อ payload ใน token เฉย ๆ</td></tr>
+          <tr><td>4. require_admin / require_viewer_or_above</td><td>เช็ค field role อีกชั้น</td></tr>
+          <tr><td>5. verify_origin_ownership</td><td>เฉพาะ endpoint ที่แตะ origin/domain เจาะจง กันข้าม tenant</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="diagram" style="margin-top:1.6rem"><pre>Browser (React SPA)
+   │  axios + JWT cookie
+   ▼
+FastAPI (:8000) ── CORS allow เฉพาะ origin ใน ALLOWED_ORIGINS
+   │
+   ├─ get_current_user / require_admin ──> decode JWT ──> DynamoDB.waf_users
+   ├─ Origins/Domains API ──> verify_origin_ownership ──> DynamoDB.waf_origins / waf_domains
+   │                                          └─ dns_service.py ──> DNS resolver จริง
+   ├─ Rate-limit enforcement ──> Redis (Lua sliding-window script)
+   ├─ Logs/Analytics API ──> clickhouse_service.py ──> ClickHouse
+   │        ก่อนแสดงผล log ที่มี PII ──> pii_masker.py mask ก่อนเสมอ
+   ├─ Alerts API ──> Telegram Bot API (httpx async)
+   └─ Background workers (asyncio.create_task ตอน startup):
+        - alert_worker() · log_forward_worker() · _cleanup_expired_codes()</pre></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> Scenario: ผู้ใช้ใหม่เพิ่มเว็บไซต์เข้าระบบ</h2>
+      <ol class="flow">
+        <li data-step="1"><strong>สมัครสมาชิก</strong><p>คนแรกในระบบ → role admin อัตโนมัติ, คนถัดไป → viewer เสมอแม้ขอ role admin</p></li>
+        <li data-step="2"><strong>ล็อกอิน</strong><p>ได้ JWT cookie</p></li>
+        <li data-step="3"><strong>เพิ่ม Origin</strong><p>กรอก label + IP + port → เช็ค quota (ไม่เกิน 5 active) → สร้างเป็น <span class="mono">status: pending</span></p></li>
+        <li data-step="4"><strong>เพิ่มโดเมน</strong><p>ระบบสร้าง <span class="mono">verification_token</span> คืน <span class="mono">dns_instructions</span> (CNAME → cdn.local, TXT ที่ _waf-challenge.example.com)</p></li>
+        <li data-step="5"><strong>ตั้งค่า DNS จริงแล้วกด Verify</strong><p>backend resolve CNAME/TXT จริงผ่านอินเทอร์เน็ต</p></li>
+        <li data-step="6"><strong>ตรง → dns_verified=True</strong><p>Caddy เรียก <span class="mono">check-ssl-allowed</span> แล้วออก TLS cert อัตโนมัติ</p></li>
+        <li data-step="7"><strong>Traffic เริ่มถูกป้องกัน</strong><p>route ผ่าน edge WAF ไปยัง origin — ทุก request โดน ModSecurity CRS ตรวจก่อนเสมอ</p></li>
+      </ol>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./02-cdn-geodns.html"><span class="dir">← ก่อนหน้า</span><strong>02 · CDN + GeoDNS</strong></a>
+      <a class="next" href="./04-ml-ai-detection.html"><span class="dir">ถัดไป →</span><strong>04 · ML + AI Detection</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Storage — WAF + CDN Platform Docs</title>
+<meta name="description" content="Polyglot persistence: ClickHouse + DynamoDB + Redis + SQLite + JSON — เลือกเครื่องมือให้เหมาะกับลักษณะข้อมูลแต่ละประเภท">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html" aria-current="page"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>06 · DATA STORAGE</p>
+      <h1>5 กลไกเก็บข้อมูลคู่ขนาน — เลือกตามลักษณะข้อมูล ไม่ยัดที่เดียว</h1>
+      <p class="lede">Polyglot persistence: เลือกเครื่องมือให้เหมาะกับงาน แทนที่จะยัดทุกอย่างลงฐานข้อมูลเดียว</p>
+    </header>
+
+    <section class="block reveal">
+      <div class="table-wrap"><table>
+        <thead><tr><th>ระบบ</th><th>เก็บอะไร</th><th>เหตุผล</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">ClickHouse</b></td><td>Access log + security audit log ปริมาณมาก</td><td>Column-oriented, aggregate/filter บนข้อมูลนับล้านแถวได้เร็ว</td></tr>
+          <tr><td><b style="color:#fff">DynamoDB</b> (AWS จริง)</td><td>alert, rule, user, origin, domain, SSL cert, pending rule</td><td>NoSQL latency ต่ำ ทนทาน ไม่ต้อง migrate schema เอง</td></tr>
+          <tr><td><b style="color:#fff">Redis</b></td><td>Sliding-window counter สำหรับ rate limit</td><td>In-memory, atomic ผ่าน Lua, sub-millisecond</td></tr>
+          <tr><td><b style="color:#fff">SQLite</b></td><td>rate_limits.db, ip_rules.db</td><td>config เครื่องเดียวใช้ ไม่ต้อง sync ข้ามเครื่อง</td></tr>
+          <tr><td><b style="color:#fff">JSON file</b></td><td>system_settings.json</td><td>ข้อมูลเล็ก เปลี่ยนไม่บ่อย</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:.85rem"><span class="mono">DynamoDBService</span> ต่อ region <span class="mono">ap-southeast-1</span> — ยืนยันว่า <b>ไม่ได้ตั้งค่า DYNAMODB_ENDPOINT_URL</b> จึงต่อ AWS DynamoDB จริงบนคลาวด์ ไม่ใช่ local emulator</p>
+    </section>
+
+    <section class="block reveal" id="capabilities">
+      <h2><span class="idx">§1</span> ความสามารถ</h2>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">ทำงานจริง</button>
+        <button class="status-pill risk" data-status="risk">ช่องโหว่</button>
+        <button class="status-pill debt" data-status="debt">หนี้เทคนิค</button>
+      </div>
+      <div class="grid cols-2">
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>access_logs สะสมจริง</strong><span class="status-pill ok">ทำงานจริง</span></div><p><b>113,336 แถว</b> ณ ตอนตรวจสอบ ยืนยันว่าระบบถูกใช้งาน/ทดสอบต่อเนื่องจริง — ไม่ใช่แค่โครงเปล่า</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Rate limiting sliding window</strong><span class="status-pill ok">ทำงานจริง</span></div><p>Redis Sorted Set (ZADD/ZREMRANGEBYSCORE/ZCARD) atomic ด้วย Lua — fail-open ถ้า Redis ล่ม</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>waf_pending_rules composite key</strong><span class="status-pill ok">ทำงานจริง</span></div><p>(rule_id + created_at) พร้อม GSI status-index — สะท้อน workflow "เสนอกฎ → รออนุมัติ" จริง</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>waf_users GSI 2 ตัว</strong><span class="status-pill ok">ทำงานจริง</span></div><p>EmailIndex + ProviderIndex (auth_provider+provider_id) รองรับ multi-provider login</p></div>
+
+        <div class="card finding" data-status="risk"><div class="finding-head"><strong>ClickHouse query ต่อ string ตรง ๆ</strong><span class="status-pill risk">ช่องโหว่</span></div><p><span class="mono">get_logs()</span>/<span class="mono">get_filter_options()</span> escape <span class="mono">'</span> แบบพื้นฐานเท่านั้น ไม่ใช่ parameterized query จริง</p></div>
+
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>DynamoDB ใช้ scan() เป็นหลัก</strong><span class="status-pill debt">หนี้เทคนิค</span></div><p><span class="mono">get_logs()</span>/<span class="mono">get_all_alerts()</span> อ่านทั้งตารางแล้วกรองที่ backend — ไม่ scale ดีเมื่อข้อมูลโต</p></div>
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>In-memory cache ไม่ sync ข้าม instance</strong><span class="status-pill debt">หนี้เทคนิค</span></div><p><span class="mono">_alerts_cache</span> TTL 5 วิ เป็น cache ระดับ process เดียว</p></div>
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>ไม่มี TTL/retention policy</strong><span class="status-pill debt">หนี้เทคนิค</span></div><p><span class="mono">access_logs</span> โตไปเรื่อย ๆ ไม่มีลบอัตโนมัติ</p></div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> การไหลของข้อมูล</h2>
+      <div class="diagram"><pre>เส้นทางที่ 1 — Request ที่ถูก WAF บล็อก:
+Client ยิง payload อันตราย
+  → ModSecurity CRS ตรวจจับ (WAF container)
+  → บันทึก /var/log/modsecurity/audit.json
+  → log forwarder อ่านไฟล์ → ส่งเข้า backend
+  → ClickHouseService.save_log("access_logs", data) status_code=403
+  → เหตุการณ์ร้ายแรง → DynamoDBService.save_alert() → waf_alerts
+  → Dashboard เรียก GET /logs → แสดงตาราง/กราฟ
+
+เส้นทางที่ 2 — Rate limit แบบ real-time:
+Request เข้า endpoint
+  → RedisRateLimiter.is_allowed(ip, limit, window)
+  → Lua script เช็ค sliding window ภายใน 1 round-trip (atomic)
+  → เกิน limit → 429 ทันที ไม่ปล่อยผ่านไป origin
+  → กติกา limit/window ดึงจาก SQLite (rate_rules)</pre></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> แนวทางพัฒนาต่อ</h2>
+      <ul class="check-list">
+        <li>เปลี่ยน ClickHouse query filter ทั้งหมดเป็น parameterized query (<span class="mono">clickhouse_connect</span> รองรับอยู่แล้ว)</li>
+        <li>เพิ่ม TTL policy ให้ตาราง ClickHouse เช่น <span class="mono">TTL timestamp + INTERVAL 90 DAY</span></li>
+        <li>ย้าย in-memory alert cache ไปใช้ Redis เพื่อ scale หลาย instance ได้</li>
+        <li>ทำ DynamoDB Local แยกสำหรับ dev/test ตั้ง <span class="mono">DYNAMODB_ENDPOINT_URL</span> จริงจัง</li>
+      </ul>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./05-tunnel-system.html"><span class="dir">← ก่อนหน้า</span><strong>05 · Tunnel System</strong></a>
+      <a class="next" href="./07-web-origin-testbed.html"><span class="dir">ถัดไป →</span><strong>07 · Web Origin Testbed</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

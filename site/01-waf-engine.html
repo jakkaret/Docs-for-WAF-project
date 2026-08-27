@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WAF Engine — WAF + CDN Platform Docs</title>
+<meta name="description" content="ModSecurity CRS, custom rule sync pipeline, BOLA guard, payload normalizer และ ReDoS-safe regex — ตรวจสอบจริงจากเครื่อง Edge Node และ Main Node">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html" aria-current="page"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>01 · WAF ENGINE</p>
+      <h1>ชั้นป้องกันหลัก: ModSecurity CRS + engine เสริมที่เขียนเอง</h1>
+      <p class="lede">ทุก request ต้องผ่านชั้นนี้ก่อนถึง origin จริง — สถาปัตยกรรมนี้เรียกตัวเองในโค้ดว่า <strong style="color:#fff">"CloudWAF Control Plane"</strong></p>
+      <p class="meta-line">
+        <span><b>ทำงานที่:</b> Main Node (waf-nginx) + Edge Node (cdn-edge-node)</span>
+        <span><b>เอนจินหลัก:</b> ModSecurity v3 + OWASP CRS v3</span>
+      </p>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> เทคโนโลยีที่ใช้</h2>
+      <div class="tech-tags">
+        <span>ModSecurity v3</span><span>OWASP CRS v3</span><span>owasp/modsecurity-crs:nginx</span>
+        <span>ngx_http_headers_more_filter_module</span><span>FastAPI + SQLite (control-api)</span>
+        <span>99-rulesync.sh (POSIX shell)</span><span>bola_guard.py</span><span>payload_normalizer.py</span><span>safe_regex.py (RE2)</span>
+      </div>
+      <p>PARANOIA level = 1, inbound anomaly threshold = 10 (ค่า default) — แต่ที่ <b style="color:#fff">Edge Node</b> มีไฟล์ override บีบ threshold ให้เข้มขึ้นเหลือ <span class="mono">inbound = 5</span> แปลว่า control plane tune ความไวของ WAF ต่างกันได้ต่อ node</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> Custom rule ที่ active จริงตอนนี้</h2>
+      <p>อ่านจากไฟล์จริงบน Main Node และ Edge Node — ทั้งหมดเป็น keyword-matching แบบง่าย (proof-of-concept) ไม่ใช่ signature ป้องกันเชิงลึก</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Match on REQUEST_URI</th><th>Action</th><th>หมายเหตุ</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1000001</td><td>contains <code class="mono">testattack</code></td><td>403 CRITICAL</td><td>rule ทดสอบระบบบล็อก keyword</td></tr>
+          <tr><td class="mono">100002</td><td>contains <code class="mono">pwd01</code></td><td>403 CRITICAL</td><td>rule ทดสอบ</td></tr>
+          <tr><td class="mono">100003</td><td>contains <code class="mono">admin1</code></td><td>403 CRITICAL</td><td>rule ทดสอบ</td></tr>
+          <tr><td class="mono">100004</td><td>regex <code class="mono">seminar</code></td><td>403 CRITICAL</td><td>ตั้งชื่อดูเหมือนทำตอน demo สัมมนา</td></tr>
+          <tr><td class="mono">123</td><td>regex <code class="mono">testpj</code></td><td>403 WARNING</td><td>เฉพาะ Edge Node</td></tr>
+          <tr><td class="mono">990001</td><td>contains <code class="mono">/test-waf-sync-rule</code></td><td>403 CRITICAL</td><td>เฉพาะ Edge Node — ตรวจสอบว่า sync pipeline ทำงานจริง</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal" id="capabilities">
+      <h2><span class="idx">§3</span> ความสามารถ</h2>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">ทำงานจริง</button>
+        <button class="status-pill debt" data-status="debt">หนี้เทคนิค / ระดับ demo</button>
+      </div>
+      <div class="grid cols-2">
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>Rule sync pipeline (Edge ↔ Control Plane)</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p><code class="mono">control-api</code> รวมไฟล์ <span class="mono">.conf/.txt</span> + blocklist เป็น <span class="mono">.tar.gz</span> — edge poll ทุก 5 วิ เทียบ SHA-256, <span class="mono">nginx -t</span> เช็ค syntax ก่อน reload แบบไม่ downtime</p>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>Global IP Blocklist</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p><span class="mono">POST/DELETE /api/blocklist</span> (auth ด้วย <span class="mono">X-Control-Token</span>) เก็บ IP ใน SQLite แล้ว auto-generate <span class="mono">@ipMatchFromFile</span> rule</p>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>BOLA/IDOR Guard</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p><span class="mono">bola_guard.py</span> (684 บรรทัด) — ตรวจ JWT signature จริง, path canonicalization กัน traversal desync, เช็ค header spoofing (<span class="mono">X-User-ID</span>/<span class="mono">X-Tenant-ID</span>) ให้ตรงกับ claim ที่ verify แล้ว</p>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>Payload Normalization</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p>แก้ WAF evasion: unicode homoglyph, double/triple percent-encoding (<span class="mono">%2527→%27→'</span>), HTML entity obfuscation, null-byte, SQL comment splitting</p>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>ReDoS-safe regex execution</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p><span class="mono">safe_regex.py</span> รองรับ RE2 (linear-time) + fallback process-isolated พร้อม hard SIGKILL timeout กัน CPU worker ค้าง</p>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>AI-assisted mitigation candidate</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p><span class="mono">POST /api/rules/mitigate-candidate</span> รับ log จริงแล้ว auto-generate SecRule ผ่านการเช็ค ReDoS-safety ให้ admin ตรวจก่อนใช้</p>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>Blast Radius Simulator</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p>เอา rule ที่จะ deploy ไป "เล่นซ้ำ" กับ traffic จริงในอดีต ประเมิน false positive ก่อน sync — ระดับเดียวกับ WAF เชิงพาณิชย์ใหญ่</p>
+        </div>
+        <div class="card finding" data-status="debt">
+          <div class="finding-head"><strong>Rule signature ยังอยู่ระดับ demo</strong><span class="status-pill debt">หนี้เทคนิค</span></div>
+          <p>ยังไม่มี custom rule ที่ป้องกันการโจมตีเฉพาะทางจริง (เช่น CVE เจาะจง หรือ business-logic abuse) นอกเหนือจาก CRS มาตรฐาน</p>
+        </div>
+      </div>
+
+      <div class="callout risk">
+        <span class="cap">พังจริง — ยืนยันจาก log</span>
+        <p><span class="mono">waf-nginx</span> (Main Node) สถานะ <span class="mono">unhealthy</span> ต่อเนื่อง <b>FailingStreak 3212 ครั้ง</b> ทุก 30 วิ (exit code 7) — healthcheck ยิง <span class="mono">curl http://127.0.0.1:80/healthz</span> แต่ nginx จริงฟังที่ <b>port 8080</b> เท่านั้น เป็น mismatch ระหว่าง default healthcheck ของ base image กับ port ที่โปรเจกต์ override — nginx รับ traffic ได้ปกติจริง เป็นแค่ false alarm ที่ทำ monitoring เข้าใจผิด</p>
+      </div>
+      <div class="callout">
+        <span class="cap">ยังไม่มีข้อมูล</span>
+        <p><span class="mono">global_whitelist.txt</span> และ <span class="mono">global_blocklist.txt</span> บน Edge Node ว่างเปล่า — โครงสร้าง sync พร้อมแล้วแต่ยังไม่เคย block IP ผ่าน dashboard จริง</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> หลักการทำงาน (Request Lifecycle)</h2>
+      <div class="diagram"><pre>Client
+  │  HTTPS (TLS terminate ที่นี่)
+  ▼
+Caddy (caddy-ssl-termination) — reverse proxy, จัดการ cert อัตโนมัติ
+  │  HTTP ภายใน docker network
+  ▼
+waf-nginx (ModSecurity CRS) — port 8080
+  │
+  ├─► [auth_request] เรียก /internal-rate-limit ก่อนเสมอ
+  │     proxy ไปที่ host.docker.internal:8000/api/limiter/check
+  │     ถ้าเกิน limit → 401 → แปลงเป็น HTTP 429 กลับ client
+  │
+  ├─► ModSecurity ประมวลผลตามลำดับ include ใน setup.conf:
+  │     1. modsecurity.conf (SecRuleEngine on, body size limit, JSON/XML parser)
+  │     2. modsecurity-override.conf (ค่า override เฉพาะ node)
+  │     3. owasp-crs/crs-setup.conf (ตั้งค่า PARANOIA/ANOMALY score)
+  │     4. owasp-crs/rules/*.conf (CRS signature ทั้งหมด)
+  │     5. /opt/custom-rules/*.conf (custom rule จาก control-api — โหลดทีหลังสุด)
+  │
+  ├─► ถ้า anomaly score เกิน threshold → deny, 403, log เข้า
+  │     /var/log/modsecurity/audit.json (SecAuditLogFormat JSON)
+  │
+  └─► ถ้าผ่านหมด → proxy_pass ไปยัง upstream จริง
+        - route "/" (IP ตรง) → dvwa_backend
+        - route juice/dvwa.waf-it-kku.online → frp_tunnel_router → FRP → Web Origin
+
+ทุก request ถูก log เป็น JSON: nginx access.json + modsecurity audit.json
+→ log-forwarder ส่งต่อไปยัง ClickHouse</pre>
+        <div class="cap">อ้างอิงจาก template จริง (default.conf.template) — ไม่ใช่การอนุมาน</div>
+      </div>
+
+      <div class="diagram"><pre>┌─────────────┐     poll ทุก 5s      ┌──────────────────┐
+│  Edge Node  │◄─────────────────────│  control-api      │
+│(rulesync.sh)│   GET /api/sync/     │  (Main Node,      │
+│             │      bundle          │   SQLite blocklist│
+│  hash เทียบ  │──────────────────────►  + rule bundling) │
+│  ถ้าเปลี่ยน   │  .tar.gz (rules+     └────────▲──────────┘
+│  → extract  │   blocklist)                  │
+│  → nginx -t │                                │ POST /api/rules
+│  → reload   │                                │ (ผ่าน Dashboard, require_admin)
+└─────────────┘                        ┌───────┴────────┐
+                                        │ Dashboard Backend│
+                                        │ rules.py · bola_guard.py · safe_regex.py│
+                                        └──────────────────┘</pre></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> Scenario: SQL Injection request เข้ามา</h2>
+      <p><span class="mono">GET /vulnerabilities/sqli/?id=1' OR '1'='1&amp;Submit=Submit</span> เข้าที่ <span class="mono">dvwa.waf-it-kku.online</span></p>
+      <ol class="flow">
+        <li data-step="1"><strong>Caddy</strong><p>รับ TLS, terminate SSL, ส่งต่อเป็น HTTP ภายใน docker network ไปยัง waf-nginx</p></li>
+        <li data-step="2"><strong>Rate limit check</strong><p>nginx เรียก <span class="mono">auth_request /internal-rate-limit</span> ถามฝั่ง backend — ถ้ายังไม่เกิน quota ผ่านต่อ</p></li>
+        <li data-step="3"><strong>ModSecurity phase 1-2</strong><p>payload ตรง signature SQLi classic (rule กลุ่ม 942xxx) ได้ anomaly score สูงเกิน threshold (5 ที่ Edge / 10 ที่ Main)</p></li>
+        <li data-step="4"><strong>Custom rule ไม่ match</strong><p>เพราะ payload ไม่มี keyword <span class="mono">testattack/pwd01/admin1/seminar</span></p></li>
+        <li data-step="5"><strong>Deny</strong><p>ModSecurity ตัดสินใจ deny ส่ง HTTP 403 (custom page 403.html) เขียน log เต็ม (headers, body, matched rule id, anomaly score)</p></li>
+        <li data-step="6"><strong>ปรากฏใน Dashboard ทันที</strong><p>log forwarder ส่งเข้า ClickHouse → admin เห็นทันที พร้อมกดปุ่ม "Generate mitigation candidate" เพื่อ auto-suggest custom rule เพิ่ม</p></li>
+      </ol>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> แนวทางพัฒนาต่อ</h2>
+      <ul class="check-list">
+        <li><b style="color:#fff">แก้ healthcheck</b> — override ให้ยิงไปที่ <span class="mono">http://127.0.0.1:8080/healthz</span> (endpoint มีอยู่แล้ว) แทนการพึ่ง default ของ base image — แก้ได้ทันทีไม่กระทบ logic อื่น</li>
+        <li><b style="color:#fff">เพิ่ม custom rule ที่มีความหมายจริง</b> — ใช้ blast-radius simulator ที่มีอยู่แล้วช่วยทดสอบ rule ใหม่ก่อน deploy</li>
+        <li><b style="color:#fff">เชื่อม mitigation-candidate เข้ากับ alert pipeline</b> — ต่อกับ telegram_listener ให้ auto-suggest rule ทันทีที่เจอ anomaly ใหม่</li>
+        <li><b style="color:#fff">ทดสอบ payload_normalizer กับ WAF bypass technique จริง</b> — payload-padding evasion และเทคนิค bypass ยุค 2026</li>
+      </ul>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./index.html"><span class="dir">← ก่อนหน้า</span><strong>00 · ภาพรวมระบบ</strong></a>
+      <a class="next" href="./02-cdn-geodns.html"><span class="dir">ถัดไป →</span><strong>02 · CDN + GeoDNS</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

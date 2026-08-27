@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WAF + CDN Platform — Verification Ledger</title>
+<meta name="description" content="เอกสารสถาปัตยกรรมระบบ WAF + CDN แบบ multi-tenant — ตรวจสอบจริงทีละชั้น ทั้งที่ทำงานได้แล้ว กำลังพัฒนา และช่องโหว่ที่ยังเปิดอยู่">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html" aria-current="page"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <section class="hero">
+      <p class="eyebrow"><span class="dot"></span>WAF + CDN PLATFORM · MULTI-TENANT · CAPSTONE PROJECT</p>
+      <h1>ระบบป้องกันเว็บที่ตรวจสอบทุกคำกล่าวอ้างด้วยเครื่องจริง</h1>
+      <p class="lede">
+        แพลตฟอร์ม Web Application Firewall + CDN ที่พัฒนาขึ้นเอง ครบตั้งแต่ชั้นป้องกัน (ModSecurity CRS + engine เสริม),
+        ชั้น Machine Learning, ชั้น AI Copilot ไปจนถึง Dashboard multi-tenant เต็มรูปแบบ —
+        เอกสารชุดนี้ตรวจทุกความสามารถผ่าน SSH เข้าเครื่องจริง อ่าน source code จริง และสั่ง <code class="mono">docker ps</code> จริง
+        ไม่ใช่การอนุมานจากชื่อไฟล์
+      </p>
+      <div class="actions">
+        <a class="btn primary" href="#capabilities">ดูสถานะความสามารถทั้งหมด</a>
+        <a class="btn" href="./01-waf-engine.html">เริ่มอ่านที่ WAF Engine →</a>
+      </div>
+
+      <div class="pipeline card reveal" data-pipeline aria-hidden="false">
+        <div class="pipeline-cap">
+          <span>Request Lifecycle · จำลองจาก traffic จริงที่ระบบเคยเจอ</span>
+          <span class="live"><span class="dot"></span>LIVE SIMULATION</span>
+        </div>
+        <div class="pipeline-track"><div class="fill"></div><div class="pipeline-packet"></div></div>
+        <div class="pipeline-nodes">
+          <div class="pipeline-node"><div class="ring"></div><div class="name">Client</div><div class="sub">อินเทอร์เน็ต</div></div>
+          <div class="pipeline-node"><div class="ring"></div><div class="name">ModSecurity CRS</div><div class="sub">Edge / Main Node</div></div>
+          <div class="pipeline-node"><div class="ring"></div><div class="name">BOLA Guard</div><div class="sub">Dashboard Backend</div></div>
+          <div class="pipeline-node"><div class="ring"></div><div class="name">Web Origin</div><div class="sub">DVWA / Juice Shop</div></div>
+        </div>
+        <div class="pipeline-log" aria-live="polite"></div>
+      </div>
+
+      <div class="stat-row reveal">
+        <div class="stat"><span class="num" data-count="113336">0</span><span class="lbl">แถว access log สะสมจริงใน ClickHouse</span></div>
+        <div class="stat"><span class="num"><span data-count="98.39" data-decimals="2" data-suffix="%">0</span></span><span class="lbl">Attack precision ของโมเดล ML</span></div>
+        <div class="stat"><span class="num"><span data-count="4" data-suffix="">0</span></span><span class="lbl">ช่องโหว่ความปลอดภัยที่พบและยังเปิดอยู่</span></div>
+        <div class="stat"><span class="num"><span data-count="7" data-suffix="">0</span></span><span class="lbl">ฟีเจอร์เขียนเสร็จแล้วแต่ยังไม่ต่อสาย</span></div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> ระบบนี้คืออะไร</h2>
+      <p style="max-width:70ch">
+        แพลตฟอร์ม <strong style="color:#fff">Web Application Firewall + CDN แบบ multi-tenant</strong> ที่พัฒนาขึ้นเอง
+        (ลักษณะเข้าข่ายโปรเจกต์จบ/capstone ของมหาวิทยาลัยขอนแก่น) มีทั้งเลเยอร์ป้องกัน (ModSecurity CRS + เอนจินเสริมที่เขียนเอง),
+        เลเยอร์ตรวจจับด้วย Machine Learning, เลเยอร์ AI ช่วยวิเคราะห์ (Gemini), และ Dashboard เต็มรูปแบบให้ผู้ใช้แต่ละคนเพิ่มเว็บไซต์ของตัวเองเข้ามาให้ระบบป้องกัน —
+        พร้อมชุดเว็บแอปช่องโหว่ตั้งใจ (DVWA, Juice Shop, vAmPI, bWAPP) สำหรับพิสูจน์ว่า WAF ทำงานได้จริง
+      </p>
+
+      <div class="diagram">
+        <pre>                          ┌─────────────────────────────────────┐
+                          │            อินเทอร์เน็ตทั่วไป            │
+                          └───────────────┬───────────────────────┘
+                                          │ HTTPS
+              ┌───────────────────────────┼───────────────────────────┐
+              ▼                           ▼                           │
+   ┌─────────────────────┐    ┌─────────────────────────────┐        │
+   │   Edge Node          │    │   Main Node                 │        │
+   │   45.154.26.91       │    │   178.104.53.123             │        │
+   │   Caddy → ModSecurity│    │   Caddy → ModSecurity        │        │
+   │   poll rule ทุก 5s ◄──┼────┼──┤ control-api :8070          │        │
+   │                      │    │  │ Dashboard Backend :8000     │        │
+   │                      │    │  │  + ml_api :5000              │        │
+   │                      │    │  │ ClickHouse/DynamoDB/Redis    │        │
+   │                      │    │  │ frps (FRP server) :7000      │        │
+   └──────────────────────┘    └───────────────┬───────────────┘        │
+                                                │ FRP tunnel (outbound   │
+                                                │ จาก origin, TCP)       │
+                                                ▼                        │
+                          ┌──────────────────────────────────┐          │
+                          │   Web Origin — 10.198.200.75      │◄─────────┘
+                          │   หลัง VPN มหาวิทยาลัยขอนแก่น (KKU)   │  Cloudflare Quick
+                          │   nginx → DVWA · Juice Shop ·      │  Tunnel x5 (ทางลัด
+                          │           vAmPI · bWAPP            │  ไม่ผ่าน WAF)
+                          └────────────────────────────────────┘</pre>
+        <div class="cap">Topology จริง 3 เครื่อง — ยืนยันด้วย SSH + docker ps บนทั้งสามเครื่อง ไม่ใช่แผนผังที่วาดจากดีไซน์เอกสาร</div>
+      </div>
+
+      <div class="tech-tags">
+        <span>ModSecurity v3 + OWASP CRS v3</span><span>FastAPI</span><span>React 18 + TypeScript</span>
+        <span>scikit-learn</span><span>Google Gemini API</span><span>ClickHouse</span><span>DynamoDB</span>
+        <span>Redis</span><span>FRP v0.61.1</span><span>Docker Compose</span><span>GitHub Actions</span>
+      </div>
+    </section>
+
+    <section class="block reveal" id="capabilities">
+      <h2><span class="idx">§2</span> สถานะความสามารถ — ตรวจสอบทีละข้อ</h2>
+      <p style="max-width:66ch">ทุกรายการด้านล่างมาจากการอ่าน source code จริงและตรวจสถานะ process/container จริงบนเครื่อง ไม่ใช่การอ่านชื่อไฟล์แล้วเดา คลิกป้ายสถานะเพื่อกรองดูเฉพาะกลุ่ม</p>
+
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">ทำงานจริงใน production</button>
+        <button class="status-pill warn" data-status="warn">เขียนเสร็จ แต่ยังไม่ต่อสาย</button>
+        <button class="status-pill risk" data-status="risk">ช่องโหว่ความปลอดภัย</button>
+        <button class="status-pill debt" data-status="debt">หนี้ทางสถาปัตยกรรม</button>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>WAF บล็อก SQLi/XSS/RCE/LFI ได้จริง</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p>ผ่าน OWASP CRS พร้อม custom rule sync จาก dashboard ไปทุก edge แบบ zero-downtime (poll 5 วิ + SHA-256 + graceful reload) — ยืนยันด้วย log จริง</p>
+          <span class="ref">อ้างอิง: 01-WAF-Engine</span>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>Dashboard multi-tenant ใช้งานได้เต็มรูปแบบ</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p>สมัคร/ล็อกอิน 3 ช่องทาง, เพิ่ม origin/โดเมนเอง, verify DNS, ตั้ง rate-limit, ดู analytics, รับแจ้งเตือน Telegram — endpoint 60+ ตัวยืนยันจาก OpenAPI จริง</p>
+          <span class="ref">อ้างอิง: 03-Dashboard-Backend-API</span>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>ML ตรวจจับ anomaly ได้จริง</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p>เทรนจากข้อมูลจริง ~60,000 samples, attack precision 98.39% เสนอกฎอัตโนมัติแบบ human-in-the-loop (ไม่ auto-block)</p>
+          <span class="ref">อ้างอิง: 04-ML-AI-Detection</span>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>ข้อมูลถูกเก็บจริงต่อเนื่อง</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <p>access_logs สะสมแล้ว 113,336 แถวใน ClickHouse — ระบบผ่านการทดสอบใช้งานจริงระดับหนึ่งแล้ว ไม่ใช่แค่โครงเปล่า</p>
+          <span class="ref">อ้างอิง: 06-Data-Storage</span>
+        </div>
+
+        <div class="card finding" data-status="risk">
+          <div class="finding-head"><strong>ทางลัดข้าม WAF อยู่จริง 2 เส้นทาง</strong><span class="status-pill risk">ช่องโหว่</span></div>
+          <p>Cloudflare Tunnel ทั้งแบบเดี่ยวและแบบ hub เปิด origin ตรงสู่อินเทอร์เน็ตโดยไม่ผ่าน ModSecurity — ยังเปิดค้างแบบ production</p>
+          <span class="ref">อ้างอิง: 05-Tunnel-System §3.2–3.3</span>
+        </div>
+        <div class="card finding" data-status="risk">
+          <div class="finding-head"><strong>ClickHouse query ต่อ string จาก user input ตรง ๆ</strong><span class="status-pill risk">ช่องโหว่</span></div>
+          <p>ใน <code class="mono">get_logs()</code>/<code class="mono">get_filter_options()</code> — escape เครื่องหมาย <code class="mono">'</code> แบบพื้นฐานเท่านั้น ยังไม่ใช่ parameterized query</p>
+          <span class="ref">อ้างอิง: 06-Data-Storage</span>
+        </div>
+        <div class="card finding" data-status="risk">
+          <div class="finding-head"><strong>Port แอปทดสอบเปิดตรงจาก host</strong><span class="status-pill risk">ช่องโหว่</span></div>
+          <p>3000/8080/5000/8081 บน Web Origin — ใครเข้าถึง VPN วงเดียวกันได้ เข้าถึงแอปช่องโหว่ได้โดยไม่ผ่าน WAF</p>
+          <span class="ref">อ้างอิง: 07-Web-Origin-Testbed</span>
+        </div>
+        <div class="card finding" data-status="risk">
+          <div class="finding-head"><strong>FRP ใช้ static token ตัวเดียวใช้ร่วมกันทั้งระบบ</strong><span class="status-pill risk">ช่องโหว่</span></div>
+          <p>ถ้าหลุดกระทบทุก origin พร้อมกัน — มี custom zero-trust protocol แก้จุดนี้แล้ว แต่ยังไม่ deploy จริง</p>
+          <span class="ref">อ้างอิง: 05-Tunnel-System §4</span>
+        </div>
+
+        <div class="card finding" data-status="warn">
+          <div class="finding-head"><strong>CDN multi-region (SG/JP/TH + GeoDNS)</strong><span class="status-pill warn">ยังไม่ต่อสาย</span></div>
+          <p>เขียนเสร็จ ผ่าน test ทุก use case แล้ว แต่ทดสอบทั้งหมดเกิดบนเครื่อง dev เท่านั้น — <em>ไม่เคย</em> deploy บน production</p>
+          <span class="ref">อ้างอิง: 02-CDN-GeoDNS</span>
+        </div>
+        <div class="card finding" data-status="warn">
+          <div class="finding-head"><strong>DNS auto-verification worker</strong><span class="status-pill warn">ยังไม่ต่อสาย</span></div>
+          <p><code class="mono">dns_verification_worker.py</code> เขียน background loop สมบูรณ์แต่ไม่เคยถูกเรียกจาก <code class="mono">main.py</code> startup</p>
+          <span class="ref">อ้างอิง: 03-Dashboard-Backend-API</span>
+        </div>
+        <div class="card finding" data-status="warn">
+          <div class="finding-head"><strong>Custom zero-trust tunnel protocol</strong><span class="status-pill warn">ยังไม่ต่อสาย</span></div>
+          <p>per-tenant token ปลอดภัยกว่า FRP เขียนเสร็จผ่าน integration test แล้ว แต่ยังไม่มี systemd service รันจริง</p>
+          <span class="ref">อ้างอิง: 05-Tunnel-System §4</span>
+        </div>
+        <div class="card finding" data-status="warn">
+          <div class="finding-head"><strong>Entropy feature สำหรับ ML</strong><span class="status-pill warn">Dead code</span></div>
+          <p>ฟังก์ชันคำนวณอยู่จริงแต่ไม่ถูกใส่เข้า <code class="mono">FEATURE_COLUMNS</code> ที่โมเดลใช้เทรนจริง</p>
+          <span class="ref">อ้างอิง: 04-ML-AI-Detection §4.2</span>
+        </div>
+
+        <div class="card finding" data-status="debt">
+          <div class="finding-head"><strong>Deployment ซ้อนกัน 2 ชุดบน Web Origin</strong><span class="status-pill debt">หนี้เทคนิค</span></div>
+          <p><code class="mono">/opt/dvwa-origin</code> เก่า vs <code class="mono">/opt/waf-lab</code> ที่รันจริง — เสี่ยงชนกันตอน reboot</p>
+          <span class="ref">อ้างอิง: 00 / 07</span>
+        </div>
+        <div class="card finding" data-status="debt">
+          <div class="finding-head"><strong><code class="mono">waf-nginx</code> unhealthy ต่อเนื่อง</strong><span class="status-pill debt">หนี้เทคนิค</span></div>
+          <p>FailingStreak 3212 ครั้ง จาก healthcheck ยิงผิด port (80 แทน 8080) — false alarm ไม่กระทบ traffic จริง แต่ทำ monitoring เข้าใจผิด</p>
+          <span class="ref">อ้างอิง: 01-WAF-Engine §4.1</span>
+        </div>
+        <div class="card finding" data-status="debt">
+          <div class="finding-head"><strong>ไม่มี closed-loop retraining</strong><span class="status-pill debt">หนี้เทคนิค</span></div>
+          <p>ผล approve/reject ของแอดมินไม่ถูกป้อนกลับไปเทรนโมเดลใหม่ (ยืนยันด้วย grep ทั้ง repository)</p>
+          <span class="ref">อ้างอิง: 04-ML-AI-Detection §4</span>
+        </div>
+        <div class="card finding" data-status="debt">
+          <div class="finding-head"><strong>Custom rule ที่ active เป็นระดับ demo ทั้งหมด</strong><span class="status-pill debt">หนี้เทคนิค</span></div>
+          <p>block keyword เช่น <code class="mono">testattack</code>, <code class="mono">admin1</code> — ยังไม่มี signature ป้องกันเชิงลึกเพิ่มจาก CRS มาตรฐาน</p>
+          <span class="ref">อ้างอิง: 01-WAF-Engine §3.1</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> ลำดับความสำคัญที่แนะนำ</h2>
+      <p style="max-width:64ch">สังเคราะห์จากข้อเสนอในทุกไฟล์ — เรียงตามผลกระทบต่อความน่าเชื่อถือของระบบที่ชื่อว่า WAF</p>
+      <ol class="flow">
+        <li data-step="1"><strong>ปิดช่องโหว่ความปลอดภัย 4 ข้อก่อน</strong><p>โดยเฉพาะทางลัดข้าม WAF และความเสี่ยง SQL Injection — ระบบที่ชื่อว่า WAF แต่มีทางเลี่ยงตัวเอง เป็นความเสี่ยงเชิง reputational สูงสุด</p></li>
+        <li data-step="2"><strong>แก้ healthcheck ของ <code class="mono">waf-nginx</code></strong><p>เร็ว ไม่กระทบ logic อื่น เพื่อให้ monitoring สะท้อนความจริง</p></li>
+        <li data-step="3"><strong>ตัดสินใจ deploy CDN multi-region จริงหรือพักไว้ก่อน</strong><p>โค้ดพร้อมแล้ว แต่ถ้ายังไม่ deploy ควรปิดโค้ดที่ dashboard อ้างถึง SG/JP/TH ที่ไม่ตรงกับความจริง</p></li>
+        <li data-step="4"><strong>เปิดใช้งานฟีเจอร์ที่เขียนเสร็จแล้วแต่ยังไม่ wire</strong><p><code class="mono">dns_verification_worker</code>, custom zero-trust tunnel — ROI สูงเพราะงานเขียนเสร็จแล้ว เหลือแค่เชื่อมสาย</p></li>
+        <li data-step="5"><strong>เคลียร์ deployment ซ้อนบน Web Origin</strong><p>ให้เหลือชุดเดียว ป้องกันปัญหาตอนเครื่อง reboot</p></li>
+        <li data-step="6"><strong>ยกระดับ ML</strong><p>เพิ่ม entropy feature กลับเข้า pipeline, ทำ closed-loop retraining, อัปเดต dataset ด้วย payload สมัยใหม่</p></li>
+        <li data-step="7"><strong>เขียน custom rule ที่มีความหมายจริง</strong><p>แทน rule ระดับ demo ปัจจุบัน โดยใช้ Blast Radius Simulator ที่มีอยู่แล้วช่วยทดสอบ false-positive ก่อน deploy</p></li>
+      </ol>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> Scenario ตัวอย่างแบบ end-to-end</h2>
+      <p style="max-width:64ch"><strong style="color:#fff">สถานการณ์:</strong> ผู้ใช้ทั่วไปสมัครใช้ระบบ แล้วมีคนพยายามโจมตี SQL Injection กับเว็บที่เพิ่งเพิ่มเข้ามา</p>
+      <ol class="flow">
+        <li data-step="1"><strong>เพิ่มเว็บเข้าระบบ</strong><p>สมัคร → ล็อกอิน → เพิ่ม origin (IP+port) → เพิ่มโดเมน → ตั้งค่า DNS จริงที่ registrar → กด Verify → Caddy ออก TLS cert อัตโนมัติ</p></li>
+        <li data-step="2"><strong>ผู้โจมตีส่ง payload</strong><p><code class="mono">GET /login?id=1' OR '1'='1</code> เข้าโดเมนที่เพิ่งเพิ่ม</p></li>
+        <li data-step="3"><strong>WAF บล็อกก่อนถึง origin</strong><p>Caddy terminate TLS → ModSecurity CRS ตรวจพบ pattern SQLi (rule กลุ่ม 942xxx) → block ทันที ตอบ 403</p></li>
+        <li data-step="4"><strong>บันทึกเหตุการณ์คู่ขนาน</strong><p>เข้า ClickHouse (<code class="mono">access_logs</code>) และ DynamoDB (<code class="mono">waf_alerts</code>) พร้อมกัน</p></li>
+        <li data-step="5"><strong>อธิบายผลทันที ไม่มีค่าใช้จ่าย API</strong><p><code class="mono">explainability_service</code> แปล rule ID เป็นคำอธิบายไทยทันที — ถ้าส่งต่อ Telegram, Gemini อาจถูกเรียกสรุปเพิ่ม</p></li>
+        <li data-step="6"><strong>แจ้งเตือนแอดมิน</strong><p><code class="mono">telegram_listener</code> ส่งเข้า Telegram ทันที</p></li>
+        <li data-step="7"><strong>แอดมินตรวจสอบผ่าน Copilot</strong><p>เปิด Dashboard เห็นกราฟ real-time, ถาม Copilot "วันนี้โดนอะไรบ้าง" ได้คำตอบอ้างอิงตัวเลขจริงจาก ClickHouse</p></li>
+        <li data-step="8"><strong>พิสูจน์ผลด้วยตัวเอง</strong><p>ยิง payload เดียวกันทั้งผ่าน WAF และตรงเข้า origin (ผ่าน VPN) เพื่อเทียบผล — เห็นชัดว่า WAF บล็อกได้จริงเมื่อผ่านเส้นทางที่ถูกต้อง</p></li>
+      </ol>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> อ่านต่อทีละชั้นระบบ</h2>
+      <div class="grid cols-3 doc-index">
+        <a class="card doc-card" href="./01-waf-engine.html"><span class="no">01</span><h3>WAF Engine</h3><p>ModSecurity CRS, rule sync pipeline, BOLA guard, payload normalizer, ReDoS-safe regex</p><div class="stats"><span class="status-pill ok">6 custom rule active</span></div></a>
+        <a class="card doc-card" href="./02-cdn-geodns.html"><span class="no">02</span><h3>CDN + GeoDNS</h3><p>Multi-region SG/JP/TH, cache/purge, GeoDNS routing — เขียนเสร็จแต่ยังไม่ deploy จริง</p><div class="stats"><span class="status-pill warn">dev-only</span></div></a>
+        <a class="card doc-card" href="./03-dashboard-backend.html"><span class="no">03</span><h3>Dashboard Backend + API</h3><p>FastAPI + React SPA, auth 3 ช่องทาง, multi-tenant isolation, PII masking</p><div class="stats"><span class="status-pill ok">60+ endpoints</span></div></a>
+        <a class="card doc-card" href="./04-ml-ai-detection.html"><span class="no">04</span><h3>ML + AI Detection</h3><p>Random Forest + Isolation Forest, Gemini Copilot, explainability engine</p><div class="stats"><span class="status-pill ok">98.4% precision</span></div></a>
+        <a class="card doc-card" href="./05-tunnel-system.html"><span class="no">05</span><h3>Tunnel System</h3><p>FRP production tunnel + 3 กลไกซ้อนอื่น — 2 เส้นทางข้าม WAF ที่ควรปิด</p><div class="stats"><span class="status-pill risk">4 กลไกซ้อนกัน</span></div></a>
+        <a class="card doc-card" href="./06-data-storage.html"><span class="no">06</span><h3>Data Storage</h3><p>ClickHouse + DynamoDB + Redis + SQLite — polyglot persistence ตามลักษณะข้อมูล</p><div class="stats"><span class="status-pill ok">113,336 rows</span></div></a>
+        <a class="card doc-card" href="./07-web-origin-testbed.html"><span class="no">07</span><h3>Web Origin Testbed</h3><p>DVWA, Juice Shop, vAmPI, bWAPP หลัง KKU VPN — testbed 4-in-1</p><div class="stats"><span class="status-pill ok">4 containers healthy</span></div></a>
+        <a class="card doc-card" href="./08-attack-landscape.html"><span class="no">08</span><h3>ภูมิทัศน์การโจมตี 2025–26</h3><p>รายงานวิจัย 120+ แหล่งอ้างอิง: AI-driven attack, BOLA, AiTM phishing, session hijacking</p><div class="stats"><span class="status-pill debt">งานวิจัยภายนอก</span></div></a>
+      </div>
+    </section>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs · จัดทำโดยสำรวจเครื่องจริง ไม่ใช่การเดา</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

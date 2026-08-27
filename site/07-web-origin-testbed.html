@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web Origin Testbed — WAF + CDN Platform Docs</title>
+<meta name="description" content="เครื่อง testbed 4-in-1: DVWA, Juice Shop, vAmPI, bWAPP หลัง KKU VPN — เป้าหมายพิสูจน์ว่า WAF บล็อกได้จริง">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html" aria-current="page"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>07 · WEB ORIGIN TESTBED</p>
+      <h1>เครื่องเป้าหมาย 4-in-1 สำหรับพิสูจน์ว่า WAF ทำงานจริง</h1>
+      <p class="lede">ต่างจาก Edge/Main Node ที่รัน WAF engine เครื่องนี้มีหน้าที่เดียวคือโฮสต์เว็บแอปที่มีช่องโหว่ตั้งใจ ไว้เป็นเป้าหมายทดสอบ</p>
+      <p class="meta-line"><span><b>เครื่อง:</b> 10.198.200.75 (private, หลัง KKU VPN)</span><span><b>สเปก:</b> Ubuntu 24.04.4 · 16 vCPU · 15 GiB RAM</span></p>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> เว็บแอปช่องโหว่ทั้ง 4</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>แอป</th><th>เทคโนโลยี</th><th>บทบาท</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">DVWA</b></td><td>vulnerables/web-dvwa + MariaDB</td><td>ช่องโหว่คลาสสิกครบ (SQLi, XSS, CSRF, Command Injection)</td></tr>
+          <tr><td><b style="color:#fff">OWASP Juice Shop</b></td><td>Node.js</td><td>อีคอมเมิร์ซจำลอง สอน OWASP Top 10 ครอบคลุมช่องโหว่สมัยใหม่กว่า DVWA</td></tr>
+          <tr><td><b style="color:#fff">vAmPI</b></td><td>Flask REST API</td><td><b style="color:#fff">สำคัญที่สุด</b> — ทดสอบ BOLA/IDOR, mass assignment, excessive data exposure</td></tr>
+          <tr><td><b style="color:#fff">bWAPP</b></td><td>PHP</td><td>ช่องโหว่ครอบคลุมกว้างสุด (100+) รวม XXE, SSRF, LDAP Injection</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal" id="capabilities">
+      <h2><span class="idx">§2</span> ความสามารถ</h2>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">ทำงานจริง</button>
+        <button class="status-pill risk" data-status="risk">ช่องโหว่ configuration</button>
+        <button class="status-pill debt" data-status="debt">หนี้เทคนิค</button>
+      </div>
+      <div class="grid cols-2">
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Reverse proxy แยกตาม subdomain</strong><span class="status-pill ok">ทำงานจริง</span></div><p>nginx <span class="mono">waf-lab.conf</span> แยก virtual host <span class="mono">juice.* / dvwa.* / vampi.* / bwapp.*</span> พร้อม TLS และ header มาตรฐาน</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Real-IP restoration ถูกต้อง</strong><span class="status-pill ok">ทำงานจริง</span></div><p>ครอบคลุม Cloudflare IP range ทั้งหมด — log เห็น IP ผู้ใช้จริงแทน IP ของ proxy คั่นกลาง</p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Container ทั้ง 4 ตัวรันจริงและ healthy</strong><span class="status-pill ok">ทำงานจริง</span></div><p>ตรวจผ่าน <span class="mono">docker ps</span> — compose project <span class="mono">waf-lab</span> ที่ <span class="mono">/opt/waf-lab</span></p></div>
+        <div class="card finding" data-status="ok"><div class="finding-head"><strong>Public exposure ผ่าน Cloudflare Quick Tunnel</strong><span class="status-pill ok">ทำงานจริง</span></div><p><span class="mono">active_urls.json</span> มี URL active สำหรับทั้ง 5 endpoint</p></div>
+
+        <div class="card finding" data-status="risk"><div class="finding-head"><strong>Port แอปเปิดตรงจาก host</strong><span class="status-pill risk">ช่องโหว่</span></div><p>3000/8080/5000/8081 — เข้าถึง VPN วงเดียวกันได้ = เข้าถึงแอปช่องโหว่ได้โดยไม่ผ่าน WAF เลย</p></div>
+        <div class="card finding" data-status="risk"><div class="finding-head"><strong>DVWA security level = low</strong><span class="status-pill risk">Config เสี่ยง</span></div><p><span class="mono">default_phpids_level = 'disabled'</span> — เหมาะ demo แต่ยังไม่ทดสอบระดับ high/impossible เพื่อวัด false-positive</p></div>
+
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>Deployment 2 ชุดซ้อนกัน</strong><span class="status-pill debt">หนี้เทคนิค</span></div><p><span class="mono">/opt/dvwa-origin</span> เก่า vs <span class="mono">/opt/waf-lab</span> ที่รันจริง — container name ซ้อนทับกันบางส่วน เสี่ยงชนตอน reboot</p></div>
+        <div class="card finding" data-status="debt"><div class="finding-head"><strong>Quick Tunnel URL สุ่มใหม่ทุก restart</strong><span class="status-pill debt">หนี้เทคนิค</span></div><p>ไม่ใช่ named tunnel ที่ผูกโดเมนถาวร — ต้องอัปเดต URL มือทุกครั้ง</p></div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> การไหลของข้อมูล</h2>
+      <div class="diagram"><pre>[ผู้ใช้/นักพัฒนาที่ทดสอบ WAF]
+        │
+        ▼
+[Edge Node / Main Node — WAF + CDN]  (ตรวจสอบ/บล็อก payload อันตรายก่อน)
+        │  (traffic ที่ผ่าน WAF แล้ว หรือทดสอบตรง)
+        ▼
+[Cloudflare Quick Tunnel]  ← outbound connection ที่ Web Origin เปิดค้างไว้
+        │
+        ▼
+[waf-origin-proxy (nginx, :80/:443)]  ← Web Origin (10.198.200.75)
+        │  แยกเส้นทางตาม subdomain
+        ├──► waf-juice-shop:3000   (Node.js app)
+        ├──► waf-dvwa-app:80 ──► waf-dvwa-db:3306 (MariaDB)
+        ├──► waf-vampi:5000       (Flask API)
+        └──► waf-bwapp:80         (PHP app)</pre></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> Scenario: ทดสอบว่า WAF บล็อก SQLi ได้จริงหรือไม่</h2>
+      <ol class="flow">
+        <li data-step="1"><strong>เปิด URL ทดสอบ</strong><p>ผ่าน Cloudflare Tunnel หรือโดเมนที่ตั้งไว้ในระบบ WAF ที่ชี้มาที่ origin นี้</p></li>
+        <li data-step="2"><strong>ถ้า route ผ่าน Edge/Main Node จริง</strong><p>ModSecurity CRS ตรวจ <span class="mono">id=1' OR '1'='1</span> — anomaly score เกิน threshold → บล็อกทันที ไม่ถึง origin</p></li>
+        <li data-step="3"><strong>ถ้าทดสอบตรงเข้า origin (baseline)</strong><p>ผ่าน VPN โดยไม่ผ่าน WAF — payload เดียวกันสำเร็จ (DVWA security level = low ไม่มีป้องกันในตัวแอปเอง)</p></li>
+        <li data-step="4"><strong>เปรียบเทียบสองกรณี</strong><p>คือวิธีหลักที่ใช้พิสูจน์ประสิทธิภาพจริงของ WAF</p></li>
+      </ol>
+
+      <h3 style="margin-top:2rem"><span class="idx">เสริม</span> ทดสอบ BOLA บน vAmPI</h3>
+      <p>เรียก <span class="mono">GET /users/2/records</span> ขณะ login เป็น user ID 1 — ถ้าระบบตรวจ authorization ไม่ครอบคลุมระดับ object vAmPI จะคืนข้อมูล user อื่นกลับมา แสดงชัดว่า WAF แบบ signature-based ป้องกัน BOLA ไม่ได้ด้วยตัวเอง เพราะเป็นปัญหา business logic ไม่ใช่ payload pattern — เหตุผลที่ระบบมี <span class="mono">bola_guard.py</span> แยกต่างหาก</p>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./06-data-storage.html"><span class="dir">← ก่อนหน้า</span><strong>06 · Data Storage</strong></a>
+      <a class="next" href="./08-attack-landscape.html"><span class="dir">ถัดไป →</span><strong>08 · ภูมิทัศน์การโจมตี 2025–26</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

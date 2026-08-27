@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tunnel System — WAF + CDN Platform Docs</title>
+<meta name="description" content="4 กลไก tunnel วางซ้อนกัน — FRP production, custom zero-trust ที่ยังไม่ deploy, และ 2 เส้นทางที่ข้าม WAF ทั้งหมด">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html" aria-current="page"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>05 · TUNNEL SYSTEM</p>
+      <h1>4 กลไก tunnel วางซ้อนกัน — ไม่ใช่แค่เส้นทางเดียว</h1>
+      <p class="lede">Web Origin อยู่หลัง VPN มหาวิทยาลัยขอนแก่น ไม่มี public IP — ต้องมีกลไกให้ origin เชื่อมต่อ<b style="color:#fff">ออกไปหา</b> Main Node เอง (outbound) แบบเดียวกับ Cloudflare Tunnel/ngrok</p>
+      <p class="meta-line"><span><b>อัปเดตล่าสุด:</b> 27 ส.ค. 2026 — SSH เข้าเครื่องจริง</span></p>
+    </header>
+
+    <section class="block reveal">
+      <div class="table-wrap"><table>
+        <thead><tr><th>กลไก</th><th>เทคโนโลยี</th><th>สถานะจริง</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">Production WAF Tunnel</b></td><td>FRP v0.61.1 (rename เป็น waf-agent)</td><td><span class="status-pill ok">active</span></td></tr>
+          <tr><td>Custom Zero-Trust Tunnel</td><td>Python asyncio + binary framing เขียนเอง</td><td><span class="status-pill warn">ยังไม่ deploy</span></td></tr>
+          <tr><td>Public Demo Tunnel (DVWA)</td><td>Cloudflare Tunnel (cloudflared)</td><td><span class="status-pill risk">active — ข้าม WAF</span></td></tr>
+          <tr><td>Public Lab Hub (multi-app)</td><td>Cloudflare Tunnel ผ่าน tunnel_manager.py</td><td><span class="status-pill risk">active — ข้าม WAF</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal" id="capabilities">
+      <h2><span class="idx">§1</span> Production: FRP Tunnel</h2>
+      <div class="grid cols-2">
+        <div class="card"><h4>Main Node</h4><p>รัน <span class="mono">frps</span> (systemd <span class="mono">frps.service</span>) ฟัง <span class="mono">7000</span> (control), <span class="mono">7500</span> (admin API), <span class="mono">8085</span> (vhost HTTP)</p></div>
+        <div class="card"><h4>Web Origin</h4><p>รัน FRP client (rename <span class="mono">/usr/local/bin/waf-agent</span>) เชื่อม outbound ไป <span class="mono">main.waf-it-kku.online:7000</span> ด้วย static token</p></div>
+      </div>
+      <p style="margin-top:1rem">Proxy สองเส้นทาง: <span class="mono">dvwa.waf-it-kku.online → 127.0.0.1:8080</span> และ <span class="mono">juice.waf-it-kku.online → 127.0.0.1:3000</span> — Dashboard (<span class="mono">/api/tunnels/status</span>) ดึงสถานะจาก FRP admin API cache 4 วินาที</p>
+
+      <div class="diagram"><pre>ผู้ใช้ทั่วไป (Internet)
+    │  HTTPS request → dvwa.waf-it-kku.online
+    ▼
+Caddy (SSL termination, Main Node)
+    ▼
+waf-nginx + ModSecurity CRS  ← ตรวจ/กรอง payload อันตราย
+    │  (ถ้า pass การตรวจสอบ)
+    ▼
+frps  (vhost routing ตาม Host header, port 8085)
+    │
+    ▼  ── control channel (TCP, outbound จาก origin, port 7000) ──
+waf-agent (FRP client บน Web Origin)
+    ▼
+nginx reverse proxy บน origin (waf-origin-proxy)
+    ▼
+Container ปลายทาง (dvwa หรือ juice-shop) ตอบกลับ</pre>
+        <div class="cap">request วิ่งเข้าจากอินเทอร์เน็ตที่ Main Node ก่อนเสมอ แล้วค่อยถูกส่งผ่าน tunnel เข้าไปหา origin — origin ไม่เคยเปิด inbound port เลย</div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> เส้นทางที่ข้าม WAF</h2>
+      <div class="callout risk">
+        <span class="cap">Cloudflare Tunnel — dvwa-tunnel.service</span>
+        <p><span class="mono">run_tunnel.sh</span> รัน cloudflared แบบ Quick Tunnel (สุ่มโดเมน <span class="mono">*.trycloudflare.com</span> ทุก restart) — URL ที่พบ active จริง: <span class="mono">clocks-exclusion-tee-gratis.trycloudflare.com</span> — <b>ไม่ผ่าน WAF ของ Main Node เลย</b> เหมาะ demo/debug เท่านั้น</p>
+      </div>
+      <div class="callout risk">
+        <span class="cap">Public Lab Hub — waf-tunnel.service</span>
+        <p><span class="mono">/opt/waf-lab/tunnel_manager.py</span> เปิด Cloudflare Quick Tunnel แยกให้ทุกแอปพร้อมกัน (hub/juice/dvwa/vampi/bwapp) generate หน้า dashboard HTML — เส้นทางนี้ก็<b>ไม่ผ่าน WAF</b> เช่นกัน</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> Custom Zero-Trust Tunnel Protocol — เขียนเสร็จ ยังไม่ deploy</h2>
+      <p>พบ <span class="mono">scripts/waf_tunnel_server.py</span> (Main Node) และ <span class="mono">scripts/waf_tunnel_agent.py</span> (client) — โปรโตคอลเขียนเองไม่พึ่ง FRP เลย จุดต่างสำคัญจาก FRP:</p>
+      <ul class="check-list">
+        <li><b style="color:#fff">Per-tenant token</b> ตรวจผ่าน <span class="mono">POST /api/auth/tunnel/verify</span> แทน static token เดียวที่ทุกคนใช้ร่วมกัน</li>
+        <li>Backend สืบค้น origin จาก DynamoDB แล้วตอบ <span class="mono">remote_bind_port</span> เฉพาะ origin นั้น — แต่ละลูกค้าได้ port แยกกัน</li>
+        <li>Binary framing เอง (header 21 byte) รองรับ <span class="mono">AUTH / AUTH_RESP / CONNECT / DATA / CLOSE</span></li>
+      </ul>
+      <div class="callout">
+        <span class="cap">สถานะจริง</span>
+        <p>ไม่มี systemd unit ไม่มี process รันค้างบน port 8050 — พบเพียงไฟล์ <span class="mono">test_tunnel_flow.py</span> ที่ spawn server+agent ชั่วคราวเพื่อ integration test แล้ว teardown ทิ้ง</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> Scenario: Origin รีสตาร์ทแล้วเชื่อมกลับ</h2>
+      <ol class="flow">
+        <li data-step="1"><strong>Web Origin รีบูต</strong><p>เช่นตอน <span class="mono">dvwa-ctl restart</span> หรือเครื่องปิดโดยไม่ตั้งใจ</p></li>
+        <li data-step="2"><strong>waf-agent.service พยายามเชื่อมใหม่</strong><p>systemd <span class="mono">Restart=always</span> เชื่อม outbound ไปหา frps อัตโนมัติ</p></li>
+        <li data-step="3"><strong>Auth สำเร็จ → register proxy ใหม่</strong><p>ทั้งสอง proxy กลับมาที่ฝั่ง server</p></li>
+        <li data-step="4"><strong>ระหว่างยังไม่ reconnect</strong><p>request ที่เข้ามาเจอ error จริงในlog: <span class="mono">no route found: dvwa.waf-it-kku.online /</span></p></li>
+      </ol>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> แนวทางพัฒนาต่อ</h2>
+      <ul class="check-list">
+        <li><b style="color:#fff">ย้ายไปใช้ custom zero-trust tunnel เป็นระบบหลัก</b> — แก้จุดอ่อนสำคัญของ FRP คือ token เดียวใช้ร่วมกันทั้งระบบ</li>
+        <li><b style="color:#fff">ปิดเส้นทางที่ข้าม WAF</b> หรือจำกัดเฉพาะ dev/debug environment</li>
+        <li><b style="color:#fff">เพิ่ม HA ให้ FRP server</b> — ปัจจุบันเป็น single point of failure</li>
+        <li><b style="color:#fff">Auto-reconnect/health monitoring ที่ดีขึ้น</b> — พบ error <span class="mono">no route found</span> เป็นระยะ ควรมี Telegram alerting</li>
+        <li><b style="color:#fff">หมุนเวียน token/credential</b> ที่เป็น static values อยู่ใน .toml</li>
+      </ul>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./04-ml-ai-detection.html"><span class="dir">← ก่อนหน้า</span><strong>04 · ML + AI Detection</strong></a>
+      <a class="next" href="./06-data-storage.html"><span class="dir">ถัดไป →</span><strong>06 · Data Storage</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

@@ -1,43 +1,43 @@
-# Website
+# WAF + CDN Platform — Docs Site
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+เว็บไซต์เอกสารสถาปัตยกรรมของแพลตฟอร์ม WAF + CDN แบบ multi-tenant (โปรเจกต์ capstone) จัดทำจากการสำรวจเครื่องจริง (SSH + อ่าน source code + `docker ps`) ไม่ใช่การอนุมานจากชื่อไฟล์
 
-## Installation
+**เว็บไซต์ที่ deploy แล้ว:** https://jakkaret.github.io/Docs-for-WAF-project/
 
-```bash
-npm install
+## โครงสร้าง
+
+เว็บไซต์เป็น static HTML/CSS/JS ล้วน (ไม่มี build step) อยู่ในโฟลเดอร์ [`site/`](./site):
+
+```
+site/
+├── index.html                 หน้าแรก — ภาพรวมระบบ + สถานะความสามารถทั้งหมด
+├── 01-waf-engine.html
+├── 02-cdn-geodns.html
+├── 03-dashboard-backend.html
+├── 04-ml-ai-detection.html
+├── 05-tunnel-system.html
+├── 06-data-storage.html
+├── 07-web-origin-testbed.html
+├── 08-attack-landscape.html
+└── assets/
+    ├── css/style.css          ระบบดีไซน์ (schematic/operations-console)
+    └── js/main.js             interaction: pipeline animation, scroll reveal, status filter
 ```
 
-**Note**: feel free to use the package manager of your choice.
+เนื้อหาต้นฉบับ (markdown) อยู่ที่ `../Claude_workspace/docs/` ของผู้จัดทำ — หน้าเว็บแต่ละหน้าคือการแปลเนื้อหานั้นเป็น HTML ที่จัดหมวดหมู่ตามสถานะจริง (ทำงานจริง / เขียนเสร็จยังไม่ต่อสาย / ช่องโหว่ / หนี้ทางสถาปัตยกรรม)
 
-## Local Development
+## แก้ไขเนื้อหา
 
-```bash
-npm run start
-```
-
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
-
-## Build
+แก้ไฟล์ `.html` ใน `site/` ตรง ๆ ได้เลย ไม่ต้อง build — เปิดดูผลลัพธ์ในเบราว์เซอร์ทันทีด้วย:
 
 ```bash
-npm run build
+cd site && python3 -m http.server 8080
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+## Deploy
 
-## Deployment
+Push เข้า branch `main` แล้ว GitHub Actions ([`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml)) จะอัปโหลดโฟลเดอร์ `site/` ขึ้น GitHub Pages อัตโนมัติ ไม่มี build step ใด ๆ
 
-Using SSH:
+## หมายเหตุ
 
-```bash
-USE_SSH=true npm run deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> npm run deploy
-```
-
-If you are using GitHub Pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+โฟลเดอร์ [`_old-docusaurus-scaffold/`](./_old-docusaurus-scaffold) เก็บสก๊าฟโฟลด์ Docusaurus ชุดแรกที่ถูกแทนที่ด้วยเว็บไซต์นี้ (เก็บไว้เพื่อประวัติ ไม่ได้ถูก deploy)
