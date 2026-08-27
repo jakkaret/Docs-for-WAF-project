@@ -397,6 +397,57 @@ footer.site-foot{
 footer.site-foot a{ color: var(--accent-2); text-decoration:none; }
 footer.site-foot a:hover{ text-decoration:underline; }
 
+/* ---------- geo-routing simulator (CDN-completeness demo) ---------- */
+.geo-demo{ margin: 1.4rem 0; }
+.geo-controls{ display:flex; flex-wrap:wrap; gap:.6rem; margin-bottom:1.2rem; align-items:center; }
+.geo-controls .grp{ display:flex; gap:.4rem; flex-wrap:wrap; }
+.geo-controls label{ font-family: var(--font-mono); font-size:.68rem; color: var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-right:.3rem; }
+.geo-btn{
+  font-family: var(--font-mono); font-size:.76rem; padding:.4rem .8rem; border-radius:999px;
+  border:1px solid var(--line); background: var(--panel); color: var(--text-dim); cursor:pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.geo-btn:hover{ border-color: var(--signal-ok); color:#fff; }
+.geo-btn.is-active{ border-color: var(--signal-ok); background: var(--signal-ok-dim); color: var(--signal-ok); }
+.geo-btn.mode.is-active{ border-color: var(--accent-2); background:#122238; color: var(--accent-2); }
+
+.geo-panel{
+  position: relative; background: var(--bg-raise); border:1px solid var(--line); border-radius: var(--radius);
+  padding: 2.4rem 1.6rem 1.6rem; overflow:hidden;
+}
+.geo-map{ position:relative; height: 110px; }
+.geo-map .baseline{ position:absolute; top:38px; left:4%; right:4%; height:1px; background: var(--line); }
+.geo-client{
+  position:absolute; top:0; width:26px; height:26px; margin-left:-13px; transform: translateX(0);
+  border-radius:50%; background: var(--panel-2); border:1px solid var(--accent-2);
+  display:flex; align-items:center; justify-content:center; font-size:.65rem; font-family: var(--font-mono); color: var(--accent-2);
+  transition: left .7s cubic-bezier(.4,.6,.2,1);
+}
+.geo-pin{ position:absolute; top:30px; width:16px; height:16px; margin-left:-8px; border-radius:50% 50% 50% 0; transform: rotate(-45deg); border:2px solid var(--muted); background: var(--bg); transition: border-color .3s, box-shadow .3s, background .3s; }
+.geo-pin.hit{ border-color: var(--signal-ok); background: var(--signal-ok); box-shadow:0 0 12px var(--signal-ok); }
+.geo-pin-label{ position:absolute; top:56px; width:70px; margin-left:-35px; text-align:center; font-family: var(--font-mono); font-size:.68rem; color: var(--text-dim); }
+.geo-pin-label .dist{ display:block; font-size:.63rem; color: var(--muted); margin-top:.1rem; }
+.geo-pin-label.hit .dist{ color: var(--signal-ok); }
+.geo-line{
+  position:absolute; top:13px; height:2px; background: var(--line); transform-origin: left center;
+  transition: all .7s cubic-bezier(.4,.6,.2,1); opacity:.5;
+}
+.geo-line.active{ background: linear-gradient(90deg, var(--accent-2), var(--signal-ok)); opacity:1; box-shadow:0 0 6px var(--signal-ok); }
+.geo-caption{ margin-top:1.4rem; padding-top:1rem; border-top:1px dashed var(--line); font-family: var(--font-mono); font-size:.8rem; color: var(--text-dim); min-height:2.4em; }
+.geo-caption b{ color: var(--signal-ok); }
+.geo-caption b.bad{ color: var(--signal-risk); }
+.geo-mode-label{ position:absolute; top:.9rem; left:1.6rem; font-family: var(--font-mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; color: var(--muted); }
+
+/* scorecard meter */
+.scorecard{ display:flex; align-items:center; gap:1rem; margin: 1.2rem 0 1.8rem; }
+.scorecard .track{ flex:1; height:10px; border-radius:6px; background: var(--line-soft); display:flex; overflow:hidden; border:1px solid var(--line); }
+.scorecard .seg{ flex:1; border-right:1px solid var(--bg); }
+.scorecard .seg:last-child{ border-right:none; }
+.scorecard .seg.pass{ background: var(--signal-ok); }
+.scorecard .seg.fail{ background: var(--line-soft); }
+.scorecard .score{ font-family: var(--font-mono); font-size:1.1rem; color:#fff; white-space:nowrap; }
+.scorecard .score span{ color: var(--signal-ok); }
+
 /* scroll reveal — hidden-by-default only once JS confirms it will un-hide it
    (progressive enhancement: no-JS / failed-script visitors always see full content) */
 .js .reveal{ opacity:0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }

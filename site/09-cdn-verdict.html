@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบนี้เป็น CDN จริงไหม — WAF + CDN Platform Docs</title>
+<meta name="description" content="ตอบคำถามอาจารย์ที่ปรึกษาตรง ๆ ด้วยหลักฐานจริง: เทียบระบบกับ 4 องค์ประกอบของ CDN ทีละข้อ พร้อม simulation การ routing แบบ 1 PoP vs multi-PoP">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-attack-landscape.html"><span class="no">08</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+        <li><a href="./09-cdn-verdict.html" aria-current="page"><span class="no">09</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>09 · CDN CLASSIFICATION — คำถามจากอาจารย์ที่ปรึกษา</p>
+      <h1>"ก็แค่ WAF ธรรมดาวางไว้ตามเซิร์ฟเวอร์" — จริงไหม?</h1>
+      <p class="lede">อาจารย์ที่ปรึกษาตั้งคำถามว่าระบบนี้เป็น CDN ตรงไหน — เอกสารนี้ไล่ตอบทีละองค์ประกอบด้วยหลักฐานจาก SSH เข้าเครื่องจริงและอ่าน config ที่ deploy อยู่จริง ไม่ใช่การอ้างจากดีไซน์เอกสาร</p>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> นิยาม CDN ที่ใช้เป็นเกณฑ์</h2>
+      <p>ตำรา/อุตสาหกรรมยอมรับร่วมกันว่า CDN ต้องมีองค์ประกอบหลัก 4 อย่าง — ระบบที่ "เป็นแค่ WAF วางไว้ตามเซิร์ฟเวอร์" คือระบบที่ไม่มีข้อ 1 และ 2 เลย: แต่ละเครื่องทำงานอิสระ ไม่มี caching ไม่มีการเชื่อมโยงกัน</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>องค์ประกอบ</th><th>ทำไมถึงจำเป็น</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td><b style="color:#fff">Caching ที่ edge</b></td><td>ลด load ที่ origin, ตอบเร็วขึ้นเพราะไม่ต้องยิงกลับ origin ทุกครั้ง</td></tr>
+          <tr><td class="mono">2</td><td><b style="color:#fff">หลาย PoP กระจายภูมิศาสตร์</b></td><td>ผู้ใช้แต่ละพื้นที่เข้าถึง node ที่อยู่ใกล้ตัวเอง ลด latency ทางกายภาพ</td></tr>
+          <tr><td class="mono">3</td><td><b style="color:#fff">Routing ไปหา PoP ที่เหมาะสม</b></td><td>ถ้ามีหลาย PoP แต่ทุกคนถูกส่งไปที่เดียวเสมอ ก็ไม่ต่างจากมี PoP เดียว</td></tr>
+          <tr><td class="mono">4</td><td><b style="color:#fff">Config/Rule sync รวมศูนย์</b></td><td>ให้ทุก PoP ทำงานเป็นระบบเดียวกัน ไม่ใช่ต่างคนต่างตั้งค่า</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> คะแนนรวม: ผ่าน 2 ใน 4</h2>
+      <div class="scorecard">
+        <div class="track">
+          <div class="seg pass"></div><div class="seg pass"></div><div class="seg fail"></div><div class="seg fail"></div>
+        </div>
+        <div class="score"><span>2</span>/4 องค์ประกอบผ่าน</div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>1 · Caching ที่ edge</strong><span class="status-pill ok">ผ่าน — ทำงานจริง</span></div>
+          <p>ตรวจ config จริงที่ generate เข้า container บน Edge Node (<span class="mono">docker exec cdn-edge-node cat /etc/nginx/conf.d/default.conf</span>):</p>
+          <div class="diagram" style="margin:.8rem 0 0"><pre>proxy_cache edge_cache;
+proxy_cache_key "$host|$request_method|$uri$is_args$args";
+proxy_cache_valid 200 301 302 10m;   # dynamic
+proxy_cache_valid 200 301 302 1h;    # static
+proxy_cache_bypass $skip_cache;      # ข้าม cache ถ้ามี auth/cookie/no-cache
+add_header X-Cache-Status $upstream_cache_status always;</pre></div>
+          <p style="margin-top:.8rem">WAF ธรรมดาไม่มีเหตุผลต้องมี cache เลย — นี่คือสิ่งที่ WAF เดี่ยว ๆ ไม่ทำ แต่ CDN edge ทำ</p>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>4 · Rule/config sync รวมศูนย์</strong><span class="status-pill ok">ผ่าน — ทำงานจริง</span></div>
+          <p><span class="mono">control-api</span> (Main Node) มี <span class="mono">/api/sync/bundle</span> รวม rule+blocklist เป็น <span class="mono">.tar.gz</span> — ทุก edge poll ทุก 5 วิ เทียบ SHA-256 แล้ว reload</p>
+          <p>Edge Node มี custom rule <span class="mono">990001</span> สร้างมาเพื่อทดสอบ pipeline นี้โดยเฉพาะ — ยืนยันว่าผ่านการทดสอบใช้งานจริงแล้ว เหมือน control plane รวมศูนย์ที่ CDN เชิงพาณิชย์ใช้</p>
+        </div>
+        <div class="card finding" data-status="warn">
+          <div class="finding-head"><strong>2 · หลาย PoP กระจายภูมิศาสตร์</strong><span class="status-pill warn">ยังไม่ผ่าน</span></div>
+          <p>โค้ด multi-region (<span class="mono">edge-sg, edge-jp, edge-th, geodns</span>) เขียนเสร็จผ่านทุก test แล้ว — แต่ทดสอบบนเครื่อง dev เท่านั้น <span class="mono">docker ps -a --filter name=cdn-</span> บน production ยืนยันว่า<b style="color:#fff">มี edge จริงแค่ 1 จุด (ไทย)</b></p>
+          <p>นิยาม CDN ต้องมี "หลาย" PoP — เปรียบเหมือนมีพิมพ์เขียวสร้างสาขา 3 แห่งแต่เปิดขายจริงแค่สาขาเดียว ยังเรียก "เครือข่ายสาขา" ไม่ได้</p>
+        </div>
+        <div class="card finding" data-status="risk">
+          <div class="finding-head"><strong>3 · Geo-routing ไปหา PoP ใกล้สุด</strong><span class="status-pill risk">ยังไม่ผ่าน</span></div>
+          <p><span class="mono">dig +short dvwa.waf-it-kku.online</span> → <span class="mono">45.154.26.91</span> เสมอ — DNS เป็น A record ตายตัว ไม่ผ่าน GeoDNS ที่เขียนไว้ใน <span class="mono">geodns/server.py</span> เลย</p>
+          <p>ต่อให้เปิด GeoDNS ตอนนี้ก็ยังพิสูจน์ "ไปหา edge ใกล้สุด" ไม่ได้ เพราะมี edge จริงแค่จุดเดียว — ไม่มี "ใกล้สุด" ให้เลือกระหว่างตัวเลือกที่ไม่มีอยู่จริง</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> Simulation: routing ตอนนี้ vs เป้าหมาย</h2>
+      <p style="max-width:66ch">ลองเลือกว่าผู้ใช้จำลองอยู่ภูมิภาคไหน แล้วสลับดูว่า request ของเขาถูกส่งไปที่ไหน — ระหว่างสถานะจริงตอนนี้ กับเป้าหมายเมื่อ deploy edge เพิ่ม</p>
+
+      <div class="geo-demo" data-geo-demo>
+        <div class="geo-controls">
+          <div class="grp">
+            <label>ผู้ใช้จำลองจาก</label>
+            <button class="geo-btn is-active" data-client="sg">สิงคโปร์</button>
+            <button class="geo-btn" data-client="jp">ญี่ปุ่น</button>
+            <button class="geo-btn" data-client="th">ไทย</button>
+          </div>
+          <div class="grp">
+            <label>สถานะ</label>
+            <button class="geo-btn mode is-active" data-mode="now">ตอนนี้ (1 PoP)</button>
+            <button class="geo-btn mode" data-mode="target">เป้าหมาย (Multi-PoP + GeoDNS)</button>
+          </div>
+        </div>
+        <div class="geo-panel">
+          <span class="geo-mode-label">Simulated Routing — ไม่ใช่ค่าวัดจริง ใช้ประกอบคำอธิบายเท่านั้น</span>
+          <div class="geo-map">
+            <div class="baseline"></div>
+            <div class="geo-client">●</div>
+            <div class="geo-line"></div>
+            <div class="geo-pin" data-pin="sg" style="left:10%"></div>
+            <div class="geo-pin-label" style="left:10%">Edge: สิงคโปร์<span class="dist">โค้ดพร้อม — ยังไม่ deploy</span></div>
+            <div class="geo-pin" data-pin="th" style="left:50%"></div>
+            <div class="geo-pin-label" style="left:50%">Edge: ไทย<span class="dist">deploy จริง</span></div>
+            <div class="geo-pin" data-pin="jp" style="left:90%"></div>
+            <div class="geo-pin-label" style="left:90%">Edge: ญี่ปุ่น<span class="dist">โค้ดพร้อม — ยังไม่ deploy</span></div>
+          </div>
+          <div class="geo-caption" data-caption aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> ข้อบกพร่องเพิ่มเติมที่เจอระหว่างตรวจเส้นทางจริง</h2>
+      <p style="max-width:64ch">ระหว่างไล่ trace request จริงข้าม Edge → Main พบ 2 จุดที่ควรรู้และแก้ก่อน defend (นอกเหนือจากประเด็น CDN)</p>
+      <div class="callout risk">
+        <span class="cap">Rate-limit แยกเป็น 2 ระบบไม่เชื่อมกัน</span>
+        <p>Edge Node ใช้ <span class="mono">limit_req</span> แบบ static hardcode (50 req/s) ไม่เชื่อมกับ dashboard เลย ส่วน Main Node ใช้ Redis sliding-window ที่ตั้งค่าผ่าน dashboard ได้จริง — กฎที่แอดมินตั้งมีผลแค่ครึ่งทาง ไม่ครอบคลุมชั้น Edge</p>
+      </div>
+      <div class="callout risk">
+        <span class="cap">Traffic วิ่งแบบ plaintext HTTP ข้าม Edge→Main</span>
+        <p>Edge Node terminate TLS แล้วส่งต่อเป็น HTTP ธรรมดาข้ามอินเทอร์เน็ตสาธารณะไปหา Main Node (<span class="mono">server 178.104.53.123:8080;</span>) — cookie/token/payload เดินทางแบบไม่เข้ารหัสช่วงนี้ เสี่ยงต่อ MITM</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> แนวทางทำให้เป็น CDN สมบูรณ์</h2>
+      <ol class="flow">
+        <li data-step="1"><strong>Deploy edge จริงอย่างน้อย 1 จุดเพิ่ม</strong><p>ภูมิภาคอื่น (เช่น VPS ถูก ๆ ที่สิงคโปร์หรือญี่ปุ่น) — เปลี่ยนสถานะจาก "PoP เดียว" เป็น "หลาย PoP" ทันที ทำให้ข้อ 2-3 ผ่านเกณฑ์</p></li>
+        <li data-step="2"><strong>เปิด GeoDNS ให้ทำงานจริง</strong><p>เมื่อมี edge 2+ จุดแล้ว โค้ดพร้อมอยู่แล้วใน <span class="mono">geodns/server.py</span></p></li>
+        <li data-step="3"><strong>แก้ rate-limit ให้เป็นระบบเดียว</strong><p>ให้ Edge Node เรียก <span class="mono">auth_request</span> ไปที่ centralized limiter เหมือน Main Node แทน <span class="mono">limit_req</span> แบบ static</p></li>
+        <li data-step="4"><strong>เข้ารหัสช่วง Edge→Main</strong><p>เปลี่ยน upstream เป็น HTTPS (<span class="mono">https://178.104.53.123:8443</span>) พร้อม <span class="mono">proxy_ssl_verify on</span></p></li>
+        <li data-step="5"><strong>ผูก dashboard เข้ากับ node จริงที่ deploy เพิ่ม</strong><p>ปัจจุบัน <span class="mono">cdn.py</span> ยังอ้างอิงโมเดล 2-node (TH+MAIN) ไม่ตรงกับ SG/JP/TH ที่ตั้งใจไว้</p></li>
+      </ol>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> สรุปสั้นสำหรับใช้ตอบอาจารย์</h2>
+      <div class="callout">
+        <span class="cap">คำตอบตรง ๆ</span>
+        <p>"ระบบมี caching จริงที่ edge และมีการ sync กฎรวมศูนย์ข้าม node จริง — สองอย่างนี้คือกลไกหลักของ CDN ที่ WAF ธรรมดาไม่มี และพิสูจน์ได้จริงด้วย <span class="mono">X-Cache-Status</span> header กับการดู rule sync สด ๆ ส่วนที่ยังไม่สมบูรณ์คือยัง deploy edge ได้แค่จุดเดียว ทำให้เรื่อง geo-routing ยังพิสูจน์ไม่ได้ — เป็น future work ที่มีโค้ดพร้อมและทดสอบผ่านแล้วบน dev รอแค่ deploy จริงเพิ่ม"</p>
+      </div>
+      <p style="margin-top:1.2rem">อาจารย์มองจากภาพที่เห็นจริง (1 edge, DNS ชี้จุดเดียว) จึงมองว่า "เหมือน WAF วางเฉย ๆ" ซึ่ง<b style="color:#fff">ถูกต้องในมุมของสิ่งที่สังเกตเห็นได้จากภายนอก</b> แต่ไม่ครบภาพทั้งหมดของสิ่งที่ implement ไว้ข้างใน</p>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./08-attack-landscape.html"><span class="dir">← ก่อนหน้า</span><strong>08 · ภูมิทัศน์การโจมตี 2025–26</strong></a>
+      <a class="next" href="./index.html"><span class="dir">กลับหน้าแรก →</span><strong>00 · ภาพรวมระบบ</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>

@@ -181,6 +181,78 @@
     run();
   }
 
+  /* ---- geo-routing simulator (CDN-completeness demo) ---- */
+  var geoDemo = document.querySelector("[data-geo-demo]");
+  if (geoDemo) {
+    var GEO_X = { sg: 10, jp: 90, th: 50 };
+    var GEO_NAME = { sg: "สิงคโปร์", jp: "ญี่ปุ่น", th: "ไทย" };
+    var client = "sg";
+    var mode = "now";
+
+    var clientEl = geoDemo.querySelector(".geo-client");
+    var lineEl = geoDemo.querySelector(".geo-line");
+    var pins = geoDemo.querySelectorAll(".geo-pin");
+    var labels = geoDemo.querySelectorAll(".geo-pin-label");
+    var caption = geoDemo.querySelector("[data-caption]");
+    var clientBtns = geoDemo.querySelectorAll("[data-client]");
+    var modeBtns = geoDemo.querySelectorAll("[data-mode]");
+
+    function renderGeo() {
+      var clientX = GEO_X[client];
+      var targetKey = mode === "now" ? "th" : client;
+      var targetX = GEO_X[targetKey];
+
+      clientEl.style.left = clientX + "%";
+      clientEl.textContent = GEO_NAME[client][0];
+
+      var left = Math.min(clientX, targetX);
+      var width = Math.abs(targetX - clientX);
+      lineEl.style.left = left + "%";
+      lineEl.style.width = width + "%";
+      lineEl.classList.toggle("active", true);
+
+      pins.forEach(function (p) {
+        p.classList.toggle("hit", p.getAttribute("data-pin") === targetKey);
+      });
+      labels.forEach(function (l, i) {
+        l.classList.toggle("hit", pins[i].getAttribute("data-pin") === targetKey);
+      });
+
+      clientBtns.forEach(function (b) {
+        b.classList.toggle("is-active", b.getAttribute("data-client") === client);
+      });
+      modeBtns.forEach(function (b) {
+        b.classList.toggle("is-active", b.getAttribute("data-mode") === mode);
+      });
+
+      if (caption) {
+        if (mode === "now") {
+          caption.innerHTML =
+            'ผู้ใช้จาก <b>' + GEO_NAME[client] + "</b> ถูกส่งไป edge เดียวที่ deploy จริงตอนนี้ — <b class=\"bad\">Edge: ไทย เสมอ</b> ไม่ว่าอยู่ภูมิภาคไหน (DNS เป็น A record ตายตัว ไม่ผ่าน GeoDNS)";
+        } else {
+          var same = client === "th";
+          caption.innerHTML = same
+            ? 'ผู้ใช้จาก <b>' + GEO_NAME[client] + "</b> อยู่ใกล้ edge ไทยอยู่แล้ว — เส้นทางเหมือนเดิม"
+            : 'ผู้ใช้จาก <b>' + GEO_NAME[client] + "</b> จะถูก GeoDNS ส่งไป <b>Edge: " + GEO_NAME[client] + "</b> แทน — เงื่อนไข: ต้อง deploy edge ภูมิภาคนั้นจริงก่อน (โค้ดพร้อมแล้ว)";
+        }
+      }
+    }
+
+    clientBtns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        client = b.getAttribute("data-client");
+        renderGeo();
+      });
+    });
+    modeBtns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        mode = b.getAttribute("data-mode");
+        renderGeo();
+      });
+    });
+    renderGeo();
+  }
+
   /* set current year */
   document.querySelectorAll("[data-year]").forEach(function(el){
     el.textContent = new Date().getFullYear();
