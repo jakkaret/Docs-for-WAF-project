@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "waf-docs-chat-proxy",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-27",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "ratelimits": [
+    {
+      "name": "CHAT_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 8,
+        "period": 60
+      }
+    }
+  ]
+}
