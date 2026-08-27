@@ -253,6 +253,33 @@
     renderGeo();
   }
 
+  /* ---- test console (replay real recorded results) ---- */
+  var consoles = document.querySelectorAll("[data-test-console]");
+  consoles.forEach(function (box) {
+    var out = box.querySelector("[data-console-out]");
+    var btns = box.querySelectorAll(".console-grid button");
+    btns.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        btns.forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        var cmd = btn.getAttribute("data-cmd");
+        var code = btn.getAttribute("data-code");
+        var status = btn.getAttribute("data-status");
+        var verdict = btn.getAttribute("data-verdict");
+        var delay = reduceMotion ? 0 : 380;
+        out.innerHTML = '<span class="cmd">' + cmd + "</span>" +
+          '<span class="placeholder">กำลังส่ง request…</span>';
+        setTimeout(function () {
+          out.innerHTML =
+            '<span class="cmd">' + cmd + "</span>" +
+            '<div class="resp"><span class="code ' + status + '">' + code + "</span>" +
+            '<span class="note">' + verdict + "</span></div>" +
+            '<span class="note" style="opacity:.7">ผลจริงที่บันทึกไว้ 27 ส.ค. 2026 — ไม่ใช่การยิงสดจากหน้านี้</span>';
+        }, delay);
+      });
+    });
+  });
+
   /* set current year */
   document.querySelectorAll("[data-year]").forEach(function(el){
     el.textContent = new Date().getFullYear();

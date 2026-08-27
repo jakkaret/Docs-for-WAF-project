@@ -448,6 +448,23 @@ footer.site-foot a:hover{ text-decoration:underline; }
 .scorecard .score{ font-family: var(--font-mono); font-size:1.1rem; color:#fff; white-space:nowrap; }
 .scorecard .score span{ color: var(--signal-ok); }
 
+/* ---------- test console (replay-real-results simulator) ---------- */
+.console-grid{ display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1.2rem; }
+.console-out{
+  background: var(--bg-raise); border:1px solid var(--line); border-radius: var(--radius);
+  padding: 1.3rem 1.5rem; font-family: var(--font-mono); font-size:.82rem; min-height: 7em;
+}
+.console-out .cmd{ color: var(--text-dim); margin-bottom:.7rem; display:block; word-break:break-all; }
+.console-out .cmd::before{ content:"$ "; color: var(--signal-ok); }
+.console-out .resp{ display:flex; align-items:baseline; gap:.6rem; margin-bottom:.5rem; flex-wrap:wrap; }
+.console-out .code{ font-weight:600; padding:.1rem .5rem; border-radius:3px; }
+.console-out .code.ok{ color: var(--signal-ok); background: var(--signal-ok-dim); }
+.console-out .code.warn{ color: var(--signal-warn); background: var(--signal-warn-dim); }
+.console-out .code.risk{ color: var(--signal-risk); background: var(--signal-risk-dim); }
+.console-out .code.debt{ color: var(--signal-debt); background: var(--signal-debt-dim); }
+.console-out .note{ color: var(--text-dim); }
+.console-out .placeholder{ color: var(--muted); }
+
 /* scroll reveal — hidden-by-default only once JS confirms it will un-hide it
    (progressive enhancement: no-JS / failed-script visitors always see full content) */
 .js .reveal{ opacity:0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }

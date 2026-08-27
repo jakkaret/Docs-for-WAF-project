@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แนวทางการทดสอบระบบ — WAF + CDN Platform Docs</title>
+<meta name="description" content="8 หมวดการทดสอบ WAF พร้อมคำสั่งจริงที่ใช้และผลจริงที่ได้ (27 ส.ค. 2026) — detection, false positive, rate limit, BOLA, bypass path, evasion">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">สารบัญ</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./08-testing-approach.html" aria-current="page"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>08 · แนวทางการทดสอบระบบ</p>
+      <h1>ทดสอบ WAF ให้ตอบ 4 คำถาม ไม่ใช่แค่ "ยิงแล้วดูว่าบล็อกไหม"</h1>
+      <p class="lede">Detection, false positive, coverage gap, resilience — พร้อมคำสั่งจริงที่ใช้ทดสอบไปแล้วและผลจริงที่ได้ (27 ส.ค. 2026) อ้างอิงจากสถาปัตยกรรมในเอกสาร 00-07</p>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> เป้าหมายของการทดสอบ — 4 คำถามหลัก</h2>
+      <div class="grid cols-2">
+        <div class="card"><h4>1 · Detection</h4><p>WAF ตรวจจับการโจมตีที่รู้จักได้จริงหรือไม่ (true positive)</p></div>
+        <div class="card"><h4>2 · False Positive</h4><p>WAF บล็อก traffic ปกติผิดหรือไม่ — ถ้าสูงเกินไป ใช้งานจริงไม่ได้</p></div>
+        <div class="card"><h4>3 · Coverage Gap</h4><p>มีเส้นทางไหนเข้าถึง origin ได้โดยไม่ผ่านการตรวจสอบเลยหรือไม่ (เช่นทางลัดที่เจอแล้วในรายงาน 05/09)</p></div>
+        <div class="card"><h4>4 · Resilience</h4><p>ระบบรับมือ traffic ปริมาณมาก (rate limit) หรือ payload obfuscate ได้แค่ไหน</p></div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> ขอบเขตและข้อควรระวังก่อนเริ่ม</h2>
+      <ul class="check-list">
+        <li><b style="color:#fff">ทดสอบผ่านเส้นทางที่ WAF ป้องกันจริงเท่านั้น</b> (<span class="mono">dvwa.waf-it-kku.online</span>, <span class="mono">juice.waf-it-kku.online</span>) — ใช้เส้นทาง Cloudflare Quick Tunnel bypass เฉพาะตอนต้องการเปรียบเทียบเท่านั้น ไม่ใช่เส้นทางทดสอบหลัก</li>
+        <li><b style="color:#fff">ไม่ทดสอบแบบทำลายข้อมูลจริง</b> — payload ต้องเป็นแค่ probe ไม่ใช่ยิง <span class="mono">DROP TABLE</span> ใส่ DVWA จริงจนข้อมูล demo พัง</li>
+        <li><b style="color:#fff">จำกัดความถี่ของการทดสอบเอง</b> — ทุก request (แม้โดนบล็อก) ถูกบันทึกลง ClickHouse จริง ยิงเยอะเกินจะทำให้ analytics มี noise ปนกับข้อมูลโจมตีจริง</li>
+        <li><b style="color:#fff">แจ้งเตือนจะเข้า Telegram ของแอดมินจริง</b> — payload severity สูงจำนวนมากอาจส่งข้อความเข้าโทรศัพท์เป็นชุดโดยไม่ตั้งใจ</li>
+      </ul>
+    </section>
+
+    <section class="block reveal" id="capabilities">
+      <h2><span class="idx">§3</span> หมวดการทดสอบ</h2>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">ทำแล้ว — ผ่าน</button>
+        <button class="status-pill risk" data-status="risk">ทำแล้ว — พบปัญหา</button>
+        <button class="status-pill warn" data-status="warn">ทำแล้ว — ต้องปรับวิธี</button>
+        <button class="status-pill debt" data-status="debt">ยังไม่ได้ทำ</button>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>3.1 · Core Detection</strong><span class="status-pill ok">ผ่านครบ</span></div>
+          <p>Baseline พื้นฐานที่สุด — SQLi, XSS reflected, path traversal, command injection ยิงด้วย <span class="mono">curl</span> ทั้ง 4 ตัวได้ <b style="color:#fff">403</b> ครบ ยืนยัน OWASP CRS มาตรฐานทำงานถูกต้องผ่าน production จริง</p>
+          <p class="ref" style="margin-top:.6rem">ขั้นต่อไป: <span class="mono">sqlmap -u URL --batch --level=3 --risk=1</span> เพื่อทดสอบ WAF-bypass technique อัตโนมัติ (encoding variation, comment injection)</p>
+        </div>
+        <div class="card finding" data-status="ok">
+          <div class="finding-head"><strong>3.2 · Custom Rule Verification</strong><span class="status-pill ok">ผ่านครบ</span></div>
+          <p>พิสูจน์ pipeline สร้าง/sync กฎเอง ไม่ใช่แค่ WAF เก่งอยู่แล้ว — <span class="mono">testattack</span> และ <span class="mono">admin1</span> keyword ได้ 403 ทั้งคู่ ยืนยันว่ากฎที่สร้างผ่าน dashboard sync ไปถึง WAF จริง</p>
+          <p class="ref" style="margin-top:.6rem">ขั้นต่อไป: สร้างกฎใหม่ผ่าน UI จริง จับเวลาว่า sync ถึง edge ภายใน ~5-10 วิ ตามที่ออกแบบไว้หรือไม่</p>
+        </div>
+        <div class="card finding" data-status="risk">
+          <div class="finding-head"><strong>3.3 · False Positive / Baseline</strong><span class="status-pill risk">พบบั๊ก</span></div>
+          <p>ยิง <span class="mono">/</span> ได้ <b style="color:var(--signal-risk)">404</b> ไม่ใช่ 403 หรือ 200 ตามคาด — ไม่ใช่ WAF บล็อก (ไม่มี header deny จาก ModSecurity) แต่เป็น<b style="color:#fff">บั๊ก routing ที่ origin</b> ไม่มี path นี้แมปไว้ ไม่ใช่ปัญหา security แต่ผู้ใช้จริงเข้าครั้งแรกจะเจอหน้า 404 ทันที</p>
+        </div>
+        <div class="card finding" data-status="warn">
+          <div class="finding-head"><strong>3.4 · Rate Limiting</strong><span class="status-pill warn">ต้องปรับวิธี</span></div>
+          <p>ทดสอบด้วย loop <span class="mono">curl</span> sequential 25 ครั้ง — <b style="color:#fff">ไม่ทริกเกอร์ 429 เลย</b> เพราะ sequential มี latency คั่นตามธรรมชาติ ทำให้ throughput ต่ำกว่า 50 req/s มาก ต้องยิง<b style="color:#fff">พร้อมกันจริง (concurrent)</b> ด้วย <span class="mono">hey -n 300 -c 60 -q 0</span> ถึงจะเห็นผล</p>
+        </div>
+        <div class="card finding" data-status="risk">
+          <div class="finding-head"><strong>3.5 · WAF Fingerprinting</strong><span class="status-pill risk">พบจุดควรปรับปรุง</span></div>
+          <p>response header ทุก request มี <span class="mono">X-Edge-Region: TH</span> และ <span class="mono">X-Cache-Status: MISS</span> ติดมาด้วย — เซ็ตแบบ static ไว้ล่วงหน้าใน nginx config ทั้งที่ CDN multi-region ยังไม่ deploy จริง เสี่ยง information leakage และสร้างความเข้าใจผิด ควรลบด้วย <span class="mono">more_clear_headers</span></p>
+        </div>
+        <div class="card finding" data-status="risk">
+          <div class="finding-head"><strong>3.6 · API Security / BOLA (vAmPI)</strong><span class="status-pill risk">มี pre-requisite ต้องแก้ก่อน</span></div>
+          <p>vAmPI <b style="color:#fff">ไม่ได้ผูกกับ FRP tunnel</b> ที่ผ่าน WAF (มีแค่ dvwa/juice ที่ลงทะเบียนกับ frps) — เข้าถึงได้ทางเดียวคือผ่าน Cloudflare Quick Tunnel ที่ข้าม WAF ไปเลย <b style="color:var(--signal-risk)">ยังทดสอบ BOLA ผ่าน WAF จริงไม่ได้เลย</b>ในสภาพปัจจุบัน ต้องเพิ่ม <span class="mono">vampi.waf-it-kku.online</span> เข้า FRP config ก่อน</p>
+        </div>
+        <div class="card finding" data-status="debt">
+          <div class="finding-head"><strong>3.7 · WAF Bypass Path Comparison</strong><span class="status-pill debt">ยังไม่ได้ทำ</span></div>
+          <p>ยิง payload เดียวกันสองเส้นทาง (ผ่าน WAF vs ผ่าน Cloudflare Quick Tunnel) เพื่อวัดขนาดความเสี่ยงที่ระบุไว้แล้วในรายงาน 05/07 ให้เห็นเป็นรูปธรรม — คาดว่าเส้นทางแรก 403, เส้นทางที่สอง 200 พร้อม SQLi สำเร็จจริง (DVWA security level = low)</p>
+        </div>
+        <div class="card finding" data-status="debt">
+          <div class="finding-head"><strong>3.8 · Evasion / Obfuscation</strong><span class="status-pill debt">ยังไม่ได้ทำ</span></div>
+          <p>ทดสอบ double URL encoding, SQL comment splitting, null-byte injection — ตรงกับ evasion technique ที่ <span class="mono">payload_normalizer.py</span> เขียนไว้ว่ารองรับ ถ้าหลุดผ่านไปได้ (ไม่ใช่ 403) แปลว่า logic การ decode ยังไม่ครอบคลุมจริง</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> ลองรันชุดทดสอบเอง (จำลองจากผลจริง)</h2>
+      <p style="max-width:66ch">คลิกชุดทดสอบด้านล่างเพื่อดูคำสั่งที่ใช้และผลจริงที่บันทึกไว้ (27 ส.ค. 2026) — ไม่ใช่การยิง request จริงจากหน้านี้ แต่เป็นการเล่นซ้ำผลที่วัดได้จริงแล้ว</p>
+      <div class="console-demo" data-test-console>
+        <div class="console-grid">
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl $TARGET/vulnerabilities/sqli/?id=1%27%20OR%20%271%27%3D%271" data-verdict="OWASP CRS จับ SQL Injection ได้ — ผ่าน">SQLi classic</button>
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl -G $TARGET/vulnerabilities/xss_r/ --data-urlencode name=&lt;script&gt;alert(1)&lt;/script&gt;" data-verdict="OWASP CRS จับ XSS reflected ได้ — ผ่าน">XSS reflected</button>
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl $TARGET/vulnerabilities/fi/?page=../../../../etc/passwd" data-verdict="OWASP CRS จับ Path Traversal ได้ — ผ่าน">Path traversal</button>
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl -G $TARGET/vulnerabilities/exec/ --data-urlencode ip=127.0.0.1;cat /etc/passwd" data-verdict="OWASP CRS จับ Command Injection ได้ — ผ่าน">Command injection</button>
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl $TARGET/?q=testattack" data-verdict="custom rule จาก dashboard sync ถึง WAF จริง — ผ่าน">Custom rule keyword</button>
+          <button class="geo-btn" data-status="risk" data-code="404" data-cmd="curl $TARGET/" data-verdict="ไม่ใช่ WAF บล็อก — เป็นบั๊ก routing ที่ origin ไม่มี path นี้แมปไว้">Baseline (/)</button>
+          <button class="geo-btn" data-status="warn" data-code="200×25" data-cmd="for i in {1..25}; do curl -s -o /dev/null -w '%{http_code}\n' $TARGET/; done" data-verdict="ไม่ทริกเกอร์ 429 — sequential ช้าเกินจะโดน rate limit ต้องยิง concurrent">Rate limit (sequential)</button>
+          <button class="geo-btn" data-status="risk" data-code="200" data-cmd="curl -D - -o /dev/null $TARGET/" data-verdict="พบ X-Edge-Region/X-Cache-Status เป็นค่า static ไม่ควร expose">Header leakage check</button>
+        </div>
+        <div class="console-out" data-console-out>
+          <span class="placeholder">คลิกปุ่มด้านบนเพื่อดูผลจริง</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> ลำดับการทดสอบที่แนะนำ</h2>
+      <p style="max-width:64ch">เริ่มจากพิสูจน์พื้นฐานว่าระบบทำงานก่อนไปทดสอบขีดจำกัด แล้วค่อยขยายไปหาจุดที่ซับซ้อนกว่า — สลับลำดับแล้วจะแยกไม่ออกว่าปัญหาคือขั้นพื้นฐานพังหรือเป็นจุดซับซ้อนเฉพาะทาง</p>
+      <ol class="flow">
+        <li data-step="1"><strong>Core Detection + False Positive baseline</strong><p>ทำคู่กันเสมอ อย่าทำแค่ฝั่งใดฝั่งหนึ่ง</p></li>
+        <li data-step="2"><strong>Custom Rule Verification</strong><p></p></li>
+        <li data-step="3"><strong>แก้ pre-requisite ของ BOLA testing ก่อน</strong><p>ผูก vAmPI เข้า FRP tunnel แล้วค่อยทดสอบ BOLA</p></li>
+        <li data-step="4"><strong>WAF Bypass Comparison</strong><p>ยืนยัน severity ของช่องโหว่ที่ระบุไว้แล้วว่าสำคัญ — ควรทำเร็ว ๆ</p></li>
+        <li data-step="5"><strong>Evasion Testing</strong><p></p></li>
+        <li data-step="6"><strong>Rate Limiting</strong><p>ทำท้าย ๆ เพราะกระทบปริมาณ log/analytics มากที่สุด</p></li>
+        <li data-step="7"><strong>WAF Fingerprinting</strong><p>ทำเมื่อไหร่ก็ได้ ไม่ขึ้นกับขั้นตอนอื่น</p></li>
+      </ol>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> ข้อควรระวังสรุปรวม</h2>
+      <ul class="check-list">
+        <li>ทดสอบผ่านโดเมนที่ WAF ป้องกันจริงเป็นหลัก ใช้เส้นทาง bypass เฉพาะตอนต้องเปรียบเทียบเท่านั้น</li>
+        <li>อย่าใช้ payload ระดับทำลายข้อมูล แม้เป็นระบบทดสอบของตัวเองก็ตาม เพราะแอปช่องโหว่ใช้ demo ข้อมูลร่วมกันหลายจุด พังแล้วต้อง reset ใหม่</li>
+        <li>ทดสอบ rate limit แยกเวลากับหมวดอื่น เพราะปริมาณ request สูงจะกลบข้อมูลการทดสอบหมวดอื่นใน log</li>
+        <li>คำนวณผลกระทบต่อ Telegram alert ก่อนยิง payload severity สูงจำนวนมากรวดเดียว</li>
+      </ul>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./07-web-origin-testbed.html"><span class="dir">← ก่อนหน้า</span><strong>07 · Web Origin Testbed</strong></a>
+      <a class="next" href="./09-attack-landscape.html"><span class="dir">ถัดไป →</span><strong>09 · ภูมิทัศน์การโจมตี 2025–26</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>
