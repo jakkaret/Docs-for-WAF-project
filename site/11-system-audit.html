@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System Audit 29 ส.ค. 2026 — WAF + CDN Platform Docs</title>
+<meta name="description" content="ตรวจสอบระบบทั้งหมดซ้ำแบบละเอียด: infra, backend, frontend, ML, CDN, WAF rules, config drift, dead code, CI — ยืนยันด้วย SSH เข้าเครื่องจริงและยิง HTTP test จริงทุกข้อ ไม่มีการแก้ไขไฟล์ใดๆ ระหว่างตรวจ">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">ภาพรวม</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">สถาปัตยกรรมระบบ</p>
+      <ul class="nav-list">
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">การทดสอบและตรวจสอบ</p>
+      <ul class="nav-list">
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html" aria-current="page"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บริบทภายนอก</p>
+      <ul class="nav-list">
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บทสรุป</p>
+      <ul class="nav-list">
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>11 · SYSTEM AUDIT — 29 ส.ค. 2026</p>
+      <h1>ตรวจสอบระบบทั้งหมดซ้ำแบบละเอียด — ยืนยันทุกข้อด้วยเครื่องจริง</h1>
+      <p class="lede">อ่าน source code จริงจากทุก layer + SSH เข้า Edge/Main + ยิง HTTP test จริงจากภายนอกเข้าระบบ — ไม่มีการแก้ไขไฟล์หรือ config ใดๆ ระหว่างตรวจ ข้อมูลที่ยืนยันด้วยการทดสอบจริงระบุ <span class="status-pill ok" style="margin:0 .1rem">VERIFIED LIVE</span> ข้อมูลที่มาจากการอ่าน code อย่างเดียวระบุ <span class="status-pill debt" style="margin:0 .1rem">CODE</span></p>
+      <div class="meta-line">
+        <span><b>ขอบเขต</b> Backend · Frontend · Infrastructure · ML · CDN · WAF Rules · Config Drift · Dead Code · CI</span>
+        <span><b>วิธีตรวจ</b> read-only observation — ไม่แตะ production</span>
+      </div>
+    </header>
+
+    <section class="block reveal" id="summary">
+      <h2><span class="idx">§1</span> สรุปผู้บริหาร</h2>
+
+      <h3><span class="idx">✅</span> สิ่งที่ทำงานได้จริง (ยืนยันด้วยการทดสอบ)</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ความสามารถ</th><th>หลักฐาน</th></tr></thead>
+        <tbody>
+          <tr><td>WAF บล็อกการโจมตีมาตรฐาน</td><td>SQLi / XSS / Path Traversal / Command Injection → 403 ทุกกรณี ทั้งผ่าน Edge และยิงตรงเข้า Main:8080</td></tr>
+          <tr><td>Custom rules ทำงาน</td><td>rule 1000001, 990001, 100003, 123 → 403 ทั้งหมด</td></tr>
+          <tr><td>Rule sync จากศูนย์กลาง</td><td>ไฟล์ rule บน Edge มี mtime ตรงกับวันที่ sync ล่าสุด</td></tr>
+          <tr><td>Edge caching</td><td><span class="mono">proxy_cache</span> + bypass rules ครบ, header <span class="mono">X-Cache-Status</span> ตอบกลับจริง</td></tr>
+          <tr><td>TLS certificate — <b style="color:var(--signal-ok)">ดีกว่าที่เอกสารเก่าระบุ</b></td><td>Main = Let's Encrypt, Edge = ZeroSSL ผ่าน Caddy on-demand — <b style="color:#fff">ไม่ใช่ self-signed</b> อย่างที่เอกสารเก่าเขียนไว้</td></tr>
+          <tr><td>ClickHouse เก็บข้อมูลจริง</td><td>113,368 แถว ข้อมูลล่าสุด 2026-08-29 08:48:45</td></tr>
+          <tr><td>Redis / ClickHouse <b style="color:var(--signal-ok)">ไม่ได้</b>เปิดสู่อินเทอร์เน็ต — ดีกว่าที่เอกสารเก่าระบุ</td><td>สแกนจากภายนอก: port 6379, 8123, 9000 = ปิดทั้งหมด</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3><span class="idx">❌</span> สิ่งที่พังอยู่ตอนนี้ (ยืนยันด้วยการทดสอบ)</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ปัญหา</th><th>ผลกระทบ</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">Tunnel ตายสนิท</b> — FRP มี client เชื่อมต่อ 0 ราย</td><td>เว็บทดสอบทั้งหมด (dvwa/juice/vampi/bwapp) เข้าไม่ได้เลย ทุก path ได้ 404</td></tr>
+          <tr><td>Lab node เข้าไม่ถึงจากทุกทาง</td><td>Main ping/HTTP ไปยัง 10.198.200.75 ไม่ผ่านทุก port</td></tr>
+          <tr><td>FRP token รั่วสู่สาธารณะ</td><td>token อยู่ใน JavaScript bundle ที่ใครก็ดาวน์โหลดได้ + port 7000 เปิดอินเทอร์เน็ต</td></tr>
+          <tr><td>Control API เปิดสู่อินเทอร์เน็ตโดยไม่ได้ตั้งใจ</td><td>ตั้งใจให้เฉพาะ Edge เข้าได้ แต่ docker เจาะผ่าน ufw → ทั้งโลกเข้าถึงได้</td></tr>
+          <tr><td>Caddy บน Main รัน config ที่หายจากดิสก์แล้ว</td><td>ถ้า restart container เมื่อไหร่ subdomain ทั้งหมดจะหยุดทำงาน</td></tr>
+          <tr><td>ML ไม่ได้อยู่ในเส้นทาง traffic</td><td>ไม่มีผลต่อการบล็อกใดๆ เป็นแค่ตัวอ่าน log ย้อนหลัง</td></tr>
+          <tr><td>ตัวเลข ML ที่โฆษณาไม่ตรงกับที่วัดได้จริง</td><td>อ้าง 93.40% / วัดได้ 80.47% / attack recall จริงแค่ 62.26%</td></tr>
+          <tr><td>หน้า Tunnels แสดงสถานะปลอม</td><td>hardcode "🟢 ONLINE" ทั้งที่ tunnel ตายสนิท</td></tr>
+          <tr><td>หน้า Traffic Logs ว่างเปล่าถาวรสำหรับ user ทั่วไป</td><td>เกิดจาก domain feature พัง → tenant filter หาอะไรไม่เจอ</td></tr>
+          <tr><td>CI ไม่สามารถ fail ได้</td><td>คำสั่ง test ต่อท้ายด้วย <span class="mono">|| echo</span> กลืน error ทุกชนิด</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="callout risk">
+        <span class="cap">ประเมินสถานะรวม</span>
+        <p>ระบบอยู่ในสถานะ <b style="color:#fff">prototype ที่มีของจริงเยอะ แต่มีชิ้นส่วนสำคัญขาดการเชื่อมต่อ</b> — เครื่องมือป้องกัน (ModSecurity + CRS + custom rules + rule sync + caching + TLS) ทำงานได้จริงและพิสูจน์ได้ แต่สิ่งที่ควรจะถูกป้องกันกลับเข้าไม่ถึง (tunnel ตาย) และส่วนที่เป็นจุดขาย (ML, CDN multi-region, explainability) ยังไม่ได้เชื่อมเข้าเส้นทางจริง</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> สถานะ Infrastructure จริง</h2>
+      <div class="grid cols-3">
+        <div class="card">
+          <h4>Edge Node — 45.154.26.91</h4>
+          <p class="mono" style="font-size:.82rem">Ubuntu 24.04.4 · 1 core · RAM 1,967MB (ใช้ 1,144)<br>Disk 29G (31%) · Uptime 9 วัน</p>
+          <p style="margin-top:.6rem">3 container ทำงาน (cdn-edge-node, caddy-ssl, log-forwarder) — ufw เปิด 22/80/443/8000 ตรงกับ port ที่ listen จริง</p>
+          <p><b style="color:var(--signal-risk)">⚠ <span class="mono">SecRuleRemoveByTag "attack-protocol"</span></b> — ปิดการตรวจจับ CRS หมวด protocol attack ทั้งหมดบน Edge</p>
+        </div>
+        <div class="card">
+          <h4>Main Node — 178.104.53.123</h4>
+          <p class="mono" style="font-size:.82rem">Ubuntu 26.04 · 2 cores · RAM 3,814MB (ใช้ 1,763)<br>Disk 38G (43%) · Uptime 5 วัน 22 ชม.</p>
+          <p style="margin-top:.6rem">6 container + 4 systemd service (dashboard :8000, ml :5000, log-analyzer, frps :7000)</p>
+          <p><span class="mono">waf-nginx</span> unhealthy — FailingStreak 9,254 ครั้ง เพราะ healthcheck เช็คผิด port (8443 แทน 8080) ไม่กระทบ traffic จริง แต่ทำให้ monitor เชื่อถือไม่ได้</p>
+        </div>
+        <div class="card">
+          <h4>Lab Node — 10.198.200.75</h4>
+          <p style="margin-top:0">SSH เชื่อมต่อได้ (VPN ทำงาน) แต่ auth ไม่ผ่านทุก user ที่ลอง (root/ubuntu/boss/admin/waf) — ไม่มี key</p>
+          <p>จาก Main ยิง HTTP ไปทุก port = timeout ทั้งหมด</p>
+          <p><b style="color:var(--signal-risk)">Lab node ถูกตัดขาดจากระบบโดยสมบูรณ์</b> ไม่ว่าจะทางไหน</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.8rem">การเข้าถึงจากอินเทอร์เน็ต — ผลสแกนจริง</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Port</th><th>ผลสแกนจาก external</th><th>ตั้งใจให้เปิดไหม</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">8000</td><td><span class="status-pill risk">เปิด</span></td><td>ใช่ (dashboard API)</td></tr>
+          <tr><td class="mono">8070</td><td><span class="status-pill risk">เปิด</span></td><td><b style="color:var(--signal-risk)">ไม่ — ufw ตั้งไว้เฉพาะ 45.154.26.91</b></td></tr>
+          <tr><td class="mono">8080</td><td><span class="status-pill risk">เปิด</span></td><td>ใช่ (waf-nginx)</td></tr>
+          <tr><td class="mono">7000</td><td><span class="status-pill risk">เปิด</span></td><td>ใช่ แต่ดู §4.1</td></tr>
+          <tr><td class="mono">6379 (Redis)</td><td><span class="status-pill ok">ปิด</span></td><td>—</td></tr>
+          <tr><td class="mono">8123, 9000 (ClickHouse)</td><td><span class="status-pill ok">ปิด</span></td><td>—</td></tr>
+          <tr><td class="mono">8443, 8085, 7500</td><td><span class="status-pill ok">ปิด</span></td><td>—</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout">
+        <span class="cap">หมายเหตุสำคัญ</span>
+        <p>เอกสารเก่าระบุว่า Redis และ ClickHouse เปิดสู่อินเทอร์เน็ต — การทดสอบจริงพบว่า<b style="color:#fff">ไม่ใช่</b> ทั้งสองปิดอยู่ ส่วนที่หลุดจริงคือ port 8070 ซึ่ง ufw ตั้งใจปิดแต่ docker-proxy เจาะผ่าน</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> ผลการทดสอบจริง (Live Tests)</h2>
+      <p style="max-width:66ch">ทดสอบผ่าน <span class="mono">https://dvwa.waf-it-kku.online</span> (ผ่าน Edge → Main) และยิงตรงเข้า Main:8080 ข้าม Edge</p>
+
+      <div class="console-demo" data-test-console data-recorded="29 ส.ค. 2026">
+        <div class="console-grid">
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl 'https://dvwa.waf-it-kku.online/?id=1%27+UNION+SELECT+1,2,3--'" data-verdict="OWASP CRS จับ SQLi ได้ — ผ่าน">SQLi UNION</button>
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl -G .../?q=&lt;script&gt;alert(1)&lt;/script&gt;" data-verdict="OWASP CRS จับ XSS ได้ — ผ่าน">XSS reflected</button>
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl .../?f=../../../../etc/passwd" data-verdict="OWASP CRS จับ Path Traversal ได้ — ผ่าน">Path traversal</button>
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl .../?cmd=;cat /etc/passwd" data-verdict="OWASP CRS จับ Command Injection ได้ — ผ่าน">Command injection</button>
+          <button class="geo-btn" data-status="ok" data-code="403" data-cmd="curl https://main.waf-it-kku.online:8080/?id=1' OR '1'='1" data-verdict="ยิงตรงเข้า Main ข้าม Edge — WAF ที่ Main ก็ทำงานเอง ไม่ใช่พึ่ง Edge อย่างเดียว">SQLi ข้าม Edge ตรงเข้า Main</button>
+          <button class="geo-btn" data-status="risk" data-code="404×6" data-cmd="curl https://dvwa.waf-it-kku.online/{,-index.php,-login.php,...}" data-verdict="frps clientCounts:0 — log แสดง 'no route found: dvwa.waf-it-kku.online' ซ้ำๆ ตั้งแต่เช้า">เข้าเว็บทดสอบ (dvwa/juice/vampi/bwapp)</button>
+          <button class="geo-btn" data-status="warn" data-code="MISS×3" data-cmd="curl -D - .../ (ยิงซ้ำ 3 ครั้ง)" data-verdict="origin ตอบ 404 และ config cache แค่ 200/301/302 — ไม่ใช่บั๊ก แต่ทดสอบ cache HIT จริงไม่ได้จนกว่า tunnel จะกลับมา">Cache</button>
+          <button class="geo-btn" data-status="warn" data-code="404×100 + fail×50" data-cmd="150 requests, concurrency 40" data-verdict="ไม่พบ HTTP 429 เลย — ยังชี้ชัดไม่ได้ว่า rate limiter ทำงานถูกต้อง ต้องทดสอบซ้ำหลัง tunnel กลับมา">Rate limiting</button>
+          <button class="geo-btn" data-status="ok" data-code="200" data-cmd="openssl s_client -connect waf-it-kku.online:443" data-verdict="Let's Encrypt (main) + ZeroSSL ECC DV (dvwa) หมดอายุ 22 Nov 2026 — strict TLS ผ่านทั้งคู่ ไม่ใช่ self-signed อย่างเอกสารเก่า">TLS certificate</button>
+        </div>
+        <div class="console-out" data-console-out>
+          <span class="placeholder">← เลือกรายการทดสอบเพื่อดูคำสั่งจริงและผลลัพธ์จริงทีละขั้น</span>
+        </div>
+      </div>
+
+      <div class="diagram" style="margin-top:1.2rem">
+        <pre>FRP admin API ยืนยันตรงกัน:
+{"clientCounts":0, "proxyTypeCount":{"http":0}, "totalTrafficIn":0, "totalTrafficOut":0}</pre>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> ช่องโหว่ความปลอดภัยระดับวิกฤต — รายละเอียดเต็ม</h2>
+      <p style="max-width:70ch">ทุกรายการนี้ยัง <b style="color:var(--signal-risk)">live บนระบบ production ตอนนี้</b> — ระบุตำแหน่งไฟล์/บรรทัด/endpoint ครบเพื่อใช้แก้ไขและอ้างอิงตอนนำเสนอ ส่วนค่า secret/token จริงไม่แสดงตรงนี้ (ดูจาก source โดยตรงตามตำแหน่งที่อ้างถึง) เพื่อไม่เพิ่มช่องทางใหม่ให้ผู้ไม่หวังดีขณะช่องโหว่ยังไม่ถูกปิด</p>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>C1 · FRP tunnel token รั่วสู่สาธารณะ + port เปิดอินเทอร์เน็ต</strong><span class="status-pill risk">CRITICAL</span></div>
+        <p><span class="mono">/etc/frp/frps.toml</span> บน Main ตั้ง <span class="mono">auth.method = "token"</span> เป็น auth เดียวที่มี — token เดียวกันนี้ hardcode ใน <span class="mono">Tunnels.tsx</span> (บรรทัด 62, 72) จึงถูก compile เข้า JavaScript bundle</p>
+        <p><span class="mono">GET http://178.104.53.123:8000/assets/index-CC3Wg3XF.js</span> → 200, 1,026,021 bytes — ดาวน์โหลดได้โดยไม่ต้อง login พบ token คงที่ปรากฏอยู่ในไฟล์ 2 ครั้ง (ค่าจริงดูได้จาก source ตรง <span class="mono">Tunnels.tsx:62,72</span>) Port 7000 (frps bindPort) เปิดสู่อินเทอร์เน็ตยืนยันด้วยการสแกนจริง</p>
+        <p><b style="color:#fff">ผลกระทบ:</b> ใครก็ตามที่เปิดหน้า dashboard (หรือ curl ไฟล์ JS ตรงๆ) จะได้ tunnel token ไป และเชื่อมต่อ FRP client เข้าระบบได้ — <b>ต้อง rotate token + ย้าย token ออกจาก frontend bundle เป็นอันดับแรก</b></p>
+      </div>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>C2 · Control API เปิดสู่อินเทอร์เน็ตโดยไม่ได้ตั้งใจ</strong><span class="status-pill risk">CRITICAL</span></div>
+        <p>ufw บน Main ตั้ง <span class="mono">8070 ALLOW IN 45.154.26.91</span> เท่านั้น แต่ docker-proxy publish port ผ่าน chain ที่ ufw ไม่ควบคุม — ทั้งอินเทอร์เน็ตเข้าถึงได้ ทดสอบจากภายนอกโดยไม่ใส่ token: <span class="mono">GET /docs</span> → 200 (Swagger เปิดสาธารณะ), <span class="mono">GET /api/sync/bundle</span> → 200 (ruleset WAF ทั้งชุด)</p>
+        <p><b style="color:#fff">ทำให้แย่ลงอีก:</b> <span class="mono">CONTROL_TOKEN</span> hardcode ใน <span class="mono">docker-compose.yml</span> ที่ track อยู่ใน git — ใครเห็น repo ก็เขียน blocklist ได้</p>
+      </div>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>C3 · Caddy บน Main รัน config ที่หายไปจากดิสก์แล้ว</strong><span class="status-pill risk">CRITICAL</span></div>
+        <p>ไฟล์บน host (inode 157112, 428 bytes, block เดียว) ≠ ไฟล์ที่ container ใช้จริง (inode 138459, 1,467 bytes, 3 blocks รวม protected sites) — host ถูกแก้หลัง container start ด้วยวิธีที่สร้าง inode ใหม่ ทำให้ bind mount ยังชี้ inode เก่าที่ค้างในหน่วยความจำ</p>
+        <p><b style="color:#fff">ระเบิดเวลา:</b> ถ้า <span class="mono">caddy-ssl-termination</span> restart หรือเครื่อง reboot จะโหลดไฟล์ 428 bytes แทน → subdomain ที่ถูกป้องกันทั้งหมดหยุดทำงาน + TLS พัง (mount เป็น read-write จึงแก้จาก container ได้ด้วย)</p>
+      </div>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>C4 · SQL Injection ใน AI Summary endpoint</strong><span class="status-pill risk">CRITICAL</span></div>
+        <p><span class="mono">dashboard/backend/api/ai_summary.py:65,76,86,96</span> — นำ <span class="mono">start_time</span>/<span class="mono">end_time</span> จาก request body ต่อ string เข้า SQL โดยตรง ไม่มีการ escape เข้าถึงได้โดย user ที่ login แล้วทุกคน และการสมัครสมาชิกเปิดสาธารณะ — ใครก็สมัครแล้วยิงได้</p>
+        <p>ค่าเหล่านี้ยังอาจมาจาก output ของ Gemini โดยตรง — LLM output ไหลเข้า SQL โดยไม่ผ่านการตรวจสอบ จุดอื่นที่ escape แค่ backslash (ไม่พอสำหรับ ClickHouse): <span class="mono">analytics.py</span>, <span class="mono">clickhouse_service.py</span>, <span class="mono">logs.py</span>, <span class="mono">cdn.py</span></p>
+      </div>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>C5 · Tunnel ตายสนิท — เว็บที่ควรถูกป้องกันเข้าไม่ได้เลย</strong><span class="status-pill risk">CRITICAL</span></div>
+        <p>frps <span class="mono">clientCounts: 0</span> — ทุก path ของเว็บทดสอบทั้ง 4 ตัวได้ 404 ระบบไม่ได้ป้องกันอะไรอยู่จริงตอนนี้ เพราะไม่มี traffic ไหลผ่าน WAF ไปถึงปลายทางเลย</p>
+      </div>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>C6 · Rule drift — <span class="mono">custom-123.conf</span></strong><span class="status-pill risk">CRITICAL</span></div>
+        <p>ใน git: <span class="mono">@rx test</span> — deploy จริงบน Edge: <span class="mono">@rx testpj</span> ยืนยัน: <span class="mono">/latest</span> → 404, <span class="mono">/contest</span> → 404 (ถ้าเป็นเวอร์ชัน git จะได้ 403 เพราะมี substring "test")</p>
+        <p><b style="color:#fff">ความเสี่ยง:</b> ถ้าใครรัน sync จาก repo ปัจจุบัน rule เวอร์ชัน <span class="mono">@rx test</span> จะ deploy ทับ — ทุก URL ที่มีคำว่า "test" จะถูกบล็อกทันที (<span class="mono">/latest</span>, <span class="mono">/testimonials</span>, <span class="mono">/contest</span>, <span class="mono">/greatest</span>)</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> สถานะรายชั้นระบบ (สรุปย่อ)</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>Backend — 84 endpoints / 18 routers</h4>
+          <p>ทำงานถูกต้อง: Auth (Argon2id + JWT, role อ่านจาก DB ทุกครั้ง), Telegram login (HMAC ถูกต้อง), RBAC, Rules CRUD + nginx reload, <span class="mono">safe_regex.py</span> (ป้องกัน ReDoS), <span class="mono">payload_normalizer.py</span></p>
+          <p>พัง: Domain/SSL ทั้งหมด 404 (router ไม่ถูก mount), BOLA Guard ไม่บันทึก policy (ลืม <span class="mono">import time</span>), Blast Radius คำนวณจาก synthetic data 100%, <span class="mono">/api/logs/explain</span> คืน stub ทุกครั้ง</p>
+        </div>
+        <div class="card">
+          <h4>Frontend — React 18 + Vite + TS</h4>
+          <p>หน้า Tunnels แสดง "🟢 ONLINE" hardcode ทั้งที่ tunnel ตายสนิท — backend ส่งสถานะจริงมาแล้วแต่ frontend ไม่อ่าน หน้า Traffic Logs ว่างถาวรสำหรับ non-admin หน้า ML Rules มีจุด crash ทั้งแอปถ้าเจอ row ที่ไม่มี field ที่คาด</p>
+          <p>พบตัวเลข/สถานะ hardcode <b style="color:#fff">25+ จุด</b> รวมถึงเวอร์ชัน CRS ที่ขัดกันเอง 3 แบบในหน้าต่างๆ (3.3.5 / 4.0 / 3.3)</p>
+        </div>
+        <div class="card">
+          <h4>ML — วัดจริงจาก eval_results.json</h4>
+          <p>Accuracy 80.47% (ไม่ใช่ 93.40% ที่ README อ้าง), Attack recall <b style="color:var(--signal-risk)">62.26%</b> (พลาดโจมตี 37.7%), Attack precision 98.39% <span class="mono">accuracy_target_passed: true</span> เป็นค่า hardcode ตายตัว — ไม่เคยคำนวณจริง</p>
+          <p>ML ไม่มี nginx config ใดอ้างถึงเลย — อ่าน log ย้อนหลังเท่านั้น ไม่เคยบล็อก entropy feature คำนวณแล้วทิ้ง (dead code)</p>
+        </div>
+        <div class="card">
+          <h4>CDN — 2/4 องค์ประกอบผ่าน (ไม่เปลี่ยนจากที่เคยประเมิน)</h4>
+          <p>GeoDNS แมป region ด้วย CIDR hardcode (subnet จำลองสำหรับ test script) ไม่ใช่ GeoIP database จริง — ต่อให้ deploy ก็ยังไม่ทำ geo-routing จริง</p>
+          <p>Cache key ไม่รวม <span class="mono">$args</span> → cache ตายสำหรับทุก request ที่มี query string TLS private key ของ edge commit อยู่ใน repo</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> ตารางสรุปทุกปัญหา — กรองตามระดับความรุนแรง</h2>
+      <p style="max-width:66ch">คลิกป้ายสถานะเพื่อกรองดูเฉพาะระดับ — รวม 6 Critical, 11 High, 20 Medium และ Low/Housekeeping อีกชุดหนึ่ง</p>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill risk" data-status="risk">CRITICAL — 6</button>
+        <button class="status-pill warn" data-status="warn">HIGH — 11</button>
+        <button class="status-pill debt" data-status="debt">MEDIUM — 20</button>
+        <button class="status-pill ok" data-status="ok">LOW / Housekeeping</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>ปัญหา</th><th>ระดับ</th></tr></thead>
+        <tbody>
+          <tr data-status="risk"><td class="mono">C1</td><td>FRP token ใน JS bundle สาธารณะ + port 7000 เปิดอินเทอร์เน็ต</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C2</td><td>Control API (8070) เปิดสู่อินเทอร์เน็ต ไม่มี auth บน sync/blocklist</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C3</td><td>Caddy บน Main รัน config ที่หายจากดิสก์แล้ว</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C4</td><td>SQLi ใน <span class="mono">/api/ai/summarize-range</span></td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C5</td><td>Tunnel ตายสนิท — ระบบไม่ได้ป้องกันอะไรอยู่จริงตอนนี้</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C6</td><td>Rule drift <span class="mono">custom-123.conf</span> — sync ครั้งหน้าจะบล็อกทุก URL ที่มีคำว่า "test"</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="warn"><td class="mono">H1</td><td>Telegram bot token รั่วผ่าน <span class="mono">GET /api/settings/</span> (viewer เข้าถึงได้) + commit ใน git</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H2</td><td>Cross-tenant leak 8 endpoints (copilot, ai summary, notifications, logs/explain ฯลฯ)</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H3</td><td>5 endpoints ที่ควรมี auth แต่ไม่มี (tunnel/verify, limiter/check ฯลฯ)</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H4</td><td>Error handler คืน <span class="mono">str(exc)</span> ดิบ + 34 จุดที่ raise 500 พร้อม detail ภายใน</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H5</td><td>ตัวเลข ML โฆษณา (93.40%) ไม่ตรงที่วัดได้ (80.47%) ใน 10+ ไฟล์</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H6</td><td>หน้า Tunnels แสดง "ONLINE" ปลอมทั้งที่ tunnel ตาย</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H7</td><td>Rule sync ไม่มี auth/TLS/signature + ลบไฟล์ก่อนตรวจสอบ syntax</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H8</td><td><span class="mono">CONTROL_TOKEN</span> hardcode ใน <span class="mono">docker-compose.yml</span> ที่ track ใน git</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H9</td><td>Edge→Main traffic เป็น HTTP ธรรมดาข้ามอินเทอร์เน็ตสาธารณะ</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H10</td><td>Redis rate limiter fail-open — Redis ล่ม = ไม่มี rate limit เลย รวม login</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="warn"><td class="mono">H11</td><td><span class="mono">SecRuleRemoveByTag "attack-protocol"</span> ปิด CRS 921 ทั้งหมดบน Edge</td><td><span class="status-pill warn">HIGH</span></td></tr>
+          <tr data-status="debt"><td class="mono">M1–M20</td><td>Domain/SSL 404, Traffic Logs ว่างถาวร, MLRules crash-risk, hardcode 25+ จุด, CRS version ขัดกัน 3 แบบ, state ข้าม user ตอน logout, CI ไม่ fail ได้, E2E selector ไม่ match, GeoDNS ใช้ CIDR hardcode, block rate 39.2% จาก threshold ผิด, OAuth ไม่มี CSRF state ฯลฯ</td><td><span class="status-pill debt">MEDIUM ×20</span></td></tr>
+          <tr data-status="ok"><td class="mono">L</td><td>Dead code 14 รายการ, script ทำลายข้อมูล 3 ตัว, <span class="mono">.DS_Store</span>/<span class="mono">dist/</span> commit ใน git, hardcoded macOS path ใน deploy script</td><td><span class="status-pill ok">LOW</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§7</span> Config Drift — ของที่รันจริงกับของใน git ไม่ตรงกัน</h2>
+      <p style="max-width:66ch">เป็นความเสี่ยงเพราะการ deploy/restart ครั้งถัดไปจะเปลี่ยนพฤติกรรมระบบโดยไม่ตั้งใจ</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>รายการ</th><th>ในดิสก์/git</th><th>ที่รันจริง</th><th>ผลถ้า restart/sync</th></tr></thead>
+        <tbody>
+          <tr><td>Caddyfile บน Main</td><td>428B, 1 block, <span class="mono">auto_https off</span></td><td>1,467B, 3 blocks, <span class="mono">disable_redirects</span></td><td><b style="color:var(--signal-risk)">subdomain ที่ถูกป้องกันหยุดทำงาน + TLS พัง</b></td></tr>
+          <tr><td><span class="mono">custom-123.conf</span></td><td><span class="mono">@rx test</span></td><td><span class="mono">@rx testpj</span></td><td><b style="color:var(--signal-risk)">ทุก URL ที่มีคำว่า "test" ถูกบล็อก</b></td></tr>
+          <tr><td>anomaly threshold</td><td>compose บอก 10</td><td>override เป็น 5</td><td>ค่าจริงคือ 5 (block rate 39.2% ของ traffic ทั้งหมด)</td></tr>
+          <tr><td>TLS certificate</td><td>เอกสารเก่าระบุ self-signed</td><td>Let's Encrypt + ZeroSSL จริง</td><td>— (ความจริงดีกว่าเอกสาร)</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§8</span> สิ่งที่ตรวจไม่ได้ในรอบนี้</h2>
+      <ul class="check-list">
+        <li>Lab node ภายในเครื่อง — SSH auth ไม่ผ่านทุก user ที่ลอง ต้องได้ key ก่อน</li>
+        <li>สถานะ Cloudflare Tunnel บน Lab — ตรวจไม่ได้เพราะเข้า Lab ไม่ได้ (เอกสารเก่าระบุว่ามี service เปิดพอร์ต 80 ตรงสู่อินเทอร์เน็ตข้าม WAF — ยังไม่ยืนยันจริงหรือไม่ในตอนนี้)</li>
+        <li>การทดสอบ write ของ Control API — ระบบบล็อก write โดยไม่มี token ยืนยันจาก source code แทน</li>
+        <li>Rate limiting และ Cache HIT ว่าทำงานถูกต้องหรือไม่ — ต้องรอ tunnel กลับมาก่อนทดสอบซ้ำได้</li>
+        <li>Dashboard functional test (login, สร้าง origin, ดู log) — ไม่ได้ทดสอบเพราะจะสร้าง state ใหม่ในระบบ production</li>
+      </ul>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./10-cdn-verdict.html"><span class="dir">← ก่อนหน้า</span><strong>10 · ระบบนี้เป็น CDN จริงไหม</strong></a>
+      <a class="next" href="./index.html"><span class="dir">กลับหน้าแรก →</span><strong>00 · ภาพรวมระบบ</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>

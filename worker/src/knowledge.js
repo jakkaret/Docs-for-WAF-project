@@ -24,7 +24,7 @@ export const SYSTEM_INSTRUCTION = `คุณคือผู้ช่วยตอ
 แพลตฟอร์ม WAF + CDN แบบ multi-tenant พัฒนาเอง มีชั้นป้องกัน (ModSecurity CRS + engine เสริม), ชั้น ML, ชั้น AI Copilot (Gemini), Dashboard multi-tenant, และชุดเว็บแอปช่องโหว่ตั้งใจ (DVWA, Juice Shop, vAmPI, bWAPP) สำหรับพิสูจน์ผล
 Topology 3 เครื่องจริง: Edge Node (45.154.26.91, WAF ชั้นหน้า), Main Node (178.104.53.123, WAF หลัก + Dashboard + control plane + ML + DB), Web Origin (10.198.200.75 ส่วนตัวหลัง VPN มหาวิทยาลัยขอนแก่น, โฮสต์เว็บแอปช่องโหว่)
 สถิติสำคัญ: access_logs สะสม 113,336 แถวใน ClickHouse, ML attack precision 98.39%, มี 4 ช่องโหว่ความปลอดภัยที่ยังเปิดอยู่, มี 7+ ฟีเจอร์ที่เขียนเสร็จแล้วแต่ยังไม่ต่อสายใช้งานจริง
-4 ช่องโหว่หลักที่ยังเปิดอยู่: (1) มีทางลัดข้าม WAF 2 เส้นทางผ่าน Cloudflare Tunnel (2) port แอปทดสอบเปิดตรงจาก host ไม่ผ่าน WAF (3) ClickHouse query ต่อ string จาก user input เสี่ยง SQL Injection (4) FRP tunnel ใช้ static token เดียวใช้ร่วมกันทั้งระบบ
+4 ช่องโหว่หลักที่เคยระบุไว้ตอนแรก: (1) มีทางลัดข้าม WAF 2 เส้นทางผ่าน Cloudflare Tunnel (2) port แอปทดสอบเปิดตรงจาก host ไม่ผ่าน WAF (3) ClickHouse query ต่อ string จาก user input เสี่ยง SQL Injection (4) FRP tunnel ใช้ static token เดียวใช้ร่วมกันทั้งระบบ — ตั้งแต่ audit รอบใหม่ 29 ส.ค. 2026 (หน้า 11) ตัวเลขนี้เพิ่มเป็น 6 CRITICAL + 11 HIGH + 20 MEDIUM หลังตรวจละเอียดกว่าเดิม ให้ใช้ตัวเลขจากหน้า 11 เป็นค่าล่าสุด
 
 [01 · WAF Engine]
 ModSecurity v3 + OWASP CRS v3 เป็นเอนจินหลัก เรียกตัวเองว่า "CloudWAF Control Plane" มี custom rule sync pipeline (poll ทุก 5 วิ, SHA-256 hash, graceful reload) ทำงานจริง มี 6 custom rule active (ระดับ demo/keyword เช่น testattack, admin1) มี BOLA/IDOR guard (bola_guard.py) แยกต่างหาก, payload normalizer กัน evasion, ReDoS-safe regex (RE2), AI-assisted mitigation candidate generator, Blast Radius Simulator ทดสอบ false-positive ก่อน deploy rule
@@ -62,5 +62,11 @@ Polyglot persistence 5 ระบบ: ClickHouse (access log, 113,336 แถว�
 [10 · ระบบนี้เป็น CDN จริงไหม]
 ตอบคำถามอาจารย์ที่ปรึกษาที่มองว่าระบบ "เป็นแค่ WAF วางไว้ตามเซิร์ฟเวอร์" — เทียบกับ 4 องค์ประกอบมาตรฐานของ CDN: (1) Caching ที่ edge — ผ่าน ทำงานจริง มี proxy_cache config จริงบน Edge Node (2) Config/rule sync รวมศูนย์ — ผ่าน ทำงานจริง (3) หลาย PoP กระจายภูมิศาสตร์ — ยังไม่ผ่าน มี edge จริงแค่ 1 จุด (4) Geo-routing ไปหา PoP ใกล้สุด — ยังไม่ผ่าน DNS เป็น A record ตายตัวจุดเดียว ไม่ผ่าน GeoDNS
 สรุป: ผ่าน 2 ใน 4 องค์ประกอบ มีกลไก CDN จริงบางส่วน (caching + centralized sync) ที่ WAF เดี่ยวไม่มี แต่ยังไม่ใช่ CDN สมบูรณ์เพราะ deploy edge ได้แค่จุดเดียว
+
+[11 · System Audit — 29 ส.ค. 2026]
+ตรวจสอบระบบทั้งหมดซ้ำแบบละเอียด (read-only, ไม่แก้ไขอะไร): อ่าน source code จริงทุกชั้น + SSH เข้า Edge/Main + ยิง HTTP test จริงจากภายนอก พบช่องโหว่ระดับ CRITICAL 6 รายการที่ยัง live อยู่จริงตอนนี้: (C1) FRP tunnel token หลุดเข้า JavaScript bundle สาธารณะ + port 7000 เปิดอินเทอร์เน็ต (C2) Control API (port 8070) เปิดสู่อินเทอร์เน็ตทั้งที่ตั้งใจให้เฉพาะ Edge เข้าได้ — endpoint sync/blocklist ไม่มี auth (C3) Caddy บน Main Node รัน config เก่าที่หายจากดิสก์แล้ว restart เมื่อไหร่ subdomain ที่ป้องกันอยู่จะหยุดทำงานทันที (C4) SQL Injection ใน endpoint AI Summary ที่ user สมัครเองได้ก็ยิงได้ (C5) Tunnel (FRP) ตายสนิท client เชื่อมต่อ 0 ราย ทำให้เว็บทดสอบทั้งหมดเข้าไม่ได้ 404 ทุก path — ระบบไม่ได้ป้องกันอะไรอยู่จริงในตอนนี้ (C6) rule "custom-123.conf" มี config drift ระหว่าง git กับที่ deploy จริง sync ครั้งหน้าจะบล็อกทุก URL ที่มีคำว่า "test"
+พบเพิ่มอีก 11 HIGH (cross-tenant data leak 8 endpoints, endpoint ที่ควรมี auth แต่ไม่มี, Redis rate limiter fail-open ฯลฯ) และ 20 MEDIUM
+สิ่งที่ตรวจแล้วพบว่า "ดีกว่าที่เอกสารเก่าเคยระบุ" — แก้ไขความเข้าใจผิดเดิม: TLS certificate เป็น Let's Encrypt/ZeroSSL ของจริง ไม่ใช่ self-signed อย่างที่เคยเขียนไว้ และ Redis/ClickHouse ปิดจากอินเทอร์เน็ตจริง ไม่ได้เปิดเผยอย่างที่เคยกังวล
+ค่า secret/token จริง (เช่น FRP auth token) ไม่เผยแพร่ตรงในหน้าเอกสาร แม้จะระบุตำแหน่งไฟล์ที่รั่วไว้ครบ — เพื่อไม่เพิ่มช่องทางใหม่ระหว่างที่ยังไม่ได้แก้ไข
 
 ===== จบฐานความรู้ =====`;

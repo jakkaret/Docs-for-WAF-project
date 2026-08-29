@@ -27,9 +27,14 @@
       <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
     </a>
     <div>
-      <p class="nav-group-label">สารบัญ</p>
+      <p class="nav-group-label">ภาพรวม</p>
       <ul class="nav-list">
         <li><a href="./index.html" aria-current="page"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">สถาปัตยกรรมระบบ</p>
+      <ul class="nav-list">
         <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
         <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
         <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
@@ -37,8 +42,24 @@
         <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
         <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
         <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">การทดสอบและตรวจสอบ</p>
+      <ul class="nav-list">
         <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บริบทภายนอก</p>
+      <ul class="nav-list">
         <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บทสรุป</p>
+      <ul class="nav-list">
         <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
       </ul>
     </div>
@@ -77,6 +98,19 @@
           <div class="pipeline-node"><div class="ring"></div><div class="name">Web Origin</div><div class="sub">DVWA / Juice Shop</div></div>
         </div>
         <div class="pipeline-log" aria-live="polite"></div>
+        <div class="pipeline-steps">
+          <div>
+            <button type="button" class="step-btn" data-step-prev aria-label="ย้อนขั้นก่อนหน้า">← ก่อนหน้า</button>
+            <button type="button" class="step-btn" data-step-next aria-label="ขั้นถัดไป">ถัดไป →</button>
+            <button type="button" class="step-btn" data-step-play aria-pressed="true">⏸ พัก</button>
+          </div>
+          <div class="step-dots" data-step-dots aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="callout risk reveal" style="max-width:66ch">
+        <span class="cap">อัปเดต 29 ส.ค. 2026 — ตรวจสอบระบบรอบใหม่</span>
+        <p>ตรวจซ้ำทั้งระบบแบบละเอียด พบช่องโหว่ระดับ <b style="color:#fff">Critical เพิ่มอีก 6 รายการ</b> (token รั่วสู่สาธารณะ, control API เปิดสู่อินเทอร์เน็ตโดยไม่ตั้งใจ, SQL Injection) และยืนยันว่า <b style="color:#fff">tunnel ที่เว็บทดสอบพึ่งอยู่ตายสนิท</b> — อ่านฉบับเต็มพร้อมหลักฐานที่ <a href="./11-system-audit.html" style="color:#fff;text-decoration:underline">หน้า 11 · System Audit</a></p>
       </div>
 
       <div class="stat-row reveal">
@@ -263,6 +297,9 @@
 
     <section class="block reveal">
       <h2><span class="idx">§5</span> อ่านต่อทีละชั้นระบบ</h2>
+      <p style="max-width:66ch">จัดเป็น 4 หมวดตามลักษณะเนื้อหา — เริ่มจากสถาปัตยกรรม ไปหลักฐานการทดสอบ แล้วจบที่บทสรุป</p>
+
+      <h3 style="margin-top:1.8rem"><span class="idx">A</span> สถาปัตยกรรมระบบ — 7 ชั้น</h3>
       <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./01-waf-engine.html"><span class="no">01</span><h3>WAF Engine</h3><p>ModSecurity CRS, rule sync pipeline, BOLA guard, payload normalizer, ReDoS-safe regex</p><div class="stats"><span class="status-pill ok">6 custom rule active</span></div></a>
         <a class="card doc-card" href="./02-cdn-geodns.html"><span class="no">02</span><h3>CDN + GeoDNS</h3><p>Multi-region SG/JP/TH, cache/purge, GeoDNS routing — เขียนเสร็จแต่ยังไม่ deploy จริง</p><div class="stats"><span class="status-pill warn">dev-only</span></div></a>
@@ -271,8 +308,21 @@
         <a class="card doc-card" href="./05-tunnel-system.html"><span class="no">05</span><h3>Tunnel System</h3><p>FRP production tunnel + 3 กลไกซ้อนอื่น — 2 เส้นทางข้าม WAF ที่ควรปิด</p><div class="stats"><span class="status-pill risk">4 กลไกซ้อนกัน</span></div></a>
         <a class="card doc-card" href="./06-data-storage.html"><span class="no">06</span><h3>Data Storage</h3><p>ClickHouse + DynamoDB + Redis + SQLite — polyglot persistence ตามลักษณะข้อมูล</p><div class="stats"><span class="status-pill ok">113,336 rows</span></div></a>
         <a class="card doc-card" href="./07-web-origin-testbed.html"><span class="no">07</span><h3>Web Origin Testbed</h3><p>DVWA, Juice Shop, vAmPI, bWAPP หลัง KKU VPN — testbed 4-in-1</p><div class="stats"><span class="status-pill ok">4 containers healthy</span></div></a>
+      </div>
+
+      <h3 style="margin-top:2rem"><span class="idx">B</span> การทดสอบและตรวจสอบ</h3>
+      <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./08-testing-approach.html"><span class="no">08</span><h3>แนวทางการทดสอบระบบ</h3><p>8 หมวดทดสอบ WAF พร้อมคำสั่งจริงที่ใช้และผลจริงที่ได้ ลองรันชุดทดสอบเองได้ในหน้า</p><div class="stats"><span class="status-pill ok">4 หมวดผ่าน</span><span class="status-pill risk">3 หมวดพบปัญหา</span></div></a>
+        <a class="card doc-card" href="./11-system-audit.html"><span class="no">11</span><h3>System Audit — 29 ส.ค. 2026</h3><p>ตรวจซ้ำทั้งระบบละเอียด: infra, backend, frontend, ML, CDN, WAF rules, dead code, CI — ยืนยันด้วยการทดสอบจริงทุกข้อ</p><div class="stats"><span class="status-pill risk">6 critical</span><span class="status-pill warn">11 high</span></div></a>
+      </div>
+
+      <h3 style="margin-top:2rem"><span class="idx">C</span> บริบทภายนอก</h3>
+      <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./09-attack-landscape.html"><span class="no">09</span><h3>ภูมิทัศน์การโจมตี 2025–26</h3><p>รายงานวิจัย 120+ แหล่งอ้างอิง: AI-driven attack, BOLA, AiTM phishing, session hijacking</p><div class="stats"><span class="status-pill debt">งานวิจัยภายนอก</span></div></a>
+      </div>
+
+      <h3 style="margin-top:2rem"><span class="idx">D</span> บทสรุป</h3>
+      <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./10-cdn-verdict.html"><span class="no">10</span><h3>ระบบนี้เป็น CDN จริงไหม</h3><p>ตอบคำถามอาจารย์ที่ปรึกษาตรง ๆ ด้วยหลักฐานจริง เทียบกับ 4 องค์ประกอบของ CDN ทีละข้อ พร้อม simulation</p><div class="stats"><span class="status-pill ok">2/4 ผ่านจริง</span></div></a>
       </div>
     </section>

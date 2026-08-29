@@ -103,12 +103,11 @@
     });
   }
 
-  /* ---- hero pipeline animation (signature element) ---- */
+  /* ---- hero pipeline (signature element) — click-through stepper + optional autoplay ---- */
   var pipeline = document.querySelector("[data-pipeline]");
   if (pipeline) {
     var packet = pipeline.querySelector(".pipeline-packet");
     var fill = pipeline.querySelector(".pipeline-track .fill");
-    var track = pipeline.querySelector(".pipeline-track");
     var nodes = pipeline.querySelectorAll(".pipeline-node");
     var logEl = pipeline.querySelector(".pipeline-log");
     var scenarios = [
@@ -134,51 +133,96 @@
         risk: true
       }
     ];
-    var si = 0;
+    var stops = [0, 33, 66, 100];
+    var si = 0;              // current scenario index
+    var hop = 0;              // current hop within scenario (0..stopAt+1, last = verdict shown)
+    var playing = !reduceMotion;
+    var timer = null;
+    var dur = reduceMotion ? 0 : 900;
 
-    function run(){
-      var s = scenarios[si % scenarios.length];
-      si++;
-      nodes.forEach(function(n){ n.classList.remove("active","blocked"); });
-      if (fill) fill.style.width = "0%";
-      if (packet) { packet.classList.remove("blocked","passed"); packet.style.left = "0%"; }
-      logEl.innerHTML = '<span class="path">' + s.path + "</span>";
+    var stepBtns = pipeline.querySelector(".pipeline-steps");
+    var prevBtn = pipeline.querySelector('[data-step-prev]');
+    var nextBtn = pipeline.querySelector('[data-step-next]');
+    var playBtn = pipeline.querySelector('[data-step-play]');
+    var dotsWrap = pipeline.querySelector('[data-step-dots]');
 
-      var stops = [0, 33, 66, 100];
-      var stopAt = s.blockAt === -1 ? 3 : s.blockAt;
-      var dur = reduceMotion ? 0 : 900;
-      var i = 0;
+    function stopAtFor(s){ return s.blockAt === -1 ? 3 : s.blockAt; }
 
-      function nextHop(){
-        if (i > stopAt) {
-          logEl.innerHTML =
-            '<span class="path">' + s.path + '</span><br>' +
-            '<span class="' + (s.risk ? "verdict-risk" : "verdict-ok") + '">' + s.verdict + "</span>" +
-            ' <span class="path">— ' + s.rule + "</span>";
-          window._pipelineTimer = setTimeout(run, 2600);
-          return;
-        }
-        nodes[Math.min(i,3)].classList.add("active");
-        if (fill) fill.style.width = stops[Math.min(i,3)] + "%";
-        if (packet) {
-          packet.style.transition = dur ? "left " + dur + "ms cubic-bezier(.4,.6,.2,1)" : "none";
-          packet.style.left = stops[Math.min(i,3)] + "%";
-        }
-        if (i === stopAt && s.risk) {
-          setTimeout(function(){
-            nodes[i].classList.remove("active");
-            nodes[i].classList.add("blocked");
-            if (packet) packet.classList.add("blocked");
-          }, dur * 0.9);
-        } else if (i === 3) {
-          if (packet) packet.classList.add("passed");
-        }
-        i++;
-        window._pipelineTimer = setTimeout(nextHop, dur + 500);
+    function renderDots(){
+      if (!dotsWrap) return;
+      var s = scenarios[si];
+      var total = stopAtFor(s) + 2; // hops 0..stopAt, plus verdict step
+      var html = "";
+      for (var d = 0; d < total; d++) {
+        html += '<span class="step-dot' + (d === hop ? " is-active" : d < hop ? " is-done" : "") + '"></span>';
       }
-      nextHop();
+      dotsWrap.innerHTML = html;
     }
-    run();
+
+    function renderHop(){
+      var s = scenarios[si];
+      var stopAt = stopAtFor(s);
+      nodes.forEach(function(n){ n.classList.remove("active","blocked"); });
+      if (packet) packet.classList.remove("blocked","passed");
+
+      if (hop === 0) {
+        logEl.innerHTML = '<span class="path">' + s.path + "</span>";
+      }
+
+      if (hop > stopAt) {
+        // verdict step
+        var idx = Math.min(stopAt, 3);
+        if (s.risk) { nodes[idx].classList.add("blocked"); if (packet) packet.classList.add("blocked"); }
+        else { if (packet) packet.classList.add("passed"); }
+        logEl.innerHTML =
+          '<span class="path">' + s.path + '</span><br>' +
+          '<span class="' + (s.risk ? "verdict-risk" : "verdict-ok") + '">' + s.verdict + "</span>" +
+          ' <span class="path">— ' + s.rule + "</span>";
+      } else {
+        var i = Math.min(hop, 3);
+        nodes[i].classList.add("active");
+        if (fill) { fill.style.transition = dur ? "width " + dur + "ms cubic-bezier(.4,.6,.2,1)" : "none"; fill.style.width = stops[i] + "%"; }
+        if (packet) { packet.style.transition = dur ? "left " + dur + "ms cubic-bezier(.4,.6,.2,1)" : "none"; packet.style.left = stops[i] + "%"; }
+      }
+      renderDots();
+      if (prevBtn) prevBtn.disabled = (si === 0 && hop === 0);
+    }
+
+    function advance(){
+      var s = scenarios[si];
+      var stopAt = stopAtFor(s);
+      if (hop > stopAt) { // was on verdict → next scenario
+        si = (si + 1) % scenarios.length;
+        hop = 0;
+      } else {
+        hop++;
+      }
+      renderHop();
+    }
+    function retreat(){
+      if (hop > 0) { hop--; }
+      else if (si > 0) { si--; hop = stopAtFor(scenarios[si]) + 1; }
+      renderHop();
+    }
+    function setPlaying(on){
+      playing = on;
+      if (playBtn) { playBtn.textContent = playing ? "⏸ พัก" : "▶ เล่นอัตโนมัติ"; playBtn.setAttribute("aria-pressed", playing ? "true" : "false"); }
+      clearTimeout(timer);
+      if (playing) scheduleNext();
+    }
+    function scheduleNext(){
+      clearTimeout(timer);
+      var s = scenarios[si];
+      var onVerdict = hop > stopAtFor(s);
+      timer = setTimeout(function(){ advance(); if (playing) scheduleNext(); }, onVerdict ? 2200 : dur + 500);
+    }
+
+    if (nextBtn) nextBtn.addEventListener("click", function(){ setPlaying(false); advance(); });
+    if (prevBtn) prevBtn.addEventListener("click", function(){ setPlaying(false); retreat(); });
+    if (playBtn) playBtn.addEventListener("click", function(){ setPlaying(!playing); });
+
+    renderHop();
+    setPlaying(playing);
   }
 
   /* ---- geo-routing simulator (CDN-completeness demo) ---- */
@@ -253,7 +297,7 @@
     renderGeo();
   }
 
-  /* ---- test console (replay real recorded results) ---- */
+  /* ---- test console (replay real recorded results) — click-through: request → verdict ---- */
   var consoles = document.querySelectorAll("[data-test-console]");
   consoles.forEach(function (box) {
     var out = box.querySelector("[data-console-out]");
@@ -266,16 +310,23 @@
         var code = btn.getAttribute("data-code");
         var status = btn.getAttribute("data-status");
         var verdict = btn.getAttribute("data-verdict");
-        var delay = reduceMotion ? 0 : 380;
-        out.innerHTML = '<span class="cmd">' + cmd + "</span>" +
-          '<span class="placeholder">กำลังส่ง request…</span>';
-        setTimeout(function () {
+        var date = box.getAttribute("data-recorded") || "27 ส.ค. 2026";
+
+        function showStep1(){
+          out.innerHTML = '<span class="cmd">' + cmd + "</span>" +
+            '<span class="placeholder">ขั้น 1/2 — request ที่ส่งจริง</span>' +
+            '<button type="button" class="btn console-next">ดูผลลัพธ์ →</button>';
+          out.querySelector(".console-next").addEventListener("click", showStep2);
+        }
+        function showStep2(){
           out.innerHTML =
             '<span class="cmd">' + cmd + "</span>" +
+            '<span class="placeholder" style="opacity:.55">ขั้น 2/2 — ผลลัพธ์จริง</span>' +
             '<div class="resp"><span class="code ' + status + '">' + code + "</span>" +
             '<span class="note">' + verdict + "</span></div>" +
-            '<span class="note" style="opacity:.7">ผลจริงที่บันทึกไว้ 27 ส.ค. 2026 — ไม่ใช่การยิงสดจากหน้านี้</span>';
-        }, delay);
+            '<span class="note" style="opacity:.7">ผลจริงที่บันทึกไว้ ' + date + ' — ไม่ใช่การยิงสดจากหน้านี้</span>';
+        }
+        showStep1();
       });
     });
   });
