@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Development Guide — WAF + CDN Platform Docs</title>
+<meta name="description" content="แผนงานถึงวันส่งโปรเจกต์ (~1 เดือนจาก 29 ส.ค. 2026): ลำดับความสำคัญ 5 สัปดาห์ + task card 14 รายการ สร้างจากผล audit จริง พร้อมกฎตัดสินใจเมื่อเวลาไม่พอและคำตอบเตรียมไว้สำหรับอาจารย์">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">ภาพรวม</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">สถาปัตยกรรมระบบ</p>
+      <ul class="nav-list">
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">การทดสอบและตรวจสอบ</p>
+      <ul class="nav-list">
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">แผนพัฒนาต่อ</p>
+      <ul class="nav-list">
+        <li><a href="./12-development-guide.html" aria-current="page"><span class="no">12</span> Development Guide</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บริบทภายนอก</p>
+      <ul class="nav-list">
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บทสรุป</p>
+      <ul class="nav-list">
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>12 · DEVELOPMENT GUIDE — แผนถึงวันส่งโปรเจกต์</p>
+      <h1>จากปัญหาที่ตรวจเจอ สู่แผน 5 สัปดาห์ที่ลงมือได้จริง</h1>
+      <p class="lede">สร้างต่อจากผล <a href="./11-system-audit.html" style="color:var(--signal-ok);text-decoration:underline">System Audit</a> — ไม่ใช่ wishlist แต่เป็นลำดับงานที่ผ่านเกณฑ์ชัดเจน พร้อม task card รายละเอียด acceptance criteria และกฎตัดสินใจล่วงหน้าเผื่อเวลาไม่พอ</p>
+      <div class="meta-line">
+        <span><b>กรอบเวลา</b> ~1 เดือน นับจาก 29 ส.ค. 2026</span>
+        <span><b>ระดับงาน</b> demo-grade เน้น functional correctness ไม่เน้น scale</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> เกณฑ์จัดลำดับงาน</h2>
+      <ol class="flow">
+        <li data-step="1"><strong>ระเบิดเวลาก่อนเสมอ</strong><p>สิ่งที่ไม่แตะแล้ววันหนึ่งจะระเบิดเองตอนใกล้สอบ (เช่น Caddy config ที่หายจากดิสก์) — ต้นทุนต่ำ ความเสี่ยงสูง</p></li>
+        <li data-step="2"><strong>ฐานที่งานอื่นต้องยืนอยู่บน</strong><p>ถ้าไม่มีสิ่งนี้ งานถัดไปทำไปก็ไม่มีความหมาย เช่น tunnel ตาย = ไม่มี traffic จริงให้ ML อธิบาย</p></li>
+        <li data-step="3"><strong>คุณค่าต่อ thesis</strong><p>ตอบ pain point จริงที่มี evidence รองรับ และเป็นสิ่งที่ป้องกันได้ตอน defense</p></li>
+        <li data-step="4"><strong>ต้นทุนต่อผลลัพธ์</strong><p>งานที่ AI ช่วยเร่งได้ (เขียนโค้ด) มาก่อนงานที่เร่งไม่ได้ (รอ DNS propagate, เช่า VPS, รอ feedback อาจารย์)</p></li>
+      </ol>
+      <div class="callout">
+        <span class="cap">สิ่งที่ไม่ใช้เป็นเกณฑ์</span>
+        <p>ความสมบูรณ์แบบเชิง production (secrets management เต็มรูป, mTLS, HA) — เก็บไว้ทำเวอร์ชัน portfolio หลังสอบจบ · การเพิ่ม scale — ไม่ใช่เป้าหมายโปรเจกต์นี้ · ML accuracy tuning — ตั้งใจเลื่อนไปหลังสอบจบ</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> แผน 5 สัปดาห์</h2>
+      <div class="diagram">
+        <pre>สัปดาห์ 0 (2-3 วัน)   STABILIZE   ปลดชนวนระเบิดเวลา + กู้ tunnel
+สัปดาห์ 1              FOUNDATION  safety net (test/CI) + เริ่ม explainability
+สัปดาห์ 2              CORE        explainability ครบ + self-tuning proposal
+สัปดาห์ 3              STRETCH     CDN จริง (ถ้าเหลือเวลา) หรือประกาศตัดอย่างเป็นทางการ
+สัปดาห์ 4              CLOSE-OUT   regression เต็มระบบ + เอกสาร + เตรียม defense</pre>
+        <div class="cap">เปลี่ยนจากแผนเดิมใน Docs/10: "ปิด bypass tunnel" → "กู้ tunnel ให้กลับมาทำงาน" เพราะผลตรวจพบว่า tunnel ไม่ได้ถูก bypass แต่ตายสนิท (FRP client = 0) — คนละปัญหากับที่เข้าใจตอนวางแผนแรก</div>
+      </div>
+      <p style="max-width:64ch"><b style="color:#fff">สัปดาห์ 2 (CORE)</b> คือส่วนที่ต้องรักษาไว้ให้ได้ไม่ว่าเกิดอะไรขึ้น — ถ้าเวลาเหลือน้อยให้ตัดงานอื่นทิ้งแล้วทำส่วนนี้ให้จบ</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> Task Cards — กรองตามสัปดาห์</h2>
+      <p style="max-width:66ch">14 งาน แบ่งเป็น 4 กลุ่มความเร่งด่วน คลิกป้ายเพื่อกรอง</p>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill risk" data-status="risk">สัปดาห์ 0 — STABILIZE (T1–T6)</button>
+        <button class="status-pill warn" data-status="warn">สัปดาห์ 1 — FOUNDATION (T7–T9)</button>
+        <button class="status-pill debt" data-status="debt">สัปดาห์ 2 — CORE (T10–T12)</button>
+        <button class="status-pill ok" data-status="ok">สัปดาห์ 4 — CLOSE-OUT (T13–T14)</button>
+      </div>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>T1 · ปลดชนวน Caddy config</strong><span class="status-pill risk">15 นาที</span></div>
+        <p>เขียนไฟล์บน host ให้ตรงกับที่ container ใช้จริง <b style="color:#fff">ด้วยวิธีที่ไม่เปลี่ยน inode</b> (<span class="mono">cat &gt; file</span> ไม่ใช่ <span class="mono">sed -i</span>) แล้ว commit เข้า git — ตรวจสำเร็จ: <span class="mono">stat</span> inode ตรงกัน + restart แล้วทุก subdomain ยังตอบ 200</p>
+      </div>
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>T2 · แก้ rule drift <span class="mono">custom-123.conf</span></strong><span class="status-pill risk">10 นาที</span></div>
+        <p>แก้ git ให้ตรงกับ prod (<span class="mono">@rx testpj</span> ไม่ใช่ <span class="mono">@rx test</span>) — พิจารณาลบทิ้งไปเลยเพราะเป็นแค่ smoke test rule ID นอกช่วง user range ด้วย</p>
+      </div>
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>T3 · กู้ tunnel ให้กลับมาทำงาน</strong><span class="status-pill risk">2–6 ชม. (ไม่แน่นอน)</span></div>
+        <p>วินิจฉัยตามลำดับ: Lab node ยังมีชีวิตไหม (ต้องหา SSH key) → ถ้าตายจริง ใช้ <span class="mono">dvwa</span> container บน Main เป็น origin ชั่วคราว → ถ้า Lab กลับมาได้ ค่อย start frpc ใหม่ ตรวจสำเร็จต้องผ่าน<b style="color:#fff">พร้อมกัน</b>: เว็บทดสอบตอบ 200 <i>และ</i> payload โจมตียังโดน 403 — งานนี้ AI ช่วยเร่งได้น้อยที่สุด เผื่อเวลาไว้เยอะ</p>
+      </div>
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>T4 · ปิด Control API จากอินเทอร์เน็ต</strong><span class="status-pill risk">30 นาที</span></div>
+        <p>แนะนำแก้ที่ต้นเหตุก่อน: เพิ่ม auth ให้ <span class="mono">GET /api/sync/bundle</span> และ <span class="mono">/api/blocklist</span> (ปัจจุบันไม่เช็ค token เลย) แล้วค่อยผูก port ให้เห็นเฉพาะ Edge เสริม — เป็น cross-cutting change ต้องทดสอบว่า rule sync ยังทำงานหลังแก้</p>
+      </div>
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>T5 · หมุน FRP token + เอาออกจาก frontend</strong><span class="status-pill risk">1 ชม.</span></div>
+        <p>เปลี่ยน token ฝั่ง <span class="mono">frps.toml</span> + ลบ fallback ที่ hardcode ไว้ใน <span class="mono">Tunnels.tsx</span> (ค่า token จริงไม่แสดงในเอกสารนี้ — ดูตำแหน่งบรรทัดที่ <a href="./11-system-audit.html">หน้า 11 §4</a>) วิธีที่ถูกต้องเชิงออกแบบ: implement <span class="mono">GET /tunnels/config-generator</span> (admin-only) ให้คืน token จาก server แทนฝังใน bundle — ตรวจสำเร็จ: grep JS bundle หา token เก่าแล้วต้องได้ 0 ผลลัพธ์</p>
+      </div>
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>T6 · แก้ SQL Injection</strong><span class="status-pill risk">45 นาที</span></div>
+        <p>เปลี่ยน <span class="mono">ai_summary.py</span> จากต่อ string เป็น parameterized query (<span class="mono">clickhouse-connect</span> รองรับอยู่แล้ว) แก้พร้อมกันทุกจุดที่ escape แค่ backslash — เพิ่ม validation ที่ <span class="mono">origin.label</span> ด้วยเพราะไหลเข้า SQL ผ่าน tenant filter</p>
+      </div>
+
+      <div class="card finding" data-status="warn">
+        <div class="finding-head"><strong>T7 · สร้าง <span class="mono">tests/</span> จริง + แก้ CI</strong><span class="status-pill warn">สัปดาห์ 1</span></div>
+        <p>ทดสอบ 5 ไฟล์เดิมอยู่หลัง <span class="mono">if __name__=="__main__"</span> pytest เก็บไม่ได้เลย + CI ใช้ <span class="mono">|| echo</span> กลืน exit code ทุกชนิด — ต้องลบทิ้ง และทำให้ CI รันบน branch <span class="mono">backend</span> ด้วย (ตอนนี้รันแค่ main/develop) ชุดแรกที่ควรมี: auth flow, RBAC, tenant isolation, SQLi guard (ยืนยัน T6), rules CRUD</p>
+      </div>
+      <div class="card finding" data-status="warn">
+        <div class="finding-head"><strong>T8 · Smoke test suite</strong><span class="status-pill warn">สัปดาห์ 1</span></div>
+        <p>script ยิง ~20 endpoint หลักก่อน/หลังการแก้ที่กระทบหลายส่วน (ตามข้อตกลง cross-cutting change ต้อง regression) ไม่ต้องเป็น k6 เต็มรูป bash/python พอสำหรับ demo scope</p>
+      </div>
+      <div class="card finding" data-status="warn">
+        <div class="finding-head"><strong>T9 · Feature attribution pipeline</strong><span class="status-pill warn">แกนของ thesis</span></div>
+        <p>ใช้ <span class="mono">shap.TreeExplainer</span> กับโมเดล Random Forest ที่ train ไว้แล้ว (ไม่ต้อง retrain) ขยาย <span class="mono">/predict</span> ให้คืนน้ำหนักรายฟีเจอร์ — ข้อจำกัด: nginx log ไม่บันทึก body ดังนั้นอธิบายจาก log ย้อนหลังได้แค่ URI+method ต่างจากตอน train</p>
+      </div>
+
+      <div class="card finding" data-status="debt">
+        <div class="finding-head"><strong>T10 · แปล attribution เป็นภาษาไทย</strong><span class="status-pill debt">สัปดาห์ 2</span></div>
+        <p>ขยาย <span class="mono">gemini_service.explain_attack()</span> ที่มี cache + fallback + model failover 4 ชั้นอยู่แล้ว — ระวัง: Gemini output ห้ามไหลเข้า SQL/shell ตรงๆ (บทเรียนจาก T6)</p>
+      </div>
+      <div class="card finding" data-status="debt">
+        <div class="finding-head"><strong>T11 · แสดงผลในหน้าเว็บ</strong><span class="status-pill debt">สัปดาห์ 2</span></div>
+        <p>แนะนำ mount <span class="mono">origins_domains_router</span> (แก้ 1 บรรทัดใน <span class="mono">main.py</span>) เพราะแก้หน้า Traffic Logs ที่ว่างถาวรไปในตัว — เป็น cross-cutting change ต้องรัน smoke test ก่อน-หลัง พ่วงแก้ optional-chaining ที่ <span class="mono">MLRules.tsx</span>/<span class="mono">MLAnalyst.tsx</span> ที่ทำให้แอป crash ได้</p>
+      </div>
+      <div class="card finding" data-status="debt">
+        <div class="finding-head"><strong>T12 · Self-tuning threshold proposal</strong><span class="status-pill debt">สัปดาห์ 2</span></div>
+        <p>ส่วนใหญ่ reuse ได้หมด (settings service, ml_rule_service, approve/reject UI มีอยู่แล้ว) สิ่งที่สร้างใหม่จริงคือ logic วิเคราะห์ block rate แล้วเสนอ threshold พร้อมเหตุผลตรวจสอบได้ — ต้องมีคนอนุมัติเสมอ เพราะปรับเองอัตโนมัติเสี่ยง data poisoning (เรียนรู้ผิดว่า attack traffic ถี่ๆ คือปกติ) เป็นการตัดสินใจเชิงออกแบบ ไม่ใช่ข้อจำกัดทางเทคนิค</p>
+      </div>
+
+      <div class="card finding" data-status="ok">
+        <div class="finding-head"><strong>T13 · แก้ตัวเลข ML ให้ตรงความจริง</strong><span class="status-pill ok">สัปดาห์ 4</span></div>
+        <p>แก้ทุกจุดที่เขียน 93.40%/0.9895 ให้เป็น 80.47%/0.8847 ที่วัดได้จริง — <span class="mono">ml/presentation_eval.html</span> ใช้ตัวเลขถูกอยู่แล้ว ใช้เป็นต้นแบบ ตัวเลขต่ำแต่ซื่อสัตย์ดีกว่าตัวเลขสวยที่ตรวจสอบแล้วไม่ตรง</p>
+      </div>
+      <div class="card finding" data-status="ok">
+        <div class="finding-head"><strong>T14 · เอกสาร privacy / PDPA</strong><span class="status-pill ok">สัปดาห์ 4</span></div>
+        <p>ยอมรับตรงๆ ว่ายังไม่ mask ก่อน ingest แม้จะมี <span class="mono">pii_masker.py</span> เขียนรอไว้แล้ว ระบุเป็น future work พร้อมชี้ว่า data residency ทำได้จริง (host ในไทยทั้งหมด ยกเว้น Gemini API call ซึ่งต้องระบุตรงๆ ว่าเป็นข้อยกเว้น)</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> ทางเลือกสัปดาห์ 3 — CDN จริง หรือตัดอย่างเป็นทางการ</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>ทางเลือก A — ทำ CDN ให้จริง</h4>
+          <p>ถ้าสัปดาห์ 0–2 เสร็จเร็วกว่าแผน: เช่า VPS ต่างประเทศ 1 เครื่อง deploy edge node ที่ 2 — ไม่ต้องครบ 3 region แค่ 2 node ก็พิสูจน์ว่าสถาปัตยกรรมทำงานจริง ⚠️ ต้องรู้ก่อน: GeoDNS ปัจจุบันแมป region ด้วย CIDR hardcode ไม่ใช่ GeoIP — ถ้าจะให้ geo-routing ทำงานจริงต้องเปลี่ยนก่อน</p>
+        </div>
+        <div class="card">
+          <h4>ทางเลือก B — ตัดอย่างเป็นทางการ</h4>
+          <p>ถ้าเวลาไม่พอ: เขียนเอกสาร 1 หน้าระบุตรงๆ ว่าผ่าน 2 จาก 4 องค์ประกอบ CDN (caching ✅, centralized sync ✅, multi-PoP ❌, geo-routing ❌) — <b style="color:#fff">นี่ไม่ใช่ความล้มเหลว</b> เป็นการตัดสินใจที่มีเหตุผลรองรับ</p>
+        </div>
+      </div>
+      <div class="callout risk">
+        <span class="cap">เกณฑ์ตัดสิน</span>
+        <p>ถึงวันจันทร์สัปดาห์ 3 แล้วงานสัปดาห์ 2 ยังไม่ครบ → เลือก B ทันที อย่ายื้อ</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> กฎตัดสินใจเมื่อเวลาไม่พอ</h2>
+      <p style="max-width:64ch">เขียนไว้ล่วงหน้าเพื่อไม่ต้องตัดสินใจตอนกดดัน</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>สถานการณ์</th><th>ทำอะไร</th></tr></thead>
+        <tbody>
+          <tr><td>สัปดาห์ 0 ยืดเกิน 4 วัน (มักเป็นเพราะ T3)</td><td>ใช้ทางสำรอง: origin เป็น <span class="mono">dvwa</span> บน Main แล้วเดินหน้าต่อ อย่าติดอยู่กับการกู้ Lab</td></tr>
+          <tr><td>จันทร์สัปดาห์ 3 แล้วสัปดาห์ 2 ยังไม่ครบ</td><td>ตัด CDN ทันที (เลือก B) ไม่ต้องคิด</td></tr>
+          <tr><td>สัปดาห์ 3 แล้ว T12 ยังไม่เสร็จ</td><td>ส่งแค่ T9+T10+T11 (explainability ล้วน) ก็เป็น thesis ที่สมบูรณ์ได้ — self-tuning เป็นส่วนขยาย</td></tr>
+          <tr><td>เจอบั๊กใหม่ระหว่างทาง</td><td>ถ้าไม่บล็อกงานที่ทำอยู่ → จดลง Docs/11 ไม่ต้องแก้ทันที</td></tr>
+          <tr><td>อยากแก้ ML accuracy</td><td><b style="color:var(--signal-risk)">อย่า</b> — เลื่อนหลังสอบจบ ยกเว้น wire entropy feature ที่มีอยู่แล้ว (~1 ชม.) ถ้าเหลือเวลาจริงๆ</td></tr>
+          <tr><td>อยากทำ production hardening (secrets, mTLS, auth บน DB)</td><td><b style="color:var(--signal-risk)">อย่า</b> — เป็น scope portfolio หลังสอบจบ ยกเว้นส่วนที่อยู่ใน T4/T5/T6 ซึ่งเป็นระดับ critical</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> คำตอบเตรียมไว้สำหรับอาจารย์</h2>
+      <div class="grid cols-2">
+        <div class="card"><h4>"นี่มันแค่ WAF วางบน server ไม่ใช่ CDN"</h4><p>ผ่าน 2 ใน 4 องค์ประกอบจริงและพิสูจน์ได้ (caching + centralized sync) อีก 2 ข้อออกแบบ/ทดสอบครบแล้วแต่ยังไม่ deploy เพราะจัดลำดับความสำคัญไปที่ฟีเจอร์หลัก — ดูรายละเอียดที่ <a href="./10-cdn-verdict.html">หน้า 10</a></p></div>
+        <div class="card"><h4>"ML แม่นแค่ไหน"</h4><p>80.47% accuracy, attack precision 98.39% แต่ recall 62.26% — ตั้งใจให้ precision สูงเพื่อลด false positive และไม่ได้บล็อกเดี่ยว ทำงานคู่กับ Rule Engine</p></div>
+        <div class="card"><h4>"ML บล็อกเองได้ไหม"</h4><p>ไม่ได้ — เป็นการตัดสินใจเชิงออกแบบ ไม่ใช่ข้อจำกัด เหตุผลคือความเสี่ยง data poisoning และ recall ที่ยังไม่สูงพอ ทุกกฎที่ ML เสนอต้องผ่านคนอนุมัติ</p></div>
+        <div class="card"><h4>"AI ในระบบนี้ทำอะไรบ้าง"</h4><p>3 ชั้นแยกกันชัดเจน: Rule Engine (deterministic, บล็อกจริง) → ML (ให้คะแนน+เสนอกฎ ไม่บล็อก) → LLM (แปลผลเป็นภาษาไทย ไม่ตัดสินใจ)</p></div>
+        <div class="card"><h4>"ใช้กับเว็บจริงได้เลยไหม"</h4><p>ยังไม่ได้ และรู้ว่าเพราะอะไร — รายการตรวจสอบครบใน <a href="./11-system-audit.html">หน้า 11</a> (secrets management, mTLS, HA, retention policy) ระบุเป็น future work</p></div>
+        <div class="card"><h4>"ข้อมูลผู้ใช้ปลอดภัยไหม / PDPA"</h4><p>ยอมรับตรงๆ ว่ายังไม่มี masking/retention ตอน ingest ระบุเป็น future work พร้อมชี้ว่า data residency ทำได้จริงแล้ว (ยกเว้น Gemini API call)</p></div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§7</span> สิ่งที่ตั้งใจไม่ทำในแผนนี้</h2>
+      <ul class="check-list">
+        <li>ML retraining / เพิ่ม accuracy — ตกลงเลื่อนแล้ว ไม่ใช่ novelty ของโปรเจกต์นี้</li>
+        <li>Secrets management (vault), mTLS, HA — production hardening ไม่ใช่ scope demo → โปรเจกต์ portfolio หลังสอบจบ</li>
+        <li>Kubernetes, Terraform — เกินความจำเป็นสำหรับ 3 VPS</li>
+        <li>MISP/OpenCTI, Wazuh, ELK เต็มระบบ — ซ้ำซ้อนกับของที่มีอยู่แล้ว</li>
+        <li>แก้ dead code 14 รายการ — ไม่กระทบผู้ใช้ จดไว้เฉยๆ</li>
+        <li>BOLA Guard ให้ enforce จริง — เขียนดีแต่ไม่ได้ wire เป็นงานใหญ่ พูดถึงใน thesis ได้ว่าออกแบบไว้แล้ว</li>
+      </ul>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./11-system-audit.html"><span class="dir">← ก่อนหน้า</span><strong>11 · System Audit — 29 ส.ค. 2026</strong></a>
+      <a class="next" href="./index.html"><span class="dir">กลับหน้าแรก →</span><strong>00 · ภาพรวมระบบ</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>
