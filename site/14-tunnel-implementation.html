@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Private Tunnel Implementation — WAF + CDN Platform Docs</title>
+<meta name="description" content="ทำไม FRP tunnel ตาย, ทำไม custom tunnel เดิมใช้ไม่ได้ (7 เหตุผล), และสถาปัตยกรรม hostname-based tunnel ที่เขียนใหม่ทั้งหมด (Python stdlib ล้วน, TLS + per-origin credential) พร้อมผลทดสอบ 31/31">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">ภาพรวม</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">สถาปัตยกรรมระบบ</p>
+      <ul class="nav-list">
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">การทดสอบและตรวจสอบ</p>
+      <ul class="nav-list">
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">แผนพัฒนาต่อ</p>
+      <ul class="nav-list">
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">ผลการแก้ไข</p>
+      <ul class="nav-list">
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html" aria-current="page"><span class="no">14</span> Private Tunnel</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บริบทภายนอก</p>
+      <ul class="nav-list">
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บทสรุป</p>
+      <ul class="nav-list">
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>14 · PRIVATE TUNNEL — 30 ส.ค. 2026</p>
+      <h1>FRP กลับมาแล้ว + เขียน private tunnel ของตัวเองใหม่ทั้งหมด</h1>
+      <p class="lede">ต่อจากหน้า 13 — บทเรียนสำคัญ: audit เดิมสรุป root cause ของ tunnel ที่ตายผิด เพราะตรวจจากอาการภายนอกด้านเดียว พอเข้า Lab node ได้จริงถึงเจอสาเหตุแท้จริง แล้วใช้โอกาสนี้เขียน tunnel ใหม่ที่แก้ปัญหาเชิงสถาปัตยกรรม 7 ข้อของโค้ดเดิมไปด้วย</p>
+      <div class="meta-line">
+        <span><b>ผลรวม</b> tunnel test 31/31 ผ่าน + smoke test เดิม 22 invariants/6 gates ไม่มี regression</span>
+        <span><b>โค้ดใหม่</b> 795 บรรทัด Python stdlib ล้วน ไม่ใช้ tunnel library ใดๆ</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> สรุปสถานะ: ก่อน vs หลัง</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th></th><th>ก่อน</th><th>หลัง</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">FRP tunnel</b></td><td>client 0 ราย, ทุก origin 404</td><td><span class="status-pill ok">✅</span> ทำงาน — dvwa + juice ผ่าน tunnel จริง</td></tr>
+          <tr><td><b style="color:#fff">Custom tunnel</b></td><td>โค้ดมีแต่ deploy ไม่ได้ (7 เหตุผล — ดู §3)</td><td><span class="status-pill ok">✅</span> ทำงานจริง — vampi ผ่าน tunnel ที่เขียนเอง</td></tr>
+          <tr><td><b style="color:#fff">Lab node</b></td><td>SSH เข้าไม่ได้, Main เข้าไม่ถึง</td><td><span class="status-pill ok">✅</span> เข้าถึงได้ ตรวจสอบครบ</td></tr>
+          <tr><td><b style="color:#fff">สถานะที่ dashboard แสดง</b></td><td>hardcode "🟢 ONLINE"</td><td><span class="status-pill warn">มี <span class="mono">/api/tunnel/status</span> จริงแล้ว</span> — frontend ยังไม่รวมเข้า</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> ค้นพบสำคัญ: ทำไม FRP ถึงตายจริงๆ</h2>
+      <div class="callout risk">
+        <span class="cap">บทเรียนเรื่อง root cause</span>
+        <p>หน้า 11 สรุปว่า tunnel ตายเพราะ <b style="color:#fff">network path ถูกบล็อก</b> — <b style="color:var(--signal-risk)">ไม่จริง</b> log บน Lab node บอกคนละเรื่อง: <span class="mono">token in login doesn't match token from configuration</span> — agent ต่อถึง Main:7000 ได้ตลอด สิ่งที่ล้มคือ authentication เพราะ token คนละตัว (หมุนไปตอน T5) audit ตอนนั้นเข้า Lab ไม่ได้จึงสรุปจากอาการภายนอกด้านเดียว — <b style="color:#fff">อย่าสรุป root cause จากหลักฐานฝั่งเดียว</b></p>
+      </div>
+      <p style="max-width:64ch">แก้โดยอัปเดต token บน agent ให้ตรงกับที่หมุนใหม่ตอน T5 แล้ว restart — ผลทันที: agent login สำเร็จ, proxy ทั้ง 2 ตัว (dvwa, juice) start success, <span class="mono">clients=1</span> จากนั้นย้อน T3 กลับไปใช้ tunnel จริงตามสถาปัตยกรรมที่ออกแบบไว้ (ยืนยันว่ามาจาก Lab จริงเพราะหน้า title ต่างกันจากตอนใช้ทางสำรอง)</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> ทำไม custom tunnel เดิมใช้ไม่ได้ — 7 เหตุผล</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>ปัญหา</th><th>หลักฐาน</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>token ไม่ใช่ความลับ — เป็น origin UUID</td><td>โผล่ใน <span class="mono">GET /api/origins</span>, log, error message</td></tr>
+          <tr><td class="mono">2</td><td><span class="mono">tunnel_server_host: "localhost"</span> hardcode</td><td>agent ที่เครื่องลูกค้าจะต่อไป localhost ของตัวเอง ใช้ข้ามเครื่องไม่ได้</td></tr>
+          <tr><td class="mono">3</td><td>ไม่มี TLS จริง</td><td>TCP ดิบ token เป็น plaintext — แต่ log พิมพ์ว่า "Secure mTLS-like Outbound Tunnel established!"</td></tr>
+          <tr><td class="mono">4</td><td>port ชนกัน</td><td><span class="mono">remote_bind_port = 10000 + origin.port</span> — 2 origin ที่ port 80 ได้ 10080 ทั้งคู่</td></tr>
+          <tr><td class="mono">5</td><td>ไม่มีอะไร route ไปหา</td><td>ไม่มี nginx config ชี้ไป 1xxxx เลย — traffic ไปไม่ถึง <b style="color:#fff">และไม่ผ่าน ModSecurity</b></td></tr>
+          <tr><td class="mono">6</td><td>ไม่มี reconnect</td><td>สายหลุด → <span class="mono">exit</span></td></tr>
+          <tr><td class="mono">7</td><td>โค้ดเปราะ</td><td><span class="mono">sys.modules['uuid'].uuid4()</span> ถูกเรียกก่อน <span class="mono">import uuid</span> จะรัน</td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:64ch"><span class="mono">test_tunnel_flow.py</span> มี <b style="color:var(--signal-risk)">0 assert</b> — "ทดสอบผ่าน" เดิมคือแค่รันแล้วไม่ error</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> สถาปัตยกรรมใหม่</h2>
+      <h3 style="margin-top:1rem">4.1 เปลี่ยนจาก port-based เป็น hostname-based</h3>
+      <p style="max-width:64ch"><b style="color:#fff">เดิม</b>: 1 origin = 1 port บน WAF → ชนกัน + nginx route ไม่ได้ · <b style="color:#fff">ใหม่</b>: ทุก origin ใช้ port เดียว (8060) แล้ว tunnel server อ่าน <span class="mono">Host:</span> header เพื่อเลือก agent — วิธีเดียวกับที่ FRP vhost ทำ ทำให้ nginx route ตาม <span class="mono">server_name</span> ได้ปกติ <b style="color:var(--signal-ok)">และ traffic ผ่าน ModSecurity ก่อนเสมอ</b></p>
+
+      <div class="diagram">
+        <pre>ผู้ใช้ทั่วไป
+   │ HTTPS
+   ↓
+Caddy — TLS termination (Let's Encrypt / ZeroSSL)
+   ↓
+waf-nginx — ModSecurity v3 + OWASP CRS 3.3.10 (936 rules) + custom rules
+   │          ← จุดที่ SQLi/XSS/traversal/RCE โดนบล็อก 403
+   ↓ เลือกตาม server_name
+   ├── frp_tunnel_router (172.18.0.1:8085) ── FRP ──┐
+   └── cloudwaf_tunnel  (172.18.0.1:8060) ── ของเรา ─┤
+                                                     ↓ TLS tunnel ที่ agent เปิดค้าง
+                                              agent บน Lab (หลัง NAT ของ KKU)
+                                                     ↓
+                                              เว็บจริง (127.0.0.1:port)</pre>
+        <div class="cap">agent เป็นฝ่ายต่อออก → เครื่อง origin ไม่ต้องเปิด inbound port, ไม่ต้องมี public IP, ไม่ต้องแก้ NAT</div>
+      </div>
+
+      <h3>4.2 Credential model — จุดต่างหลักจาก FRP</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th></th><th>FRP</th><th>ของเรา</th></tr></thead>
+        <tbody>
+          <tr><td>รูปแบบ</td><td>shared token ตัวเดียวทั้งระบบ</td><td><span class="mono">cwt_&lt;origin_id&gt;_&lt;secret&gt;</span> แยกต่อ origin</td></tr>
+          <tr><td>เก็บยังไง</td><td>plaintext ในไฟล์ config</td><td>เฉพาะ SHA-256 ของ secret</td></tr>
+          <tr><td>เทียบยังไง</td><td>string compare</td><td><span class="mono">hmac.compare_digest</span></td></tr>
+          <tr><td>ขอบเขต</td><td>ทุก domain</td><td>ผูกกับ domain ที่อนุญาตเท่านั้น</td></tr>
+          <tr><td>ถ้าหลุด</td><td><b style="color:var(--signal-risk)">กระทบทุก origin</b></td><td><b style="color:var(--signal-ok)">กระทบ origin เดียว</b></td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>4.3 ไฟล์ที่สร้าง</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ไฟล์</th><th>บรรทัด</th><th>หน้าที่</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">tunnel/protocol.py</td><td>63</td><td>framing 21 bytes + 7 message type + bound ขนาด payload</td></tr>
+          <tr><td class="mono">tunnel/server.py</td><td>447</td><td>agent listener (TLS 8050) + vhost listener (8060) + registry + state file</td></tr>
+          <tr><td class="mono">tunnel/agent.py</td><td>285</td><td>ต่อออก, pin certificate, reconnect backoff, forward ไป local target</td></tr>
+          <tr><td class="mono">dashboard/backend/api/tunnel.py</td><td>—</td><td>ออก token / verify agent / รายงานสถานะจริง</td></tr>
+          <tr><td class="mono">tunnel/test_tunnel.sh</td><td>—</td><td>ชุดทดสอบ 31 เคส</td></tr>
+        </tbody>
+      </table></div>
+      <p>Deploy: <span class="mono">cloudwaf-tunnel.service</span> บน Main, <span class="mono">cloudwaf-agent.service</span> บน Lab — ทั้งคู่ <span class="mono">Restart=always</span></p>
+
+      <h3>4.4 แก้ปัญหาทั้ง 7 ข้อจาก §3 ยังไง</h3>
+      <ul class="check-list">
+        <li>token = origin UUID → credential แยกต่อ origin, เก็บเฉพาะ hash, ผูกกับ domain</li>
+        <li>host hardcode → อ่านจาก config/env</li>
+        <li>ไม่มี TLS → TLS 1.2+ พร้อม <b style="color:#fff">certificate pinning</b> — agent ปฏิเสธไม่ยอมสตาร์ทถ้าไม่มีทั้ง pin และ CA verification</li>
+        <li>port ชนกัน → routing ด้วย hostname ใช้ port เดียว ไม่มีทางชน</li>
+        <li>ไม่มีอะไร route ไปหา → nginx <span class="mono">server_name</span> → upstream ผ่าน ModSecurity ก่อนเสมอ</li>
+        <li>ไม่ reconnect → loop + exponential backoff 2→60 วินาที, keepalive PING/PONG ทุก 30 วินาที</li>
+        <li>โค้ดเปราะ → import ปกติ, ไม่ log token, bound payload ก่อน allocate, lock ป้องกัน frame interleave</li>
+      </ul>
+      <p style="max-width:64ch"><b style="color:#fff">เพิ่มเติมที่ไม่ได้อยู่ใน 7 ข้อเดิม:</b> verifier ล่ม = ปฏิเสธ ไม่ใช่ปล่อยผ่าน (fail closed) · ทุก error ของ verify คืน 401 เหมือนกันหมด (ป้องกัน probe หา origin ที่มีอยู่) · idle timeout 90 วินาที · vhost listener bind เฉพาะ docker bridge ไม่เปิดสู่อินเทอร์เน็ต</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> ผลทดสอบครบทุกเคส — กรองตามกลุ่ม</h2>
+      <p style="max-width:66ch">รันด้วย <span class="mono">tunnel/test_tunnel.sh</span> — 31/31 ผ่าน แบ่งเป็น 6 กลุ่ม คลิกกรองดูได้</p>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">Proxy ทำงาน (4)</button>
+        <button class="status-pill risk" data-status="risk">WAF บังคับใช้ (5)</button>
+        <button class="status-pill warn" data-status="warn">Credential (7)</button>
+        <button class="status-pill debt" data-status="debt">Transport / ทนทาน (9)</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>กลุ่ม</th><th>เคส</th><th>ผล</th></tr></thead>
+        <tbody>
+          <tr data-status="ok"><td>1 · เข้าถึง origin</td><td>HTTPS สาธารณะเข้าถึง origin หลัง NAT, เนื้อหาตรงจากแอปจริง, API path proxy ถูก, 404 ของ origin เองส่งผ่านมา</td><td><span class="status-pill ok">4/4</span></td></tr>
+          <tr data-status="risk"><td>2 · traffic ผ่าน WAF ก่อนเข้า tunnel</td><td>SQLi/XSS/Path traversal/Command injection → 403 ก่อนถึง tunnel, custom rule ทำงานบน host นี้ด้วย</td><td><span class="status-pill ok">5/5</span></td></tr>
+          <tr data-status="risk"><td>3 · origin ไม่เปิดสู่ภายนอก</td><td>ยิงตรง 10.198.200.75:5000 จากอินเทอร์เน็ตจริง (ไม่ใช่จาก VPN) → ไม่มี route</td><td><span class="status-pill ok">1/1</span></td></tr>
+          <tr data-status="warn"><td>4 · credential</td><td>token ว่าง/รูปแบบผิด/origin ไม่มีอยู่/secret ผิด/ออก token ต้อง authenticate → 401 ทั้งหมด, token ถูก → 200, token ถูกแต่ domain ไม่ได้รับสิทธิ์ → 401</td><td><span class="status-pill ok">7/7</span></td></tr>
+          <tr data-status="debt"><td>5 · transport</td><td>agent listener พูด TLS, protocol = TLSv1.3, plaintext ยิงเข้า TLS port ได้แค่ alert</td><td><span class="status-pill ok">3/3</span></td></tr>
+          <tr data-status="debt"><td>6 · vhost ไม่เปิดสู่อินเทอร์เน็ต</td><td>178.104.53.123:8060 จากภายนอก → 000</td><td><span class="status-pill ok">1/1</span></td></tr>
+          <tr data-status="debt"><td>7 · สถานะตรงความจริง</td><td>agent count=1, domain ตรงกัน, ตัวนับ request เดินจริง, status endpoint ต้อง authenticate</td><td><span class="status-pill ok">4/4</span></td></tr>
+          <tr data-status="debt"><td>8 · ความทนทาน</td><td>restart agent / restart tunnel server → ทั้งคู่กลับมาเองได้</td><td><span class="status-pill ok">2/2</span></td></tr>
+          <tr data-status="debt"><td>9 · hostname ที่ไม่มี agent</td><td>คืน 502 ไม่ค้าง</td><td><span class="status-pill ok">1/1</span></td></tr>
+          <tr data-status="debt"><td>10 · ไม่กระทบของเดิม</td><td>host ที่ใช้ FRP ยังทำงานและยังถูกกรอง, dashboard ยังทำงาน</td><td><span class="status-pill ok">3/3</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout">
+        <span class="cap">บั๊กที่เจอในชุดทดสอบเอง (ไม่ใช่ระบบผิด) — รอบแรกได้ 29/31</span>
+        <p>"origin เปิดสู่ภายนอก" got=200 เพราะทดสอบจากเครื่องที่ต่อ VPN มหาวิทยาลัยอยู่ (เห็น private IP ได้) → ย้ายไปทดสอบจาก Main · "plaintext ได้ response" เพราะ <span class="mono">timeout</span> ไม่มีบน macOS → เปลี่ยนเป็น <span class="mono">nc -w</span> · "valid token" ขึ้น 422 เพราะ quoting ซ้อนใน <span class="mono">$(...)</span> ทำ JSON เพี้ยน → สร้าง body ด้วย <span class="mono">printf</span> ก่อน</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> สถานะระบบปัจจุบัน</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Domain</th><th>เส้นทาง</th><th>Origin</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">waf-it-kku.online</td><td>Caddy → backend:8000</td><td>Dashboard บน Main</td></tr>
+          <tr><td class="mono">dvwa.waf-it-kku.online</td><td>Edge → Main → <b style="color:#fff">FRP</b> → Lab</td><td>DVWA (Lab:8080)</td></tr>
+          <tr><td class="mono">juice.waf-it-kku.online</td><td>Caddy → Main → <b style="color:#fff">FRP</b> → Lab</td><td>Juice Shop (Lab:3000)</td></tr>
+          <tr><td class="mono">vampi.waf-it-kku.online</td><td>Caddy → Main → <b style="color:var(--signal-ok)">Custom tunnel</b> → Lab</td><td>VAmPI (Lab:5000)</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§7</span> ยังเหลือ</h2>
+      <div class="callout risk">
+        <span class="cap">พบใหม่จากการเข้า Lab ได้ — ยังไม่ปิด</span>
+        <p>Lab มี <b style="color:#fff">Cloudflare tunnel 2 ตัวรันอยู่</b> — <span class="mono">dvwa-tunnel.service</span> ("DVWA Cloudflare Public Tunnel & CDN Edge") และ <span class="mono">waf-tunnel.service</span> ("WAF Lab Multi-Origin Public Tunnels") นี่คือ <b style="color:var(--signal-risk)">WAF bypass ที่หน้า 11 เตือนไว้ ยืนยันแล้วว่ามีจริง</b> — เปิดเว็บทดสอบสู่อินเทอร์เน็ตตรงๆ โดยไม่ผ่าน ModSecurity ยังไม่ได้ปิดในรอบนี้เพราะยังไม่ได้ตรวจว่ามีอะไรพึ่งพาอยู่ — เป็น priority สูงสุดของโปรเจกต์ที่ยังค้างอยู่</p>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>เฉพาะ tunnel</h4>
+          <p>หน้า Tunnels frontend ยังอ่านแค่ <span class="mono">/api/tunnels/status</span> (FRP) ควรรวมกับ <span class="mono">/api/tunnel/status</span> ตัวใหม่และเลิก hardcode "ONLINE" · ยังไม่มี UI ออก token (ต้องเรียก API เอง) · cert เป็น self-signed อายุ 825 วัน (ใช้ pinning ชดเชย แต่ตอนหมุน cert ต้องอัปเดต fingerprint ทุก agent) · ยังไม่รองรับ WebSocket upgrade (Juice Shop ใช้ <span class="mono">/socket.io/</span>)</p>
+        </div>
+        <div class="card">
+          <h4>ค้างจากหน้า 13</h4>
+          <p>เพิ่ม auth ให้ control-api endpoint ที่ยังไม่มี token check — ต้อง rebuild image · เปลี่ยน <span class="mono">FRP_ADMIN_PASS</span> จาก default · จุดที่ escape แค่ backslash ใน ClickHouse query อีก 4 ไฟล์</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§8</span> คุณค่าเชิง thesis</h2>
+      <div class="callout">
+        <span class="cap">ประโยคที่ป้องกันได้ตอน defense</span>
+        <p>"ระบบมี private tunnel ที่พัฒนาเอง ให้เว็บที่อยู่หลัง NAT เข้าระบบป้องกันได้โดยไม่ต้องเปิดพอร์ต ใช้ credential แยกต่อ origin เข้ารหัสด้วย TLS พร้อม certificate pinning และ traffic ยังผ่าน WAF ครบทุก request — พิสูจน์ด้วยชุดทดสอบ 31 เคสที่รันกับระบบจริง"</p>
+      </div>
+      <p style="max-width:64ch"><b style="color:#fff">ข้อจำกัดที่ต้องพูดตรงๆ:</b> ยังไม่รองรับ WebSocket, cert เป็น self-signed (ใช้ pinning ทดแทน), ทดสอบกับ agent 1 ตัว ยังไม่ได้ทดสอบ scale หลาย agent พร้อมกัน</p>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./13-week0-stabilization.html"><span class="dir">← ก่อนหน้า</span><strong>13 · Week 0 Stabilization</strong></a>
+      <a class="next" href="./index.html"><span class="dir">กลับหน้าแรก →</span><strong>00 · ภาพรวมระบบ</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>

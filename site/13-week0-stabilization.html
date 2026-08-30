@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 0 Stabilization — WAF + CDN Platform Docs</title>
+<meta name="description" content="บันทึกการแก้ปัญหา CRITICAL ทั้ง 6 รายการจาก System Audit ภายในวันเดียว — สมอค tunnel, ปิด control API, หมุน token, แก้ SQL Injection, ปลดชนวน config drift — ทุกข้อทดสอบกับระบบจริงแล้ว">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">ภาพรวม</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">สถาปัตยกรรมระบบ</p>
+      <ul class="nav-list">
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">การทดสอบและตรวจสอบ</p>
+      <ul class="nav-list">
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">แผนพัฒนาต่อ</p>
+      <ul class="nav-list">
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">ผลการแก้ไข</p>
+      <ul class="nav-list">
+        <li><a href="./13-week0-stabilization.html" aria-current="page"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บริบทภายนอก</p>
+      <ul class="nav-list">
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บทสรุป</p>
+      <ul class="nav-list">
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>13 · WEEK 0 STABILIZATION — 30 ส.ค. 2026</p>
+      <h1>ปิดช่องโหว่ CRITICAL ทั้ง 6 รายการ ภายในวันเดียว</h1>
+      <p class="lede">แก้ตามแผนใน <a href="./12-development-guide.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 12 §3</a> ทุกข้อทดสอบกับระบบจริงก่อน-หลัง ไม่ใช่การคาดการณ์ — สมอ acceptance criteria ที่ตั้งไว้ล่วงหน้าทุกข้อ</p>
+      <div class="meta-line">
+        <span><b>ผลรวม smoke test</b> 22/22 invariants + 6/6 security gates ผ่าน</span>
+        <span><b>ของแถม</b> ยืนยันครั้งแรกว่า edge caching ทำงานจริง (MISS→HIT→HIT→HIT)</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> สรุปหนึ่งหน้า</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Task</th><th>ปัญหา</th><th>สถานะ</th><th>ผลที่พิสูจน์ได้</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">T1</td><td>Caddy รัน config ที่หายจากดิสก์</td><td><span class="status-pill ok">✅</span></td><td>restart จริงแล้วทุก endpoint ยังทำงาน</td></tr>
+          <tr><td class="mono">T2</td><td>rule ใน git จะบล็อกทุก URL ที่มีคำว่า "test"</td><td><span class="status-pill ok">✅</span></td><td><span class="mono">/latest /contest /testimonials</span> ไม่โดนบล็อก</td></tr>
+          <tr><td class="mono">T8</td><td>ไม่มีตาข่ายนิรภัยก่อนแก้ของเสี่ยง</td><td><span class="status-pill ok">✅</span></td><td><span class="mono">scripts/smoke_test.sh</span> — 22 invariants</td></tr>
+          <tr><td class="mono">T3</td><td>tunnel ตาย เว็บทดสอบ 404 ทุก path</td><td><span class="status-pill ok">✅</span></td><td>DVWA กลับมา 200 + WAF ยังบล็อก 403</td></tr>
+          <tr><td class="mono">T4</td><td>Control API หลุดสู่อินเทอร์เน็ต</td><td><span class="status-pill ok">✅</span></td><td>internet=000 / Edge=200 / localhost=200</td></tr>
+          <tr><td class="mono">T5</td><td>FRP token อยู่ใน JS bundle สาธารณะ</td><td><span class="status-pill ok">✅</span></td><td>bundle ใหม่ไม่มี secret ใดๆ เหลือ</td></tr>
+          <tr><td class="mono">T6</td><td>SQL Injection ใน AI summary</td><td><span class="status-pill ok">✅</span></td><td>9 เคสทดสอบ ผ่านหมด</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> รายละเอียดการแก้ — กรองตาม task</h2>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill risk" data-status="risk">Config drift (T1, T2)</button>
+        <button class="status-pill warn" data-status="warn">Network exposure (T3, T4)</button>
+        <button class="status-pill debt" data-status="debt">Secrets (T5)</button>
+        <button class="status-pill ok" data-status="ok">Injection (T6)</button>
+      </div>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>T1 · Caddy config ที่หายจากดิสก์</strong><span class="status-pill ok">FIXED</span></div>
+        <p>Container ถือ file handle inode 138459 (1,467 bytes, 3 site blocks) ขณะที่ไฟล์บนดิสก์ถูกแทนที่เป็นคนละไฟล์ (inode 157112, 428 bytes) — config ที่รันอยู่ <b style="color:#fff">ไม่มีใน git history เลย</b> ถ้า container ตายก่อนกู้จะหายถาวร</p>
+        <p>ดึง config จาก container มาเก็บก่อน → เขียนกลับ<b style="color:#fff">โดยรักษา inode เดิม</b> (<span class="mono">cat &gt;</span> ไม่ใช่ <span class="mono">sed -i</span> ซึ่งเป็นสาเหตุของปัญหานี้ตั้งแต่แรก) → restart → commit เข้า git</p>
+        <p><b style="color:#fff">ทดสอบ:</b> เทียบ baseline ก่อน/หลัง restart ทุก endpoint ตรงกัน 100% — <span class="mono">https://dvwa.waf-it-kku.online/</span>, SQLi payload, TLS issuer (Let's Encrypt), strict TLS ทั้งหมดผ่าน</p>
+      </div>
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>T2 · Rule drift <span class="mono">custom-123.conf</span></strong><span class="status-pill ok">FIXED</span></div>
+        <p><b style="color:#fff">ทิศทางกลับจากที่คาดตอนวางแผน</b> — ตอนวางแผนเข้าใจว่า production ผิด แต่ความจริงตรงข้าม: git มี <span class="mono">@rx test</span> (อันตราย ไม่ anchor จะบล็อกทุก URL ที่มีคำว่า "test") ส่วนเครื่องจริงมี <span class="mono">@rx testpj</span> ที่ถูกต้องอยู่แล้วแต่ไม่เคย commit</p>
+        <p>แก้ไฟล์ใน repo ให้ตรงกับ production แล้ว commit ทั้งสองเครื่อง — <b style="color:#fff">ทดสอบ:</b> <span class="mono">/latest /contest /testimonials</span> → 404 (ไม่บล็อก) ✅, <span class="mono">/testpj</span> → 403 ✅, git diff = 0 ทั้งสองเครื่อง</p>
+      </div>
+
+      <div class="card finding" data-status="warn">
+        <div class="finding-head"><strong>T3 · กู้ tunnel</strong><span class="status-pill ok">FIXED (รอบแรก — ทางสำรอง)</span></div>
+        <p>Lab node เข้าไม่ถึงตอนนั้น → ใช้ทางสำรอง: ชี้ <span class="mono">dvwa.waf-it-kku.online</span> ไปที่ container <span class="mono">dvwa</span> ที่รันอยู่บน Main แทน (แก้ 3 บรรทัดใน nginx template, ไม่แตะ juice)</p>
+        <p><b style="color:#fff">เงื่อนไขคือต้องผ่านพร้อมกัน:</b> <span class="mono">/</span> → 200 (origin ไม่ตาย) <i>และ</i> SQLi → 403 (WAF ยังทำงาน) — ผ่านทั้งคู่ ✅ <b style="color:var(--signal-ok)">ของแถม:</b> origin กลับมามีชีวิต ทำให้ทดสอบ cache ได้เป็นครั้งแรก: MISS→HIT→HIT→HIT พิสูจน์ edge caching ทำงานจริง</p>
+        <p style="opacity:.75">อัปเดต: รอบที่ 2 ย้อนกลับไปใช้ tunnel จริงหลังพบ root cause แท้จริง — ดู <a href="./14-tunnel-implementation.html" style="color:var(--signal-ok)">หน้า 14</a></p>
+      </div>
+      <div class="card finding" data-status="warn">
+        <div class="finding-head"><strong>T4 · ปิด Control API จากอินเทอร์เน็ต</strong><span class="status-pill ok">FIXED</span></div>
+        <p><b style="color:#fff">Root cause จริง:</b> ufw ตั้งกฎถูกแล้ว (<span class="mono">8070 ALLOW IN 45.154.26.91</span>) แต่ Docker แทรก iptables rule ของตัวเองที่ถูกประเมิน<b style="color:#fff">ก่อน</b> INPUT chain ของ ufw — กฎ ufw จึงไม่มีผลกับ port ที่ container publish เลย</p>
+        <p>ใส่กฎที่ <span class="mono">DOCKER-USER</span> chain (chain ที่ Docker การันตีว่าจะไม่เขียนทับ) แล้ว persist ผ่าน <span class="mono">/etc/ufw/after.rules</span></p>
+        <p><b style="color:#fff">ทดสอบ 3 มุม:</b> อินเทอร์เน็ต = <b style="color:var(--signal-ok)">000</b> (บล็อก) / Edge = 200 (rule sync ไม่พัง) / localhost = 200 — ทดสอบ persistence ผ่าน <span class="mono">ufw reload</span> แล้วยังเหมือนเดิม, port อื่นไม่กระทบ</p>
+      </div>
+
+      <div class="card finding" data-status="debt">
+        <div class="finding-head"><strong>T5 · FRP token รั่วสู่สาธารณะ</strong><span class="status-pill ok">FIXED</span></div>
+        <p>แก้ที่ต้นเหตุ ไม่ใช่แค่ลบ token: <b style="color:#fff">implement endpoint ที่หายไป</b> <span class="mono">GET /api/tunnels/config-generator</span> (admin-only, อ่าน token จาก env, validate input เพราะ interpolate เข้า shell command) → เอา fallback ที่มี secret ออกจาก frontend → หมุน token ใหม่ด้วย <span class="mono">openssl rand -hex 32</span> → rebuild frontend</p>
+        <p><b style="color:#fff">ทดสอบ:</b> token เดิมใน bundle ใหม่ = <b style="color:var(--signal-ok)">0 ครั้ง</b> (เดิม 2), purge token เดิม = 0 ครั้ง (เดิม 1), <b style="color:#fff">token ใหม่ในบันเดิล = 0 ครั้งเช่นกัน</b> (ไม่รั่วซ้ำ), endpoint ใหม่คืน 401 เมื่อไม่มี auth — พ่วงแก้ปุ่ม Purge ที่ 422 ตลอดไปด้วย</p>
+      </div>
+
+      <div class="card finding" data-status="ok">
+        <div class="finding-head"><strong>T6 · SQL Injection</strong><span class="status-pill ok">FIXED</span></div>
+        <p>ป้องกัน 2 ชั้น: (1) <span class="mono">_parse_time_bound()</span> แปลงเป็น <span class="mono">datetime</span> object จริง รับเฉพาะ 3 รูปแบบ อย่างอื่นคืน 422 ทันที ใช้กับทั้งค่าจาก request และจาก Gemini เหมือนกัน (2) เปลี่ยนทั้ง 4 query เป็น parameterized query ผ่าน <span class="mono">clickhouse-connect</span></p>
+        <p>ระหว่างทางพบ bug ซ้อน: outer <span class="mono">except Exception</span> จับ <span class="mono">HTTPException</span> แล้วแปลง 422 ของเราเป็น 500 พร้อม leak <span class="mono">str(e)</span> — แก้เพิ่ม <span class="mono">except HTTPException: raise</span> ก่อน handler กว้าง</p>
+        <p><b style="color:#fff">ทดสอบ 9/9:</b> ช่วงเวลาถูกต้อง → คืนข้อมูลจริง 1,593 รายการ (พิสูจน์ว่าไม่ใช่แค่บล็อกทุกอย่างทิ้ง) / injection 8 รูปแบบ (quote, OR, UNION, DROP, comment, backslash, ที่ end_time, ช่วงกลับด้าน) → ปฏิเสธด้วย 422 หมด</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> ยังเหลือ</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>เร่งด่วนกว่าที่เหลือ</h4>
+          <p>Lab node เข้าไม่ได้ตอนนั้น (แก้แล้วในรอบถัดมา — ดูหน้า 14) · เพิ่ม auth ให้ control-api endpoint (<span class="mono">/api/sync/bundle</span>, <span class="mono">/api/blocklist</span> — ต้อง rebuild image) · เปลี่ยน <span class="mono">FRP_ADMIN_PASS</span> จากค่า default</p>
+        </div>
+        <div class="card">
+          <h4>ยังไม่ได้ยืนยัน</h4>
+          <p>Rate limiting ทำงานถูกต้องหรือไม่ — ต้องใช้ load tool จริง (k6) ยิงให้เกิน 50 req/s จริงๆ · Cloudflare Tunnel bypass บน Lab ที่เอกสารเก่าระบุไว้ — ตรวจไม่ได้เพราะตอนนั้นเข้า Lab ไม่ได้ (ยืนยันแล้วว่ามีจริงในหน้า 14)</p>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="cap">ไฟล์สำรองที่สร้างไว้ทุกจุดที่แก้ (บนเครื่อง Main)</span>
+        <p><span class="mono">nginx/Caddyfile.bak-428-20260830</span>, <span class="mono">nginx/templates/conf.d/default.conf.template.bak-20260830</span>, <span class="mono">dashboard/backend/api/{ai_summary,tunnels}.py.bak-20260830</span>, <span class="mono">dashboard/frontend/src/pages/{Tunnels,CDN}.tsx.bak-20260830</span>, <span class="mono">/etc/frp/frps.toml.bak-20260830</span>, <span class="mono">/etc/ufw/after.rules.bak-20260830</span></p>
+      </div>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./12-development-guide.html"><span class="dir">← ก่อนหน้า</span><strong>12 · Development Guide</strong></a>
+      <a class="next" href="./14-tunnel-implementation.html"><span class="dir">ถัดไป →</span><strong>14 · Private Tunnel</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>

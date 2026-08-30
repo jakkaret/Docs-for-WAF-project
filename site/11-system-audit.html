@@ -56,6 +56,13 @@
       </ul>
     </div>
     <div>
+      <p class="nav-group-label">ผลการแก้ไข</p>
+      <ul class="nav-list">
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+      </ul>
+    </div>
+    <div>
       <p class="nav-group-label">บริบทภายนอก</p>
       <ul class="nav-list">
         <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
@@ -101,22 +108,27 @@
         </tbody>
       </table></div>
 
-      <h3><span class="idx">❌</span> สิ่งที่พังอยู่ตอนนี้ (ยืนยันด้วยการทดสอบ)</h3>
+      <h3><span class="idx">❌</span> สิ่งที่พังอยู่ตอนนี้ (ยืนยันด้วยการทดสอบ) — สถานะ ณ วันตรวจ 29 ส.ค.</h3>
+      <p style="max-width:66ch">อัปเดต 30 ส.ค.: 5 ข้อแรกถูกแก้แล้ว ยืนยันด้วยการทดสอบซ้ำ — รายละเอียดที่ <a href="./13-week0-stabilization.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 13</a> และ <a href="./14-tunnel-implementation.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 14</a></p>
       <div class="table-wrap"><table>
-        <thead><tr><th>ปัญหา</th><th>ผลกระทบ</th></tr></thead>
+        <thead><tr><th>ปัญหา</th><th>ผลกระทบ</th><th>สถานะ 30 ส.ค.</th></tr></thead>
         <tbody>
-          <tr><td><b style="color:#fff">Tunnel ตายสนิท</b> — FRP มี client เชื่อมต่อ 0 ราย</td><td>เว็บทดสอบทั้งหมด (dvwa/juice/vampi/bwapp) เข้าไม่ได้เลย ทุก path ได้ 404</td></tr>
-          <tr><td>Lab node เข้าไม่ถึงจากทุกทาง</td><td>Main ping/HTTP ไปยัง 10.198.200.75 ไม่ผ่านทุก port</td></tr>
-          <tr><td>FRP token รั่วสู่สาธารณะ</td><td>token อยู่ใน JavaScript bundle ที่ใครก็ดาวน์โหลดได้ + port 7000 เปิดอินเทอร์เน็ต</td></tr>
-          <tr><td>Control API เปิดสู่อินเทอร์เน็ตโดยไม่ได้ตั้งใจ</td><td>ตั้งใจให้เฉพาะ Edge เข้าได้ แต่ docker เจาะผ่าน ufw → ทั้งโลกเข้าถึงได้</td></tr>
-          <tr><td>Caddy บน Main รัน config ที่หายจากดิสก์แล้ว</td><td>ถ้า restart container เมื่อไหร่ subdomain ทั้งหมดจะหยุดทำงาน</td></tr>
-          <tr><td>ML ไม่ได้อยู่ในเส้นทาง traffic</td><td>ไม่มีผลต่อการบล็อกใดๆ เป็นแค่ตัวอ่าน log ย้อนหลัง</td></tr>
-          <tr><td>ตัวเลข ML ที่โฆษณาไม่ตรงกับที่วัดได้จริง</td><td>อ้าง 93.40% / วัดได้ 80.47% / attack recall จริงแค่ 62.26%</td></tr>
-          <tr><td>หน้า Tunnels แสดงสถานะปลอม</td><td>hardcode "🟢 ONLINE" ทั้งที่ tunnel ตายสนิท</td></tr>
-          <tr><td>หน้า Traffic Logs ว่างเปล่าถาวรสำหรับ user ทั่วไป</td><td>เกิดจาก domain feature พัง → tenant filter หาอะไรไม่เจอ</td></tr>
-          <tr><td>CI ไม่สามารถ fail ได้</td><td>คำสั่ง test ต่อท้ายด้วย <span class="mono">|| echo</span> กลืน error ทุกชนิด</td></tr>
+          <tr><td><b style="color:#fff">Tunnel ตายสนิท</b> — FRP มี client เชื่อมต่อ 0 ราย</td><td>เว็บทดสอบทั้งหมด (dvwa/juice/vampi/bwapp) เข้าไม่ได้เลย ทุก path ได้ 404</td><td><span class="status-pill ok">✅ FIXED</span></td></tr>
+          <tr><td>Lab node เข้าไม่ถึงจากทุกทาง</td><td>Main ping/HTTP ไปยัง 10.198.200.75 ไม่ผ่านทุก port</td><td><span class="status-pill ok">✅ FIXED</span></td></tr>
+          <tr><td>FRP token รั่วสู่สาธารณะ</td><td>token อยู่ใน JavaScript bundle ที่ใครก็ดาวน์โหลดได้ + port 7000 เปิดอินเทอร์เน็ต</td><td><span class="status-pill ok">✅ FIXED</span></td></tr>
+          <tr><td>Control API เปิดสู่อินเทอร์เน็ตโดยไม่ได้ตั้งใจ</td><td>ตั้งใจให้เฉพาะ Edge เข้าได้ แต่ docker เจาะผ่าน ufw → ทั้งโลกเข้าถึงได้</td><td><span class="status-pill ok">✅ FIXED</span></td></tr>
+          <tr><td>Caddy บน Main รัน config ที่หายจากดิสก์แล้ว</td><td>ถ้า restart container เมื่อไหร่ subdomain ทั้งหมดจะหยุดทำงาน</td><td><span class="status-pill ok">✅ FIXED</span></td></tr>
+          <tr><td>ML ไม่ได้อยู่ในเส้นทาง traffic</td><td>ไม่มีผลต่อการบล็อกใดๆ เป็นแค่ตัวอ่าน log ย้อนหลัง</td><td><span class="status-pill debt">ค้าง</span></td></tr>
+          <tr><td>ตัวเลข ML ที่โฆษณาไม่ตรงกับที่วัดได้จริง</td><td>อ้าง 93.40% / วัดได้ 80.47% / attack recall จริงแค่ 62.26%</td><td><span class="status-pill debt">ค้าง — สัปดาห์ 4</span></td></tr>
+          <tr><td>หน้า Tunnels แสดงสถานะปลอม</td><td>hardcode "🟢 ONLINE" ทั้งที่ tunnel ตายสนิท</td><td><span class="status-pill warn">มี endpoint จริงแล้ว frontend ยังไม่อ่าน</span></td></tr>
+          <tr><td>หน้า Traffic Logs ว่างเปล่าถาวรสำหรับ user ทั่วไป</td><td>เกิดจาก domain feature พัง → tenant filter หาอะไรไม่เจอ</td><td><span class="status-pill debt">ค้าง</span></td></tr>
+          <tr><td>CI ไม่สามารถ fail ได้</td><td>คำสั่ง test ต่อท้ายด้วย <span class="mono">|| echo</span> กลืน error ทุกชนิด</td><td><span class="status-pill debt">ค้าง — สัปดาห์ 1</span></td></tr>
         </tbody>
       </table></div>
+      <div class="callout risk">
+        <span class="cap">พบใหม่ 30 ส.ค. — ยังไม่ปิด</span>
+        <p>เข้าถึง Lab node ได้แล้วยืนยันว่า <b style="color:#fff">Cloudflare Tunnel bypass ที่เคยสงสัยไว้มีอยู่จริง</b> — <span class="mono">dvwa-tunnel.service</span> และ <span class="mono">waf-tunnel.service</span> เปิดเว็บทดสอบสู่อินเทอร์เน็ตตรงๆ ไม่ผ่าน ModSecurity นี่คือ priority สูงสุดของโปรเจกต์ที่ยังไม่ได้แก้ในรอบนี้ — ดูหน้า 14 §9</p>
+      </div>
 
       <div class="callout risk">
         <span class="cap">ประเมินสถานะรวม</span>
@@ -195,40 +207,40 @@
 
     <section class="block reveal">
       <h2><span class="idx">§4</span> ช่องโหว่ความปลอดภัยระดับวิกฤต — รายละเอียดเต็ม</h2>
-      <p style="max-width:70ch">ทุกรายการนี้ยัง <b style="color:var(--signal-risk)">live บนระบบ production ตอนนี้</b> — ระบุตำแหน่งไฟล์/บรรทัด/endpoint ครบเพื่อใช้แก้ไขและอ้างอิงตอนนำเสนอ ส่วนค่า secret/token จริงไม่แสดงตรงนี้ (ดูจาก source โดยตรงตามตำแหน่งที่อ้างถึง) เพื่อไม่เพิ่มช่องทางใหม่ให้ผู้ไม่หวังดีขณะช่องโหว่ยังไม่ถูกปิด</p>
+      <p style="max-width:70ch">สถานะตอนตรวจ (29 ส.ค.) — ทุกรายการ <b style="color:var(--signal-risk)">live บนระบบ production ในวันนั้น</b> ระบุตำแหน่งไฟล์/บรรทัด/endpoint ครบ ส่วนค่า secret/token จริงไม่แสดงตรงนี้เพื่อไม่เพิ่มช่องทางใหม่ <b style="color:var(--signal-ok)">อัปเดต 30 ส.ค.: ทั้ง 6 ข้อถูกแก้และทดสอบซ้ำแล้ว</b> — ดูหลักฐานการแก้ที่ <a href="./13-week0-stabilization.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 13</a></p>
 
       <div class="card finding" data-status="risk">
-        <div class="finding-head"><strong>C1 · FRP tunnel token รั่วสู่สาธารณะ + port เปิดอินเทอร์เน็ต</strong><span class="status-pill risk">CRITICAL</span></div>
+        <div class="finding-head"><strong>C1 · FRP tunnel token รั่วสู่สาธารณะ + port เปิดอินเทอร์เน็ต</strong><span class="status-pill risk">CRITICAL</span> <span class="status-pill ok">✅ FIXED 30 ส.ค.</span></div>
         <p><span class="mono">/etc/frp/frps.toml</span> บน Main ตั้ง <span class="mono">auth.method = "token"</span> เป็น auth เดียวที่มี — token เดียวกันนี้ hardcode ใน <span class="mono">Tunnels.tsx</span> (บรรทัด 62, 72) จึงถูก compile เข้า JavaScript bundle</p>
         <p><span class="mono">GET http://178.104.53.123:8000/assets/index-CC3Wg3XF.js</span> → 200, 1,026,021 bytes — ดาวน์โหลดได้โดยไม่ต้อง login พบ token คงที่ปรากฏอยู่ในไฟล์ 2 ครั้ง (ค่าจริงดูได้จาก source ตรง <span class="mono">Tunnels.tsx:62,72</span>) Port 7000 (frps bindPort) เปิดสู่อินเทอร์เน็ตยืนยันด้วยการสแกนจริง</p>
         <p><b style="color:#fff">ผลกระทบ:</b> ใครก็ตามที่เปิดหน้า dashboard (หรือ curl ไฟล์ JS ตรงๆ) จะได้ tunnel token ไป และเชื่อมต่อ FRP client เข้าระบบได้ — <b>ต้อง rotate token + ย้าย token ออกจาก frontend bundle เป็นอันดับแรก</b></p>
       </div>
 
       <div class="card finding" data-status="risk">
-        <div class="finding-head"><strong>C2 · Control API เปิดสู่อินเทอร์เน็ตโดยไม่ได้ตั้งใจ</strong><span class="status-pill risk">CRITICAL</span></div>
+        <div class="finding-head"><strong>C2 · Control API เปิดสู่อินเทอร์เน็ตโดยไม่ได้ตั้งใจ</strong><span class="status-pill risk">CRITICAL</span> <span class="status-pill ok">✅ FIXED 30 ส.ค.</span></div>
         <p>ufw บน Main ตั้ง <span class="mono">8070 ALLOW IN 45.154.26.91</span> เท่านั้น แต่ docker-proxy publish port ผ่าน chain ที่ ufw ไม่ควบคุม — ทั้งอินเทอร์เน็ตเข้าถึงได้ ทดสอบจากภายนอกโดยไม่ใส่ token: <span class="mono">GET /docs</span> → 200 (Swagger เปิดสาธารณะ), <span class="mono">GET /api/sync/bundle</span> → 200 (ruleset WAF ทั้งชุด)</p>
         <p><b style="color:#fff">ทำให้แย่ลงอีก:</b> <span class="mono">CONTROL_TOKEN</span> hardcode ใน <span class="mono">docker-compose.yml</span> ที่ track อยู่ใน git — ใครเห็น repo ก็เขียน blocklist ได้</p>
       </div>
 
       <div class="card finding" data-status="risk">
-        <div class="finding-head"><strong>C3 · Caddy บน Main รัน config ที่หายไปจากดิสก์แล้ว</strong><span class="status-pill risk">CRITICAL</span></div>
+        <div class="finding-head"><strong>C3 · Caddy บน Main รัน config ที่หายไปจากดิสก์แล้ว</strong><span class="status-pill risk">CRITICAL</span> <span class="status-pill ok">✅ FIXED 30 ส.ค.</span></div>
         <p>ไฟล์บน host (inode 157112, 428 bytes, block เดียว) ≠ ไฟล์ที่ container ใช้จริง (inode 138459, 1,467 bytes, 3 blocks รวม protected sites) — host ถูกแก้หลัง container start ด้วยวิธีที่สร้าง inode ใหม่ ทำให้ bind mount ยังชี้ inode เก่าที่ค้างในหน่วยความจำ</p>
         <p><b style="color:#fff">ระเบิดเวลา:</b> ถ้า <span class="mono">caddy-ssl-termination</span> restart หรือเครื่อง reboot จะโหลดไฟล์ 428 bytes แทน → subdomain ที่ถูกป้องกันทั้งหมดหยุดทำงาน + TLS พัง (mount เป็น read-write จึงแก้จาก container ได้ด้วย)</p>
       </div>
 
       <div class="card finding" data-status="risk">
-        <div class="finding-head"><strong>C4 · SQL Injection ใน AI Summary endpoint</strong><span class="status-pill risk">CRITICAL</span></div>
+        <div class="finding-head"><strong>C4 · SQL Injection ใน AI Summary endpoint</strong><span class="status-pill risk">CRITICAL</span> <span class="status-pill ok">✅ FIXED 30 ส.ค.</span></div>
         <p><span class="mono">dashboard/backend/api/ai_summary.py:65,76,86,96</span> — นำ <span class="mono">start_time</span>/<span class="mono">end_time</span> จาก request body ต่อ string เข้า SQL โดยตรง ไม่มีการ escape เข้าถึงได้โดย user ที่ login แล้วทุกคน และการสมัครสมาชิกเปิดสาธารณะ — ใครก็สมัครแล้วยิงได้</p>
         <p>ค่าเหล่านี้ยังอาจมาจาก output ของ Gemini โดยตรง — LLM output ไหลเข้า SQL โดยไม่ผ่านการตรวจสอบ จุดอื่นที่ escape แค่ backslash (ไม่พอสำหรับ ClickHouse): <span class="mono">analytics.py</span>, <span class="mono">clickhouse_service.py</span>, <span class="mono">logs.py</span>, <span class="mono">cdn.py</span></p>
       </div>
 
       <div class="card finding" data-status="risk">
-        <div class="finding-head"><strong>C5 · Tunnel ตายสนิท — เว็บที่ควรถูกป้องกันเข้าไม่ได้เลย</strong><span class="status-pill risk">CRITICAL</span></div>
+        <div class="finding-head"><strong>C5 · Tunnel ตายสนิท — เว็บที่ควรถูกป้องกันเข้าไม่ได้เลย</strong><span class="status-pill risk">CRITICAL</span> <span class="status-pill ok">✅ FIXED 30 ส.ค.</span></div>
         <p>frps <span class="mono">clientCounts: 0</span> — ทุก path ของเว็บทดสอบทั้ง 4 ตัวได้ 404 ระบบไม่ได้ป้องกันอะไรอยู่จริงตอนนี้ เพราะไม่มี traffic ไหลผ่าน WAF ไปถึงปลายทางเลย</p>
       </div>
 
       <div class="card finding" data-status="risk">
-        <div class="finding-head"><strong>C6 · Rule drift — <span class="mono">custom-123.conf</span></strong><span class="status-pill risk">CRITICAL</span></div>
+        <div class="finding-head"><strong>C6 · Rule drift — <span class="mono">custom-123.conf</span></strong><span class="status-pill risk">CRITICAL</span> <span class="status-pill ok">✅ FIXED 30 ส.ค.</span></div>
         <p>ใน git: <span class="mono">@rx test</span> — deploy จริงบน Edge: <span class="mono">@rx testpj</span> ยืนยัน: <span class="mono">/latest</span> → 404, <span class="mono">/contest</span> → 404 (ถ้าเป็นเวอร์ชัน git จะได้ 403 เพราะมี substring "test")</p>
         <p><b style="color:#fff">ความเสี่ยง:</b> ถ้าใครรัน sync จาก repo ปัจจุบัน rule เวอร์ชัน <span class="mono">@rx test</span> จะ deploy ทับ — ทุก URL ที่มีคำว่า "test" จะถูกบล็อกทันที (<span class="mono">/latest</span>, <span class="mono">/testimonials</span>, <span class="mono">/contest</span>, <span class="mono">/greatest</span>)</p>
       </div>
@@ -272,12 +284,12 @@
       <div class="table-wrap"><table>
         <thead><tr><th>#</th><th>ปัญหา</th><th>ระดับ</th></tr></thead>
         <tbody>
-          <tr data-status="risk"><td class="mono">C1</td><td>FRP token ใน JS bundle สาธารณะ + port 7000 เปิดอินเทอร์เน็ต</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
-          <tr data-status="risk"><td class="mono">C2</td><td>Control API (8070) เปิดสู่อินเทอร์เน็ต ไม่มี auth บน sync/blocklist</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
-          <tr data-status="risk"><td class="mono">C3</td><td>Caddy บน Main รัน config ที่หายจากดิสก์แล้ว</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
-          <tr data-status="risk"><td class="mono">C4</td><td>SQLi ใน <span class="mono">/api/ai/summarize-range</span></td><td><span class="status-pill risk">CRITICAL</span></td></tr>
-          <tr data-status="risk"><td class="mono">C5</td><td>Tunnel ตายสนิท — ระบบไม่ได้ป้องกันอะไรอยู่จริงตอนนี้</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
-          <tr data-status="risk"><td class="mono">C6</td><td>Rule drift <span class="mono">custom-123.conf</span> — sync ครั้งหน้าจะบล็อกทุก URL ที่มีคำว่า "test"</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C1 ✅</td><td>FRP token ใน JS bundle สาธารณะ + port 7000 เปิดอินเทอร์เน็ต</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C2 ✅</td><td>Control API (8070) เปิดสู่อินเทอร์เน็ต ไม่มี auth บน sync/blocklist</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C3 ✅</td><td>Caddy บน Main รัน config ที่หายจากดิสก์แล้ว</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C4 ✅</td><td>SQLi ใน <span class="mono">/api/ai/summarize-range</span></td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C5 ✅</td><td>Tunnel ตายสนิท — ระบบไม่ได้ป้องกันอะไรอยู่จริงตอนนี้</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
+          <tr data-status="risk"><td class="mono">C6 ✅</td><td>Rule drift <span class="mono">custom-123.conf</span> — sync ครั้งหน้าจะบล็อกทุก URL ที่มีคำว่า "test"</td><td><span class="status-pill risk">CRITICAL</span></td></tr>
           <tr data-status="warn"><td class="mono">H1</td><td>Telegram bot token รั่วผ่าน <span class="mono">GET /api/settings/</span> (viewer เข้าถึงได้) + commit ใน git</td><td><span class="status-pill warn">HIGH</span></td></tr>
           <tr data-status="warn"><td class="mono">H2</td><td>Cross-tenant leak 8 endpoints (copilot, ai summary, notifications, logs/explain ฯลฯ)</td><td><span class="status-pill warn">HIGH</span></td></tr>
           <tr data-status="warn"><td class="mono">H3</td><td>5 endpoints ที่ควรมี auth แต่ไม่มี (tunnel/verify, limiter/check ฯลฯ)</td><td><span class="status-pill warn">HIGH</span></td></tr>

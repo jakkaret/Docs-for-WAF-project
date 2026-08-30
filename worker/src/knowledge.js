@@ -74,4 +74,11 @@ Polyglot persistence 5 ระบบ: ClickHouse (access log, 113,336 แถว�
 เกณฑ์จัดลำดับ: ระเบิดเวลาก่อนเสมอ > ฐานที่งานอื่นต้องยืนอยู่บน > คุณค่าต่อ thesis > ต้นทุนต่อผลลัพธ์ — ML auto-block และ production hardening เต็มรูป (secrets vault, mTLS, HA) ตั้งใจไม่ทำในรอบนี้ เก็บไว้เป็นโปรเจกต์ portfolio หลังสอบจบ
 มีคำตอบเตรียมไว้สำหรับคำถามอาจารย์ที่คาดว่าจะเจอ (เป็นแค่ WAF ไม่ใช่ CDN, ML แม่นแค่ไหน, ML บล็อกเองได้ไหม, ใช้กับเว็บจริงได้ไหม, PDPA) — ทุกคำตอบมีหลักฐานอ้างอิงในหน้า 10/11 รองรับ
 
+[13 · Week 0 Stabilization — 30 ส.ค. 2026]
+ปิดช่องโหว่ CRITICAL ทั้ง 6 รายการจากหน้า 11 ภายในวันเดียวถัดมา ทุกข้อทดสอบกับระบบจริงก่อน-หลัง: T1 กู้ Caddy config ที่หายจากดิสก์, T2 แก้ rule drift ที่จะบล็อกทุก URL ที่มีคำว่า "test", T3 กู้ tunnel (รอบแรกใช้ทางสำรอง), T4 ปิด Control API จากอินเทอร์เน็ต (root cause จริงคือ Docker แทรก iptables rule ก่อน ufw), T5 หมุน FRP token ใหม่ + implement endpoint ที่ขาดหายเพื่อเลิกใช้ fallback ที่ hardcode secret, T6 แก้ SQL Injection ด้วย parameterized query + validation 2 ชั้น (9/9 เคสทดสอบผ่าน) สร้าง smoke test suite ใหม่ (22 invariants + 6 security gates) เป็นตาข่ายนิรภัยสำหรับงานถัดไปด้วย — ผลพลอยได้: ยืนยันครั้งแรกว่า edge caching ทำงานจริง (MISS→HIT→HIT→HIT)
+
+[14 · Private Tunnel — 30 ส.ค. 2026]
+ค้นพบว่าหน้า 11 สรุป root cause ของ tunnel ที่ตายผิด (คิดว่า network ถูกบล็อก แต่จริงๆ คือ token ไม่ตรงกันหลังหมุน token ตอน T5) — เป็นบทเรียนเรื่องอย่าสรุปสาเหตุจากหลักฐานฝั่งเดียว หลังแก้ token FRP กลับมาทำงานปกติ จากนั้นเขียน private tunnel ใหม่ทั้งหมด (795 บรรทัด Python stdlib ล้วน) ทดแทน custom tunnel เดิมที่ deploy ไม่ได้เพราะมีปัญหาเชิงสถาปัตยกรรม 7 ข้อ (token ไม่ใช่ความลับ, host hardcode, ไม่มี TLS จริง, port ชนกัน, ไม่มีอะไร route ไปหาทำให้ traffic ไม่ผ่าน WAF, ไม่ reconnect, โค้ดเปราะ) สถาปัตยกรรมใหม่ใช้ hostname-based routing (เหมือน FRP vhost) ทำให้ traffic ผ่าน ModSecurity ก่อนเข้า tunnel เสมอ, credential แยกต่อ origin (เก็บเฉพาะ SHA-256 hash ไม่ใช่ shared token แบบ FRP), TLS พร้อม certificate pinning ผลทดสอบ 31/31 เคสผ่าน ไม่มี regression กับ smoke test เดิม
+พบใหม่ที่ยังไม่ได้แก้: เข้าถึง Lab node ได้แล้วยืนยันว่า Cloudflare Tunnel bypass (dvwa-tunnel.service, waf-tunnel.service) เปิดเว็บทดสอบสู่อินเทอร์เน็ตตรงๆ ไม่ผ่าน WAF จริง — ตรงกับ priority สูงสุดของโปรเจกต์ที่ยังค้างอยู่
+
 ===== จบฐานความรู้ =====`;

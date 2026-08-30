@@ -58,6 +58,13 @@
       </ul>
     </div>
     <div>
+      <p class="nav-group-label">ผลการแก้ไข</p>
+      <ul class="nav-list">
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+      </ul>
+    </div>
+    <div>
       <p class="nav-group-label">บริบทภายนอก</p>
       <ul class="nav-list">
         <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
@@ -114,9 +121,9 @@
         </div>
       </div>
 
-      <div class="callout risk reveal" style="max-width:66ch">
-        <span class="cap">อัปเดต 29 ส.ค. 2026 — ตรวจสอบระบบรอบใหม่</span>
-        <p>ตรวจซ้ำทั้งระบบแบบละเอียด พบช่องโหว่ระดับ <b style="color:#fff">Critical เพิ่มอีก 6 รายการ</b> (token รั่วสู่สาธารณะ, control API เปิดสู่อินเทอร์เน็ตโดยไม่ตั้งใจ, SQL Injection) และยืนยันว่า <b style="color:#fff">tunnel ที่เว็บทดสอบพึ่งอยู่ตายสนิท</b> — อ่านฉบับเต็มพร้อมหลักฐานที่ <a href="./11-system-audit.html" style="color:#fff;text-decoration:underline">หน้า 11 · System Audit</a></p>
+      <div class="callout reveal" style="max-width:66ch">
+        <span class="cap">อัปเดต 30 ส.ค. 2026 — 6 Critical ที่พบเมื่อวาน ปิดหมดแล้ว</span>
+        <p>audit วันที่ 29 ส.ค. พบช่องโหว่ Critical 6 รายการ (token รั่วสู่สาธารณะ, control API เปิดสู่อินเทอร์เน็ตโดยไม่ตั้งใจ, SQL Injection, tunnel ตายสนิท ฯลฯ) — <b style="color:var(--signal-ok)">ทั้ง 6 ข้อถูกแก้และทดสอบซ้ำแล้วภายในวันถัดมา</b> พร้อมเขียน private tunnel ใหม่ทดแทน FRP (31/31 test ผ่าน) อ่านหลักฐานที่ <a href="./11-system-audit.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 11</a> → <a href="./13-week0-stabilization.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 13</a> → <a href="./14-tunnel-implementation.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 14</a></p>
       </div>
 
       <div class="stat-row reveal">
@@ -327,12 +334,18 @@
         <a class="card doc-card" href="./12-development-guide.html"><span class="no">12</span><h3>Development Guide</h3><p>แผน 5 สัปดาห์จากผล audit จริง + task card 14 รายการ พร้อม acceptance criteria และกฎตัดสินใจเมื่อเวลาไม่พอ</p><div class="stats"><span class="status-pill risk">6 งานด่วน</span></div></a>
       </div>
 
-      <h3 style="margin-top:2rem"><span class="idx">D</span> บริบทภายนอก</h3>
+      <h3 style="margin-top:2rem"><span class="idx">D</span> ผลการแก้ไข — 30 ส.ค. 2026</h3>
+      <div class="grid cols-3 doc-index">
+        <a class="card doc-card" href="./13-week0-stabilization.html"><span class="no">13</span><h3>Week 0 Stabilization</h3><p>ปิดช่องโหว่ CRITICAL ทั้ง 6 รายการจากหน้า 11 ภายในวันเดียว — ทุกข้อทดสอบกับระบบจริงก่อน-หลัง</p><div class="stats"><span class="status-pill ok">6/6 fixed</span></div></a>
+        <a class="card doc-card" href="./14-tunnel-implementation.html"><span class="no">14</span><h3>Private Tunnel</h3><p>เขียน tunnel ใหม่แทน custom tunnel เดิมที่ deploy ไม่ได้ — hostname-based routing, credential แยกต่อ origin, TLS + cert pinning</p><div class="stats"><span class="status-pill ok">31/31 test ผ่าน</span></div></a>
+      </div>
+
+      <h3 style="margin-top:2rem"><span class="idx">E</span> บริบทภายนอก</h3>
       <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./09-attack-landscape.html"><span class="no">09</span><h3>ภูมิทัศน์การโจมตี 2025–26</h3><p>รายงานวิจัย 120+ แหล่งอ้างอิง: AI-driven attack, BOLA, AiTM phishing, session hijacking</p><div class="stats"><span class="status-pill debt">งานวิจัยภายนอก</span></div></a>
       </div>
 
-      <h3 style="margin-top:2rem"><span class="idx">E</span> บทสรุป</h3>
+      <h3 style="margin-top:2rem"><span class="idx">F</span> บทสรุป</h3>
       <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./10-cdn-verdict.html"><span class="no">10</span><h3>ระบบนี้เป็น CDN จริงไหม</h3><p>ตอบคำถามอาจารย์ที่ปรึกษาตรง ๆ ด้วยหลักฐานจริง เทียบกับ 4 องค์ประกอบของ CDN ทีละข้อ พร้อม simulation</p><div class="stats"><span class="status-pill ok">2/4 ผ่านจริง</span></div></a>
       </div>
