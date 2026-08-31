@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WAF Generation Assessment — WAF + CDN Platform Docs</title>
+<meta name="description" content="ประเมินตรงไปตรงมาไม่อวย: WAF อุตสาหกรรมมีกี่ Gen ต่างกันยังไง แล้วโปรเจกต์นี้อยู่ระดับไหนจริง — เทียบกับ framework จาก F5/Check Point/Levo.ai พร้อมแผนถ้าจะพัฒนาต่อถึง Gen 4">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">ภาพรวม</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">สถาปัตยกรรมระบบ</p>
+      <ul class="nav-list">
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">ตรวจสอบและแก้ไข</p>
+      <ul class="nav-list">
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">แผนพัฒนาต่อ</p>
+      <ul class="nav-list">
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">FAQ</p>
+      <ul class="nav-list">
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+        <li><a href="./18-waf-generation-assessment.html" aria-current="page"><span class="no">18</span> WAF Generation Assessment</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บริบทภายนอก</p>
+      <ul class="nav-list">
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>18 · GENERATION ASSESSMENT — 1 ก.ย. 2026</p>
+      <h1>WAF Gen ไหนกันแน่ — ประเมินตรงไปตรงมา ไม่อวย</h1>
+      <p class="lede">คำถามที่ผู้ใช้ถาม: "WAF ตอนนี้มีกี่ Gen ต่างยังไงบ้าง ของผมอยู่ในระดับไหน ขอแบบไม่อวย" — เทียบกับ framework การแบ่ง generation จริงจากอุตสาหกรรม (F5, Check Point, Levo.ai) ไม่ใช่นิยามที่ตั้งเอง แล้ววางสถานะจริงของโปรเจกต์ทับทีละข้อ</p>
+      <div class="meta-line">
+        <span><b>ผลสรุป</b> เอนจินที่บล็อกจริง = Gen 1 (signature-based) — ML ที่มีเป็นของจริงแต่ยังไม่ถึงเกณฑ์ Gen 3</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> WAF แบ่งเป็นรุ่นไหนบ้าง — นิยามจากอุตสาหกรรมจริง</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>รุ่น</th><th>หลักการ</th><th>ตัวอย่าง</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">Gen 1</b><br>Signature-based</td><td>จับ pattern ที่รู้จักแล้ว (regex/rule ตายตัว) ต้องคนอัปเดต rule เอง จับ zero-day ไม่ได้ false positive สูง</td><td>ModSecurity+CRS แบบดั้งเดิม, WAF appliance รุ่นเก่า</td></tr>
+          <tr><td><b style="color:#fff">Gen 2</b><br>Behavioral / Session-aware</td><td>เพิ่ม tracking session, ให้ risk score ตามพฤติกรรม (บอท, rate, pattern การเข้าใช้) ลดพึ่งพา signature อย่างเดียว</td><td>ระบบที่มี bot detection + session risk</td></tr>
+          <tr><td><b style="color:#fff">Gen 3</b><br>Next-Gen WAF (ML-driven)</td><td>เทรนจาก attack data จำนวนมาก จับ pattern ใหม่ที่ไม่เคยเห็นได้ ไม่ต้องรอคนเขียน rule near-zero-config</td><td>Cloudflare/F5/Imperva รุ่นปัจจุบัน</td></tr>
+          <tr><td><b style="color:#fff">Gen 4</b><br>WAAP</td><td>รวม WAF + Bot Management + API Security (schema-aware) + DDoS + client-side protection (Magecart) + edge หลายภูมิภาค + threat intel แชร์ข้าม customer</td><td>Cloudflare, Akamai, Imperva ตัวเต็มปี 2025–26</td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:66ch;opacity:.75">อ้างอิง: <a href="https://www.f5.com/company/blog/from-rules-to-risk-the-evolution-of-wafs-and-the-rise-of-ai-powered-outcomes" target="_blank" rel="noopener" style="color:var(--signal-ok)">F5 — From rules to risk</a> · <a href="https://www.checkpoint.com/cyber-hub/cloud-security/what-is-web-application-firewall/what-is-a-next-generation-waf/" target="_blank" rel="noopener" style="color:var(--signal-ok)">Check Point — What Is a Next-Gen WAF?</a> · <a href="https://www.levo.ai/resources/blogs/what-is-waap-web-application-api-protection" target="_blank" rel="noopener" style="color:var(--signal-ok)">Levo.ai — What Is WAAP?</a></p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> โปรเจกต์นี้อยู่ตรงไหน — ประเมินตรงๆ</h2>
+      <div class="callout risk">
+        <span class="cap">เอนจินที่บล็อกจริงคือ Gen 1</span>
+        <p>ModSecurity + OWASP CRS signature-based ล้วนๆ — เทคโนโลยีเดียวกับที่ commercial product ใช้เมื่อ 10–15 ปีก่อน ไม่ต่างจาก WAF ตัวเก่าที่สุดในตลาด</p>
+      </div>
+
+      <h3 style="margin-top:1.4rem">ML ที่มีอยู่คือของจริง แต่ยังไม่ถึงระดับ Gen 3</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>เกณฑ์ Gen 3</th><th>สถานะจริงของโปรเจกต์</th></tr></thead>
+        <tbody>
+          <tr><td>ตัดสินใจบล็อกเองแบบ real-time</td><td><span class="status-pill risk">❌</span> ไม่ auto-block เลย — เป็นแค่คำแนะนำให้คนอนุมัติ (human-in-the-loop)</td></tr>
+          <tr><td>ความแม่นยำเพียงพอให้เชื่อถือ</td><td><span class="status-pill risk">❌</span> attack recall จริง <b style="color:#fff">62.26%</b> — ดูตัวเลขเต็มและที่มาของการแก้ไขที่ <a href="./17-post-stabilization-hardening.html" style="color:var(--signal-ok)">หน้า 17 §9</a></td></tr>
+          <tr><td>Closed-loop retraining (เรียนรู้จาก traffic ใหม่)</td><td><span class="status-pill risk">❌</span> เทรนครั้งเดียว ไม่มี pipeline ป้อนกลับเลย (ยืนยันด้วย grep ทั้ง repo)</td></tr>
+          <tr><td>Feature attribution / อธิบายได้</td><td><span class="status-pill ok">✅</span> มีจริง — per-request attribution ภาษาไทย ดูหน้า <a href="./16-explainability-completion.html" style="color:var(--signal-ok)">16</a></td></tr>
+        </tbody>
+      </table></div>
+
+      <h3 style="margin-top:1.4rem">Gen 2 features — ไม่มีเลยสักอย่าง</h3>
+      <p style="max-width:66ch">ไม่มี bot management, ไม่มี session-based risk scoring, ไม่มี challenge/captcha — ยังไม่ถึง Gen 2 ด้วยซ้ำในมิตินี้</p>
+
+      <h3 style="margin-top:1.4rem">Gen 4 / WAAP — ไม่ถึงแม้แต่จะเข้าใกล้</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Feature</th><th>สถานะ</th></tr></thead>
+        <tbody>
+          <tr><td>API schema-aware protection</td><td><span class="status-pill risk">❌</span> ไม่มี</td></tr>
+          <tr><td>Client-side / Magecart protection</td><td><span class="status-pill risk">❌</span> ไม่มี</td></tr>
+          <tr><td>Multi-region edge จริง</td><td><span class="status-pill warn">⚠️</span> CDN 3-region (SG/JP/TH) เขียนโค้ดเสร็จ ผ่าน test บน dev แล้ว <b style="color:#fff">แต่ไม่เคย deploy จริงข้ามภูมิภาคเลย</b> — ปัจจุบันมี Edge node จริงแค่ 1 ตัว</td></tr>
+          <tr><td>RASP</td><td><span class="status-pill risk">❌</span> ไม่มี</td></tr>
+          <tr><td>Threat intel แชร์ข้าม tenant</td><td><span class="status-pill risk">❌</span> ไม่มี</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> สรุป</h2>
+      <div class="callout risk">
+        <span class="cap">คำตัดสิน</span>
+        <p><b style="color:#fff">คือ Gen 1 WAF ที่มี prototype ML แปะเป็นชั้นทดลองข้างๆ ยังไม่ไว้ใจให้ตัดสินใจเอง</b> ไม่ใช่ Next-Gen WAF ตามนิยามอุตสาหกรรม แม้โค้ด ML/AI Copilot/explainability จะดูทันสมัย</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">สำหรับ thesis/capstone — นี่คือ scope ที่สมเหตุสมผล</b> จุดขายที่ตอบได้จริงในห้องสอบคือ "เข้าใจข้อจำกัดของ ML แล้วออกแบบให้ human-in-the-loop เพราะ recall ไม่พอ" ไม่ใช่ "สร้าง Next-Gen WAF"</p>
+      <div class="callout">
+        <span class="cap">คำเตือนสำหรับ defense</span>
+        <p>ถ้าไปเคลม Gen 3/WAAP จะโดนซักได้ง่ายมาก เพราะตัวเลขและ feature ไม่ซัพพอร์ตคำอ้างนั้นจริง — ตอบตามตารางข้างบนแทน จะดูน่าเชื่อถือกว่าและตอบคำถามลึกได้มั่นใจกว่า</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> ถ้าจะพัฒนาต่อให้ถึง Gen 4 — ต้องทำอะไรบ้าง</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>4.1 Bot Management</h4>
+          <p>ยังไม่มีเลย — Gen 2 ก็ยังไม่ถึง ต้องสร้าง fingerprinting (TLS/JA3, canvas/behavior), session risk scoring, challenge (CAPTCHA/JS) แทนการ block ตรงๆ — งานใหญ่ ต้องมี dataset บอทจริงมาเทรน/tune</p>
+        </div>
+        <div class="card">
+          <h4>4.2 API Security (schema-aware)</h4>
+          <p>ต้อง parse OpenAPI/schema ของ origin แล้วตรวจ request ตาม schema จริง (ไม่ใช่แค่ regex บน URL) + auto-discover endpoint ที่ origin ไม่เคยประกาศไว้ (shadow API detection)</p>
+        </div>
+        <div class="card">
+          <h4>4.3 Multi-region Edge จริง</h4>
+          <p>โค้ด CDN 3-region เขียนเสร็จแล้ว <b style="color:#fff">แต่ต้อง deploy จริง</b> — เช่าเครื่องเพิ่มอีก 2 ภูมิภาค + GeoDNS จริง + sync rule ข้าม edge ให้ทำงานพร้อมกัน ไม่ใช่แค่โค้ด</p>
+        </div>
+        <div class="card">
+          <h4>4.4 Client-side Protection (Magecart-class)</h4>
+          <p>ต้อง inject JS monitor ฝั่ง browser ตรวจ script ที่ผิดปกติ (เช่น skimmer ขโมยบัตรเครดิต) — สถาปัตยกรรมคนละชั้นกับ WAF เดิมทั้งหมด เริ่มจากศูนย์</p>
+        </div>
+        <div class="card">
+          <h4>4.5 RASP</h4>
+          <p>ต้องฝัง agent เข้าไปใน runtime ของแอปเป้าหมายเอง (Java/Node/.NET) ไม่ใช่แค่ที่ perimeter — เกินขอบเขตของ "WAF ข้างหน้า origin" ที่ออกแบบไว้ตอนนี้เลย ต้องเปลี่ยนสถาปัตยกรรมพื้นฐาน</p>
+        </div>
+        <div class="card">
+          <h4>4.6 Threat Intel ข้าม tenant</h4>
+          <p>ต้องมี traffic จากลูกค้าจริงจำนวนมากพอจะเห็น pattern ร่วม — ข้อนี้<b style="color:#fff">ทำไม่ได้เลยจนกว่าจะมีผู้ใช้จริงหลายรายในสเกลใหญ่</b> ไม่ใช่แค่เรื่องเทคนิค</p>
+        </div>
+      </div>
+      <h3 style="margin-top:1.4rem">4.7 ยกระดับ ML ให้ auto-block ได้ (เงื่อนไขของ Gen 3 ที่ยังไม่ผ่านด้วยซ้ำ)</h3>
+      <p style="max-width:66ch">ต้องดัน recall จาก 62% ขึ้นไปในระดับที่ไว้ใจได้ (&gt;90%+) + closed-loop retraining + calibrate confidence — ตามที่ <span class="mono">CLAUDE.md</span> ระบุไว้แล้วว่าเลื่อนหลังสอบจบ</p>
+
+      <div class="callout risk" style="margin-top:1.4rem">
+        <span class="cap">ทำไม่ทันใน 1 เดือนแน่นอน — ไม่ใช่แค่ "เยอะ" แต่บาง item เปลี่ยน scope ทั้งหมด</span>
+        <p>ข้อ 4.5 (RASP) กับข้อ 4.6 (threat intel ข้าม tenant) ไม่ใช่ปัญหาที่แก้ด้วยเวลา/แรงเพิ่ม — ข้อ 4.5 ต้องเปลี่ยนสถาปัตยกรรมจากรากฐาน ข้อ 4.6 ต้องมี user base จริงที่ยังไม่มี</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">คำแนะนำ:</b> อย่าตั้งเป้า Gen 4 เป็น scope thesis เด็ดขาด — ถ้าอยากมีจุดขาย "ก้าวข้าม Gen 1" แนะนำเลือกแค่ 1 อย่างที่เข้าเงื่อนไขเวลา+โครงสร้างที่มีอยู่แล้วจริง: <b style="color:var(--signal-ok)">ข้อ 4.3 (deploy multi-region ที่เขียนเสร็จแล้ว)</b> เพราะโค้ดพร้อม เหลือแค่ deploy — ตรงกับ priority "CDN ให้จริงครบ" ที่ <span class="mono">CLAUDE.md</span> วางไว้อยู่แล้ว ไม่ต้องเพิ่ม scope ใหม่</p>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./10-cdn-verdict.html"><span class="dir">← ก่อนหน้า</span><strong>10 · ระบบนี้เป็น CDN จริงไหม</strong></a>
+      <a class="next" href="./index.html"><span class="dir">กลับหน้าแรก →</span><strong>00 · ภาพรวมระบบ</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>

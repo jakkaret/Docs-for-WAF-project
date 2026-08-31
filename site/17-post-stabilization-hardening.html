@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Post-Stabilization Hardening — WAF + CDN Platform Docs</title>
-<meta name="description" content="ปิด Cloudflare Tunnel bypass ตัวจริง (priority สูงสุดของโปรเจกต์), แก้ RAM leak จาก reload=True, ปิด ClickHouse injection 6 จุด, และ TDD หา SecRule injection เจอใน rule_manager.py — 30 ส.ค.–1 ก.ย. 2026">
+<meta name="description" content="ปิด Cloudflare Tunnel bypass ตัวจริง (priority สูงสุดของโปรเจกต์), แก้ RAM leak จาก reload=True, ปิด ClickHouse+SecRule injection 8 จุดรวมด้วย TDD, และแก้เลข ML accuracy ที่ README ตกยุคอ้าง 93.40% ทั้งที่จริง 80.47% — 30 ส.ค.–1 ก.ย. 2026">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,10 +43,14 @@
       </ul>
     </div>
     <div>
-      <p class="nav-group-label">การทดสอบและตรวจสอบ</p>
+      <p class="nav-group-label">ตรวจสอบและแก้ไข</p>
       <ul class="nav-list">
         <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
         <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html" aria-current="page"><span class="no">17</span> Post-Stabilization Hardening</a></li>
       </ul>
     </div>
     <div>
@@ -56,24 +60,16 @@
       </ul>
     </div>
     <div>
-      <p class="nav-group-label">ผลการแก้ไข</p>
+      <p class="nav-group-label">FAQ</p>
       <ul class="nav-list">
-        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
-        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
-        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
-        <li><a href="./17-post-stabilization-hardening.html" aria-current="page"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+        <li><a href="./18-waf-generation-assessment.html"><span class="no">18</span> WAF Generation Assessment</a></li>
       </ul>
     </div>
     <div>
       <p class="nav-group-label">บริบทภายนอก</p>
       <ul class="nav-list">
         <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
-      </ul>
-    </div>
-    <div>
-      <p class="nav-group-label">บทสรุป</p>
-      <ul class="nav-list">
-        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
       </ul>
     </div>
     <div class="sidebar-foot">
@@ -85,10 +81,10 @@
   <main id="main">
     <header class="page-head reveal">
       <p class="eyebrow"><span class="dot"></span>17 · POST-STABILIZATION HARDENING — 30 ส.ค. – 1 ก.ย. 2026</p>
-      <h1>ปิด bypass ตัวจริง + ตามหา bug ต่อด้วย TDG จนเจอช่องโหว่ที่ 7</h1>
-      <p class="lede">ต่อจากหน้า 14 และ 16 — งานรอบนี้ปิด priority สูงสุดของโปรเจกต์ตาม <span class="mono">CLAUDE.md</span> (Cloudflare Tunnel bypass), ตามด้วยรอบ "ทำระบบพื้นฐานให้เสถียร" ที่เจอ RAM leak จริง, เหตุขัดข้องเครือข่ายของมหาวิทยาลัยที่แก้เองไม่ได้, และปิดท้ายด้วยการหา bug แบบ TDD (RED→GREEN→verify) จนเจอช่องโหว่ตัวที่ 7 ที่ไม่มีใครเคยพิสูจน์มาก่อน</p>
+      <h1>ปิด bypass ตัวจริง + ตามหา bug ต่อด้วย TDD จนเจอช่องโหว่ที่ 7 + แก้ตัวเลข ML ที่ตกยุค</h1>
+      <p class="lede">ต่อจากหน้า 14 และ 16 — งานรอบนี้ปิด priority สูงสุดของโปรเจกต์ตาม <span class="mono">CLAUDE.md</span> (Cloudflare Tunnel bypass), ตามด้วยรอบ "ทำระบบพื้นฐานให้เสถียร" ที่เจอ RAM leak จริง, เหตุขัดข้องเครือข่ายของมหาวิทยาลัยที่แก้เองไม่ได้, หา bug แบบ TDD (RED→GREEN→verify) จนเจอช่องโหว่ตัวที่ 7 ที่ไม่มีใครเคยพิสูจน์มาก่อน, และปิดท้ายด้วยการแก้เลข ML ที่ README เดิมอ้างตกยุค (93.40% → 80.47% ตัวจริง) พร้อมเขียน README มืออาชีพใหม่ทั้งฉบับ</p>
       <div class="meta-line">
-        <span><b>ผลรวม</b> smoke test 22/22 + 6/6 ผ่านทุกรอบ, tunnel test 28/28, full suite backend 55 → 61 ผ่าน</span>
+        <span><b>ผลรวม</b> smoke test 22/22 + 6/6 ผ่านทุกรอบ, tunnel test 28/28, full suite backend 55 → 61 ผ่าน, ml/tests 18/18</span>
         <span><b>ช่องโหว่ที่ปิดเพิ่ม</b> Cloudflare bypass (P0), ClickHouse injection ×6, SecRule injection ×2</span>
       </div>
     </header>
@@ -105,6 +101,7 @@
           <tr><td><b style="color:#fff">H4 · ClickHouse injection</b></td><td>escape เดิม escape แค่ quote ไม่ escape backslash ก่อน — หลุดได้จริง</td><td><span class="status-pill ok">✅ ปิด 6/6 จุด</span></td></tr>
           <tr><td><b style="color:#fff">FRP_ADMIN_PASS</b></td><td>ยังเป็นค่า default อ่อน</td><td><span class="status-pill warn">ผู้ใช้ตัดสินใจคงไว้ (dev stage)</span></td></tr>
           <tr><td><b style="color:#fff">SecRule injection</b></td><td>ช่องโหว่ที่ 7 ไม่เคยมีใครพิสูจน์มาก่อน — เจอผ่าน TDD</td><td><span class="status-pill ok">✅ ปิดแล้ว</span></td></tr>
+          <tr><td><b style="color:#fff">T13 · เลข ML ตกยุค</b></td><td>README อ้าง 93.40% ทั้งที่โมเดลถูกเทรนใหม่แล้วเหลือ 80.47% — <span class="mono">/health</span> ยัง hardcode ว่า "ผ่าน target"</td><td><span class="status-pill ok">✅ แก้ครบ + README ใหม่</span></td></tr>
         </tbody>
       </table></div>
     </section>
@@ -230,7 +227,19 @@ curl http://neverssl.com → redirect ไป KKU NAC captive portal login</pre>
     </section>
 
     <section class="block reveal">
-      <h2><span class="idx">§9</span> คุณค่าเชิง thesis</h2>
+      <h2><span class="idx">§9</span> T13 · แก้ตัวเลข ML ที่โฆษณาเกินจริง + README มืออาชีพ</h2>
+      <p style="max-width:66ch">ผู้ใช้ถามว่าใครเขียนเลข 93.40% ที่ README เดิมอ้าง — สืบจาก <span class="mono">git log</span> จริง: commit แรก (10 ส.ค.) เทรนโมเดลครั้งแรกได้ 93.40% จริงตอนนั้น เขียนลง README, commit ต่อมา (23 ส.ค.) เทรนใหม่ด้วย synthetic data generator ได้ผล eval ใหม่ = <b style="color:#fff">80.47%</b> แต่ README ไม่เคยอัปเดตตาม — <b style="color:#fff">สรุป: ไม่ใช่การโม้ตั้งแต่แรก แต่เป็นเอกสารตกยุคหลังโมเดลถูกเทรนใหม่</b></p>
+      <div class="callout risk">
+        <span class="cap">TDD แก้ที่ behavior จริงก่อน (ไม่ใช่แค่แก้ข้อความ)</span>
+        <p><span class="mono">/health</span> endpoint เดิม hardcode <span class="mono">accuracy_target_passed: True</span> เสมอ ทั้งที่ <span class="mono">eval_accuracy</span> จริงอยู่ที่ 0.8047 (ต่ำกว่า target 0.85) — RED: เขียนเทส 4 ตัวก่อนมีฟังก์ชัน <span class="mono">accuracy_meets_target()</span> → ImportError ตามคาด · GREEN: เพิ่มฟังก์ชันจริง (fail-closed: ไม่มีข้อมูล = ไม่ผ่าน) ลบ fallback <span class="mono">0.934</span> ที่ยังอ้างเลขเก่าออกด้วย → เทสผ่าน 4/4, ml/tests รวม 18/18</p>
+        <p style="margin-top:.5rem">Deploy จริงบน Main: <span class="mono">accuracy_target_passed:true</span> (ขัดแย้งในตัวเองกับ eval_accuracy 0.8047) → <b style="color:var(--signal-ok)">accuracy_target_passed:false, eval_accuracy:0.8047</b> ตรงความจริงแล้ว</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">กวาดเอกสาร/placeholder ที่เป็นข้อความ static ทั่วโปรเจกต์:</b> README.md และแผนเทียบ Cloudflare (เลข 93.40%/0.9895 → 80.47%/0.8847 ทุกจุด รวม verdict "✅ เทียบเท่า" ที่ต้องแก้เป็น "⚠️ ยังต่ำกว่า target" เพราะอิงเลขเก่า) · <span class="mono">train_model.py</span> ที่ print "(Target &gt; 85% PASSED!)" hardcode ไม่เช็คค่าจริง · dashboard HTML ที่มี placeholder ผิดทั้งชุด (train/test split, benign/attack totals, confusion matrix ทั้ง 4 ช่อง) ตรวจพบว่าไม่มี fallback reset ถ้า fetch ข้อมูลจริงล้มเหลว — โหมด fetch-fail จะโชว์เลขเก่าค้างอยู่ถ้าไม่แก้ placeholder ด้วย ยืนยันปิดครบด้วยการ grep เลขเก่าทั่ว repo หลังแก้ → ไม่เจอเหลือเลยสักจุด</p>
+      <p style="max-width:66ch"><b style="color:#fff">เขียน README ใหม่ทั้งฉบับ</b> (ผู้ใช้ขอเพิ่มระหว่างทาง) จากคู่มือ local setup อย่างเดียว เปลี่ยนเป็นโครงสร้าง README มืออาชีพ: ภาพรวม+เหตุผลออกแบบ, สถาปัตยกรรม 3 เครื่องพร้อม diagram, tech stack ตามเวอร์ชันจริงจาก package.json/requirements.txt, ผลทดสอบ ML เลขจริง, roadmap ที่บอกข้อจำกัดตรงๆ — ตัดลิงก์ไปไฟล์คู่มือที่อ้างถึงแต่ไม่มีอยู่จริงในโปรเจกต์ออกด้วย ไม่ใส่ลิงก์เสีย</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§10</span> คุณค่าเชิง thesis</h2>
       <div class="callout ok">
         <span class="cap">ประโยคที่ป้องกันได้ตอน defense</span>
         <p>"ปิด WAF bypass ที่ระบุไว้เป็นความเสี่ยงสูงสุดของโปรเจกต์ได้จริงหลังพิสูจน์ด้วยข้อมูล network-level (DNS/TCP/UDP) ไม่ใช่แค่อ่านสถานะ systemd — และใช้ TDD (RED→GREEN→verify กับเครื่องมือจริง) หาช่องโหว่ inject เข้าไฟล์ config ที่ไม่มีใครเคยพิสูจน์มาก่อนจนเจอและปิดได้"</p>

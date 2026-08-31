@@ -45,10 +45,14 @@
       </ul>
     </div>
     <div>
-      <p class="nav-group-label">การทดสอบและตรวจสอบ</p>
+      <p class="nav-group-label">ตรวจสอบและแก้ไข</p>
       <ul class="nav-list">
         <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
         <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
       </ul>
     </div>
     <div>
@@ -58,24 +62,16 @@
       </ul>
     </div>
     <div>
-      <p class="nav-group-label">ผลการแก้ไข</p>
+      <p class="nav-group-label">FAQ</p>
       <ul class="nav-list">
-        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
-        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
-        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
-        <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+        <li><a href="./18-waf-generation-assessment.html"><span class="no">18</span> WAF Generation Assessment</a></li>
       </ul>
     </div>
     <div>
       <p class="nav-group-label">บริบทภายนอก</p>
       <ul class="nav-list">
         <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
-      </ul>
-    </div>
-    <div>
-      <p class="nav-group-label">บทสรุป</p>
-      <ul class="nav-list">
-        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
       </ul>
     </div>
     <div class="sidebar-foot">
@@ -316,8 +312,8 @@
     </section>
 
     <section class="block reveal">
-      <h2><span class="idx">§5</span> อ่านต่อทีละชั้นระบบ</h2>
-      <p style="max-width:66ch">จัดเป็น 4 หมวดตามลักษณะเนื้อหา — เริ่มจากสถาปัตยกรรม ไปหลักฐานการทดสอบ แล้วจบที่บทสรุป</p>
+      <h2><span class="idx">§5</span> อ่านต่อทีละหมวด</h2>
+      <p style="max-width:66ch">จัดเป็น 5 หมวดตามประเภทเนื้อหา — เริ่มจากสถาปัตยกรรม ไปหลักฐานการตรวจสอบ+แก้ไข แผนพัฒนา คำถามที่พบบ่อย แล้วปิดท้ายด้วยบริบทงานวิจัยภายนอก</p>
 
       <h3 style="margin-top:1.8rem"><span class="idx">A</span> สถาปัตยกรรมระบบ — 7 ชั้น</h3>
       <div class="grid cols-3 doc-index">
@@ -330,10 +326,15 @@
         <a class="card doc-card" href="./07-web-origin-testbed.html"><span class="no">07</span><h3>Web Origin Testbed</h3><p>DVWA, Juice Shop, vAmPI, bWAPP หลัง KKU VPN — testbed 4-in-1</p><div class="stats"><span class="status-pill ok">4 containers healthy</span></div></a>
       </div>
 
-      <h3 style="margin-top:2rem"><span class="idx">B</span> การทดสอบและตรวจสอบ</h3>
+      <h3 style="margin-top:2rem"><span class="idx">B</span> ตรวจสอบและแก้ไข — 27 ส.ค.–1 ก.ย. 2026</h3>
+      <p style="max-width:66ch;opacity:.75;margin:.3rem 0 1rem">เรียงตามเวลาจริง: วิธีทดสอบ → ผลตรวจพบ → ปิดทีละรอบ</p>
       <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./08-testing-approach.html"><span class="no">08</span><h3>แนวทางการทดสอบระบบ</h3><p>8 หมวดทดสอบ WAF พร้อมคำสั่งจริงที่ใช้และผลจริงที่ได้ ลองรันชุดทดสอบเองได้ในหน้า</p><div class="stats"><span class="status-pill ok">4 หมวดผ่าน</span><span class="status-pill risk">3 หมวดพบปัญหา</span></div></a>
         <a class="card doc-card" href="./11-system-audit.html"><span class="no">11</span><h3>System Audit — 29 ส.ค. 2026</h3><p>ตรวจซ้ำทั้งระบบละเอียด: infra, backend, frontend, ML, CDN, WAF rules, dead code, CI — ยืนยันด้วยการทดสอบจริงทุกข้อ</p><div class="stats"><span class="status-pill risk">6 critical</span><span class="status-pill warn">11 high</span></div></a>
+        <a class="card doc-card" href="./13-week0-stabilization.html"><span class="no">13</span><h3>Week 0 Stabilization</h3><p>ปิดช่องโหว่ CRITICAL ทั้ง 6 รายการจากหน้า 11 ภายในวันเดียว — ทุกข้อทดสอบกับระบบจริงก่อน-หลัง</p><div class="stats"><span class="status-pill ok">6/6 fixed</span></div></a>
+        <a class="card doc-card" href="./14-tunnel-implementation.html"><span class="no">14</span><h3>Private Tunnel</h3><p>เขียน tunnel ใหม่แทน custom tunnel เดิมที่ deploy ไม่ได้ — hostname-based routing, credential แยกต่อ origin, TLS + cert pinning</p><div class="stats"><span class="status-pill ok">31/31 test ผ่าน</span></div></a>
+        <a class="card doc-card" href="./16-explainability-completion.html"><span class="no">16</span><h3>Explainability Ships</h3><p>Feature attribution + คำอธิบายภาษาไทย deploy ขึ้น production จริง พิสูจน์ด้วย User Journey บนเบราว์เซอร์จริง</p><div class="stats"><span class="status-pill ok">13/13 journey</span><span class="status-pill warn">2 critical ใหม่</span></div></a>
+        <a class="card doc-card" href="./17-post-stabilization-hardening.html"><span class="no">17</span><h3>Post-Stabilization Hardening</h3><p>ปิด Cloudflare Tunnel bypass (priority สูงสุด), RAM leak, ClickHouse+SecRule injection 8 จุด, และเลข ML ที่ README ตกยุคอ้าง</p><div class="stats"><span class="status-pill ok">P0 ปิดแล้ว</span><span class="status-pill ok">61 tests</span></div></a>
       </div>
 
       <h3 style="margin-top:2rem"><span class="idx">C</span> แผนพัฒนาต่อ</h3>
@@ -341,22 +342,15 @@
         <a class="card doc-card" href="./12-development-guide.html"><span class="no">12</span><h3>Development Guide</h3><p>แผน 5 สัปดาห์จากผล audit จริง + task card 14 รายการ พร้อม acceptance criteria และกฎตัดสินใจเมื่อเวลาไม่พอ</p><div class="stats"><span class="status-pill risk">6 งานด่วน</span></div></a>
       </div>
 
-      <h3 style="margin-top:2rem"><span class="idx">D</span> ผลการแก้ไข — 30 ส.ค.–1 ก.ย. 2026</h3>
+      <h3 style="margin-top:2rem"><span class="idx">D</span> FAQ</h3>
       <div class="grid cols-3 doc-index">
-        <a class="card doc-card" href="./13-week0-stabilization.html"><span class="no">13</span><h3>Week 0 Stabilization</h3><p>ปิดช่องโหว่ CRITICAL ทั้ง 6 รายการจากหน้า 11 ภายในวันเดียว — ทุกข้อทดสอบกับระบบจริงก่อน-หลัง</p><div class="stats"><span class="status-pill ok">6/6 fixed</span></div></a>
-        <a class="card doc-card" href="./14-tunnel-implementation.html"><span class="no">14</span><h3>Private Tunnel</h3><p>เขียน tunnel ใหม่แทน custom tunnel เดิมที่ deploy ไม่ได้ — hostname-based routing, credential แยกต่อ origin, TLS + cert pinning</p><div class="stats"><span class="status-pill ok">31/31 test ผ่าน</span></div></a>
-        <a class="card doc-card" href="./16-explainability-completion.html"><span class="no">16</span><h3>Explainability Ships</h3><p>Feature attribution + คำอธิบายภาษาไทย deploy ขึ้น production จริง พิสูจน์ด้วย User Journey บนเบราว์เซอร์จริง</p><div class="stats"><span class="status-pill ok">13/13 journey</span><span class="status-pill warn">2 critical ใหม่</span></div></a>
-        <a class="card doc-card" href="./17-post-stabilization-hardening.html"><span class="no">17</span><h3>Post-Stabilization Hardening</h3><p>ปิด Cloudflare Tunnel bypass (priority สูงสุด), RAM leak, ClickHouse injection 6 จุด, และ SecRule injection ที่พบผ่าน TDD</p><div class="stats"><span class="status-pill ok">P0 ปิดแล้ว</span><span class="status-pill ok">61 tests</span></div></a>
+        <a class="card doc-card" href="./10-cdn-verdict.html"><span class="no">10</span><h3>ระบบนี้เป็น CDN จริงไหม</h3><p>ตอบคำถามอาจารย์ที่ปรึกษาตรง ๆ ด้วยหลักฐานจริง เทียบกับ 4 องค์ประกอบของ CDN ทีละข้อ พร้อม simulation</p><div class="stats"><span class="status-pill ok">2/4 ผ่านจริง</span></div></a>
+        <a class="card doc-card" href="./18-waf-generation-assessment.html"><span class="no">18</span><h3>WAF Generation Assessment</h3><p>WAF ตอนนี้มีกี่ Gen ต่างกันยังไง แล้วโปรเจกต์นี้อยู่ระดับไหนจริง — เทียบกับนิยามอุตสาหกรรม ไม่อวย</p><div class="stats"><span class="status-pill risk">Gen 1</span></div></a>
       </div>
 
       <h3 style="margin-top:2rem"><span class="idx">E</span> บริบทภายนอก</h3>
       <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./09-attack-landscape.html"><span class="no">09</span><h3>ภูมิทัศน์การโจมตี 2025–26</h3><p>รายงานวิจัย 120+ แหล่งอ้างอิง: AI-driven attack, BOLA, AiTM phishing, session hijacking</p><div class="stats"><span class="status-pill debt">งานวิจัยภายนอก</span></div></a>
-      </div>
-
-      <h3 style="margin-top:2rem"><span class="idx">F</span> บทสรุป</h3>
-      <div class="grid cols-3 doc-index">
-        <a class="card doc-card" href="./10-cdn-verdict.html"><span class="no">10</span><h3>ระบบนี้เป็น CDN จริงไหม</h3><p>ตอบคำถามอาจารย์ที่ปรึกษาตรง ๆ ด้วยหลักฐานจริง เทียบกับ 4 องค์ประกอบของ CDN ทีละข้อ พร้อม simulation</p><div class="stats"><span class="status-pill ok">2/4 ผ่านจริง</span></div></a>
       </div>
     </section>
 
