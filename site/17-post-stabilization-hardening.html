@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Post-Stabilization Hardening — WAF + CDN Platform Docs</title>
+<meta name="description" content="ปิด Cloudflare Tunnel bypass ตัวจริง (priority สูงสุดของโปรเจกต์), แก้ RAM leak จาก reload=True, ปิด ClickHouse injection 6 จุด, และ TDD หา SecRule injection เจอใน rule_manager.py — 30 ส.ค.–1 ก.ย. 2026">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div>
+      <p class="nav-group-label">ภาพรวม</p>
+      <ul class="nav-list">
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">สถาปัตยกรรมระบบ</p>
+      <ul class="nav-list">
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">การทดสอบและตรวจสอบ</p>
+      <ul class="nav-list">
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">แผนพัฒนาต่อ</p>
+      <ul class="nav-list">
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">ผลการแก้ไข</p>
+      <ul class="nav-list">
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html" aria-current="page"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บริบทภายนอก</p>
+      <ul class="nav-list">
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="nav-group-label">บทสรุป</p>
+      <ul class="nav-list">
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>17 · POST-STABILIZATION HARDENING — 30 ส.ค. – 1 ก.ย. 2026</p>
+      <h1>ปิด bypass ตัวจริง + ตามหา bug ต่อด้วย TDG จนเจอช่องโหว่ที่ 7</h1>
+      <p class="lede">ต่อจากหน้า 14 และ 16 — งานรอบนี้ปิด priority สูงสุดของโปรเจกต์ตาม <span class="mono">CLAUDE.md</span> (Cloudflare Tunnel bypass), ตามด้วยรอบ "ทำระบบพื้นฐานให้เสถียร" ที่เจอ RAM leak จริง, เหตุขัดข้องเครือข่ายของมหาวิทยาลัยที่แก้เองไม่ได้, และปิดท้ายด้วยการหา bug แบบ TDD (RED→GREEN→verify) จนเจอช่องโหว่ตัวที่ 7 ที่ไม่มีใครเคยพิสูจน์มาก่อน</p>
+      <div class="meta-line">
+        <span><b>ผลรวม</b> smoke test 22/22 + 6/6 ผ่านทุกรอบ, tunnel test 28/28, full suite backend 55 → 61 ผ่าน</span>
+        <span><b>ช่องโหว่ที่ปิดเพิ่ม</b> Cloudflare bypass (P0), ClickHouse injection ×6, SecRule injection ×2</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> สรุปหนึ่งหน้า</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>เรื่อง</th><th>ปัญหา</th><th>สถานะ</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">Cloudflare Tunnel bypass</b></td><td>Lab node รัน tunnel ตรงเข้า origin ข้าม ModSecurity — priority สูงสุดของโปรเจกต์</td><td><span class="status-pill ok">✅ ปิดแล้ว</span></td></tr>
+          <tr><td><b style="color:#fff">RAM leak บน Main</b></td><td><span class="mono">reload=True</span> ใน production กิน RAM 1.06GB ทิ้งเปล่า</td><td><span class="status-pill ok">✅ แก้แล้ว</span></td></tr>
+          <tr><td><b style="color:#fff">waf-nginx unhealthy</b></td><td>healthcheck ผิด endpoint มา 23 ชั่วโมง (สถานะผิด ไม่ใช่ WAF ล่ม)</td><td><span class="status-pill ok">✅ แก้แล้ว</span></td></tr>
+          <tr><td><b style="color:#fff">bwapp เสิร์ฟผิดแอป</b></td><td>ไม่เคยต่อสายเข้าระบบเลยตั้งแต่แรก + เจอ Lab หลุด KKU network authentication ระหว่างแก้</td><td><span class="status-pill ok">✅ แก้แล้ว (รอ user login NAC)</span></td></tr>
+          <tr><td><b style="color:#fff">H4 · ClickHouse injection</b></td><td>escape เดิม escape แค่ quote ไม่ escape backslash ก่อน — หลุดได้จริง</td><td><span class="status-pill ok">✅ ปิด 6/6 จุด</span></td></tr>
+          <tr><td><b style="color:#fff">FRP_ADMIN_PASS</b></td><td>ยังเป็นค่า default อ่อน</td><td><span class="status-pill warn">ผู้ใช้ตัดสินใจคงไว้ (dev stage)</span></td></tr>
+          <tr><td><b style="color:#fff">SecRule injection</b></td><td>ช่องโหว่ที่ 7 ไม่เคยมีใครพิสูจน์มาก่อน — เจอผ่าน TDD</td><td><span class="status-pill ok">✅ ปิดแล้ว</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> ปิด Cloudflare Tunnel bypass — priority สูงสุด</h2>
+      <div class="callout ok">
+        <span class="cap">P0 ตาม CLAUDE.md — ปิดแล้ว</span>
+        <p>หน้า 14 เตือนไว้ว่า Lab มี <span class="mono">dvwa-tunnel.service</span> และ <span class="mono">waf-tunnel.service</span> รัน <span class="mono">cloudflared</span> ชี้ตรงเข้า origin port (80, 3000, 8080, 5000, 8081) — ข้าม ModSecurity ทั้งหมด ตอนนี้ปิดถาวรแล้วด้วย <span class="mono">systemctl disable --now</span> ทั้งคู่</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">แก้ความเข้าใจผิดของตัวเองระหว่างทาง</b> — รอบแรกสรุปจาก <span class="mono">systemctl is-active</span> = <span class="mono">active running</span> ว่า bypass "เปิดรั่วอยู่จริง" ซึ่งผิด ตรวจลึกแล้วพบว่า process ยังอยู่มา 7 วันแต่ต่อ Cloudflare ไม่ติดเลย:</p>
+      <div class="diagram">
+        <pre>cloudflared processes : 6 ตัว รันมา 7 วัน
+TCP connections       : 0
+UDP/QUIC connections  : 0
+DNS ของ URL ที่บันทึก  : ไม่ resolve (ยืนยันผ่าน 1.1.1.1 และ 8.8.8.8)</pre>
+        <div class="cap">น่าจะเพราะ KKU VPN บล็อก outbound ตอนนั้น — จึงยังไม่มีใครเข้าถึงได้จริง แต่ตั้ง Restart=always + enabled แปลว่าเน็ตกลับมาปกติเมื่อไหร่ มันจะได้ URL ใหม่แล้วเปิดทางลัดทันที = ช่องโหว่ที่รออยู่ ไม่ใช่ช่องโหว่ที่กำลังรั่ว ณ ขณะนั้น — แต่ก็ยังต้องปิดอยู่ดี เพราะเงื่อนไขเปลี่ยนได้ทุกเมื่อ</div>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">บทเรียนซ้ำ:</b> <span class="mono">active running</span> ของ systemd บอกว่า process ยังอยู่ ไม่ได้บอกว่ามันทำงานสำเร็จ — เจอบทเรียนเดียวกันนี้อีกครั้งใน §4</p>
+      <h3 style="margin-top:1.4rem">เส้นทาง traffic จริงที่ตรวจสอบแล้ว — ไม่มีเส้นไหนพึ่ง cloudflared</h3>
+      <div class="diagram">
+        <pre>internet -> *.waf-it-kku.online -> Main caddy-ssl-termination :443
+         -> waf-nginx :8080 (ModSecurity)
+            juice, dvwa      -> upstream frp_tunnel_router  172.18.0.1:8085  (FRP)
+            vampi            -> upstream cloudwaf_tunnel    172.18.0.1:8060  (tunnel ที่เขียนเอง)
+            default (bwapp)  -> container dvwa บน Main</pre>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>host</th><th>ก่อน (normal/sqli)</th><th>หลัง (normal/sqli)</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">dvwa</td><td>302 / 403</td><td>302 / 403</td></tr>
+          <tr><td class="mono">juice</td><td>200 / 403</td><td>200 / 403</td></tr>
+          <tr><td class="mono">vampi</td><td>200 / 403</td><td>200 / 403</td></tr>
+          <tr><td class="mono">bwapp</td><td>302 / 403</td><td>302 / 403</td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:66ch">cloudflared เหลือ 0 process, ทั้งสอง unit = <span class="mono">inactive</span> + <span class="mono">disabled</span> — สมัครพร้อมกันแก้ unit <span class="mono">waf-lab.service</span> ที่สถานะ systemd ไม่ตรงความจริง (enabled แต่ <span class="mono">inactive dead</span> ขณะ container ทั้ง 6 ตัวรันอยู่จริง ถูกสตาร์ตด้วยมือนอก systemd) — อันตรายตอน reboot เพราะ systemd จะไม่ auto-start ให้ ทดสอบผ่าน smoke test 22 invariants / 6 security gates</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> RAM leak จริง — <span class="mono">reload=True</span> ในโปรดักชัน</h2>
+      <p style="max-width:66ch">ผู้ใช้ขอ "ระบบพื้นฐานทั้งหมดทำงานได้ปกติ...แก้ได้เลย...แจ้งตอนเสร็จหมด" — มอบอำนาจตัดสินใจให้เต็มที่ ระหว่างไล่ตรวจเจอ <span class="mono">waf-dashboard.service</span> รัน <span class="mono">python main.py</span> ตรง (ไม่ใช่ผ่าน <span class="mono">uvicorn</span> CLI) ซึ่งไปโดน <span class="mono">uvicorn.run(..., reload=True)</span> ที่ฝังอยู่ใน <span class="mono">__main__</span> block</p>
+      <div class="callout risk">
+        <span class="cap">ทำไมอันตราย</span>
+        <p>Uvicorn reload mode สร้าง supervisor + worker process แยกกัน — worker (spawn child) กิน RSS <b style="color:#fff">1.06 GB เดี่ยวๆ</b> (27% ของ RAM ทั้งเครื่อง) ถาวรตลอดเวลาที่ service รัน และยังเฝ้าดู filesystem ตลอดเวลา — ถ้ามีไฟล์ .py ถูกเขียนระหว่าง deploy มันจะ auto-restart กลางคันโดยไม่ตั้งใจ ทำให้ deploy บางส่วนถูก serve ก่อนไฟล์ครบ (<span class="mono">reload=True</span> เป็น dev-only ตามเอกสาร Uvicorn เอง ไม่ควรอยู่ใน production)</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">แก้:</b> ลบ <span class="mono">reload=True,</span> ออกจาก <span class="mono">dashboard/backend/main.py</span> บรรทัดเดียว, deploy, restart</p>
+      <div class="stat-row" style="margin-top:1rem">
+        <div class="stat"><span class="num">2663→1626</span><span class="lbl">RAM ใช้บน Main (MB)</span></div>
+        <div class="stat"><span class="num">+1036</span><span class="lbl">MB ที่ว่างเพิ่มขึ้น</span></div>
+      </div>
+      <p style="max-width:66ch">process เหลือตัวเดียว (ไม่มี spawn child อีก), smoke test 22+6 ผ่านเหมือนเดิม</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> waf-nginx unhealthy 23 ชั่วโมง — สถานะผิด ไม่ใช่ WAF ล่ม</h2>
+      <p style="max-width:66ch">Root cause จากอ่านโค้ด <span class="mono">/usr/local/bin/healthcheck</span> จริง (ไม่เดา): script เป็นของ image ต้นทางที่ตรวจ <span class="mono">https://localhost:${SSL_PORT}/healthz</span> แต่ container นี้ไม่มี SSL listener เลย (TLS termination อยู่ที่ Caddy ชั้นนอก) → connect refused ทุกครั้ง ตลอด <span class="mono">FailingStreak 2783</span></p>
+      <p style="max-width:66ch"><b style="color:#fff">แก้:</b> เพิ่ม <span class="mono">healthcheck:</span> override ใน <span class="mono">docker-compose.yml</span> ให้ตรวจ <span class="mono">http://localhost:8080/healthz</span> (endpoint จริงที่ทำงาน) แทน — ไม่แตะ nginx config ตัวจริงเลย เป็นแค่ metadata ของ Docker <b style="color:#fff">ยืนยันก่อนแก้ว่าไม่มีอะไรอ่านค่านี้ไปตัดสินใจ</b> (<span class="mono">depends_on</span> แบบ list ธรรมดา ไม่มี <span class="mono">condition: service_healthy</span>, backend ก็ไม่อ่าน docker health) — เป็นแค่สถานะผิดที่ทำให้คนอ่าน <span class="mono">docker ps</span> เข้าใจผิดว่า WAF ล่ม ไม่เคยกระทบ traffic จริง</p>
+      <p style="max-width:66ch">ผล: <span class="mono">waf-nginx Up (healthy)</span></p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> bwapp เสิร์ฟผิดแอป → เจอ Lab หลุด KKU network authentication</h2>
+      <p style="max-width:66ch">เดิม <span class="mono">bwapp.waf-it-kku.online</span> ไม่มี <span class="mono">server_name</span> block ใน nginx เลย ตกไป default fallback → เสิร์ฟ container <span class="mono">dvwa</span> บน Main ผิดตัว — ตรวจแล้ว: bwapp ไม่เคยถูกต่อสายเข้าระบบเลยตั้งแต่แรก (ไม่มี origin ใน DynamoDB, ไม่มี FRP proxy, ไม่มี tunnel registration)</p>
+      <div class="callout risk">
+        <span class="cap">restart service ที่ถือ long-lived connection มีต้นทุนแฝง</span>
+        <p>ระหว่างต่อสาย (เพิ่ม FRP proxy + nginx block) ต้อง restart <span class="mono">waf-agent.service</span> — connection เดิมที่ทำงานอยู่ (dvwa, juice ผ่าน FRP) หลุดและต่อกลับไม่ได้ ลองย้ายไป custom tunnel แทนแล้ว restart <span class="mono">cloudwaf-agent.service</span> — connection เดิมของ vampi ก็หลุดตามไปด้วยเช่นกัน</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">วินิจฉัยจนพบสาเหตุจริง (ไม่ใช่สิ่งที่งานรอบนี้ทำให้เกิด):</b></p>
+      <div class="diagram">
+        <pre>ping Main            → "Destination Net Prohibited" จาก KKU VPN gateway เอง
+port 80  → Main      → เชื่อมได้
+port 443/7000/8050   → connection refused ทั้งหมด
+port 443 → 1.1.1.1   → connection refused (host ภายนอกที่ไม่เกี่ยวกับระบบเลย)
+curl http://neverssl.com → redirect ไป KKU NAC captive portal login</pre>
+        <div class="cap">สรุป: Lab หลุดจาก KKU network authentication (NAC session หมดอายุ) — บล็อกทุกอย่างยกเว้น HTTP ธรรมดา เป็นปัญหาเดิมที่ซ่อนอยู่ (เหตุผลเดียวกับที่ cloudflared ใน §2 ต่อ Cloudflare ไม่ติด) connection เดิมรอดมาได้เพราะเป็น TCP session ที่เปิดค้างไว้นาน ไม่ต้องต่อใหม่ — พอ restart service ต้องขอ connection ใหม่ถึงเจอบล็อกที่ซ่อนอยู่</div>
+      </div>
+      <p style="max-width:66ch">นี่คือ network-level authentication ที่ต้องใช้ credential ของผู้ใช้เอง (KKU account) ไม่ใช่สิ่งที่ทำผ่าน SSH ได้ — รอผู้ใช้ login ใหม่ที่เครื่อง Lab แล้ว restart agent ทั้งสองตัวต่อกลับติดทันที ยืนยันด้วย title/redirect ของแอปจริง ไม่ใช่แค่ status code:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>host</th><th>normal</th><th>sqli</th><th>ยืนยันตัวตนแอป</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">dvwa</td><td>302</td><td>403</td><td><span class="mono">Location: login.php</span></td></tr>
+          <tr><td class="mono">juice</td><td>200</td><td>403</td><td><span class="mono">&lt;title&gt;OWASP Juice Shop&lt;/title&gt;</span></td></tr>
+          <tr><td class="mono">vampi</td><td>200</td><td>403</td><td>—</td></tr>
+          <tr><td class="mono">bwapp</td><td>302→302→200</td><td>403</td><td><span class="mono">&lt;title&gt;bWAPP - Login&lt;/title&gt;</span> (ตามด้วย <span class="mono">-L</span>)</td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:66ch">bwapp คือของจริงแล้ว ไม่ใช่ dvwa ที่หลุดมาทางค่า default เหมือนก่อนหน้า — regression เต็ม: smoke test 22+6 ผ่าน, tunnel test พบ 1 fail เดิม (test hardcode โดเมนเดียวไว้ตั้งแต่ก่อนขยาย <span class="mono">tunnel_domains</span> เป็น 4 โดเมน) แก้ assertion แล้ว → <b style="color:var(--signal-ok)">28/28 ผ่าน</b></p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> H4 · ClickHouse injection — ปิดครบ 6 จุด</h2>
+      <p style="max-width:66ch">ตรวจใหม่พบ 8 จุดที่ escape ด้วย <span class="mono">.replace("'", "\\'")</span> เดิม แบ่งได้ 2 กลุ่มจริง — 6 จุดเป็น ClickHouse SQL injection จริง (<span class="mono">clickhouse_service.py</span> ×3, <span class="mono">analytics.py</span> ×1, <span class="mono">cdn.py</span> ×1, <span class="mono">logs.py</span> ×1), อีก 2 จุดใน <span class="mono">rule_manager.py</span> ไม่ใช่ ClickHouse เลย (เขียนไฟล์ ModSecurity <span class="mono">.conf</span> คนละ sink คนละ trust model) — <b style="color:#fff">ไม่แตะตอนนั้น</b> เพราะยังไม่ได้พิสูจน์ว่ากติกา escape เหมือนกันไหม บันทึกไว้เป็นรายการแยก (→ ดู §7 ที่ตามไปพิสูจน์และปิดจริง)</p>
+      <div class="callout risk">
+        <span class="cap">Root cause — พิสูจน์กับ ClickHouse จริงก่อนแก้</span>
+        <p>ClickHouse ตีความ <span class="mono">\</span> เป็น escape character ในสตริง (แบบเดียวกับ MySQL) — โค้ดเดิม escape แค่ quote โดยไม่ escape backslash ที่มีอยู่ก่อนหน้า ทำให้ input ที่มี <span class="mono">\</span> นำหน้า <span class="mono">'</span> (เช่น <span class="mono">x\' OR 1=1 --</span>) หลุดออกจาก string literal ได้จริง — ยืนยันด้วยการรันจริง: escape เดิมทำให้ query error <span class="mono">Unmatched parentheses</span> (หลุดจริง), escape ใหม่ (backslash ก่อน แล้วค่อย quote) round-trip กลับเป็นสตริงเดิมเป๊ะ</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">แก้:</b> เพิ่มฟังก์ชันกลาง <span class="mono">escape_like_value()</span> ใน <span class="mono">services/clickhouse_service.py</span> ใช้ร่วม 5 จุดที่เป็น LIKE-pattern fuzzy match — ส่วน <span class="mono">logs.py</span> explain-by-id (ค่าเดียว match ตรงตัว) เปลี่ยนเป็น parameterized query จริง (<span class="mono">{log_id:String}</span> + <span class="mono">parameters=</span>) ตาม pattern ที่ T6 (หน้า 13) วางไว้แล้ว — ดีกว่า escape เพราะไม่พึ่งการ escape ถูกต้องเลย</p>
+      <p style="max-width:66ch"><b style="color:#fff">ทดสอบ:</b> เทสใหม่ 3 ตัว (round-trip ผ่าน reference decoder จำลองกติกา unescape ของ ClickHouse เอง, ไม่มี unescaped quote หลุด, input ปกติไม่เปลี่ยน) ผ่านหมด 3/3 → full suite <b style="color:var(--signal-ok)">58 passed</b> (เดิม 55) <b style="color:#fff">deploy + verify กับของจริง:</b> ยิง attack string เดียวกันเข้า 3 endpoint จริงผ่าน HTTP — ทุก endpoint ตอบ 200 ปกติ ไม่ 500 ไม่หลุด SQL</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§7</span> ช่องโหว่ที่ 7 — SecRule injection ใน <span class="mono">rule_manager.py</span> (พบผ่าน TDD)</h2>
+      <p style="max-width:66ch">ไล่หา bug ทั้งระบบแบบกว้างๆ ด้วย TDD process จริง (RED→GREEN→verify) เลือกจุดที่ค้างไว้จาก §6 — สองจุดใน <span class="mono">rule_manager.py</span> หน้าตาเหมือน ClickHouse bug (escape แค่ quote ไม่ escape backslash ก่อน) แต่เป็นคนละ sink (เขียนไฟล์ ModSecurity <span class="mono">.conf</span> ไม่ใช่ ClickHouse)</p>
+      <p style="max-width:66ch"><b style="color:#fff">ตรวจกติกาจริงก่อน:</b> เอกสาร ModSecurity official ("Data Formats" wiki) ยืนยันว่า backslash เป็น escape character ใน quoted string เหมือน ClickHouse — สงสัยว่าเป็นบัคจริง</p>
+      <div class="callout risk">
+        <span class="cap">พิสูจน์กับเครื่องมือจริงก่อนเขียนโค้ดใดๆ</span>
+        <p>สร้าง rule message = <span class="mono">pwned\' ctl:ruleRemoveById=900001</span> ด้วย escaping เดิม deploy เข้า custom-rules บน Main ชั่วคราว รัน <span class="mono">nginx -t</span> (แค่ตรวจ syntax ไม่ reload ไม่กระทบ traffic จริง) แล้วลบไฟล์ทันที — ได้: <span class="mono">Expecting an action, got: ctl:ruleRemoveById=900001',tag:'end'</span></p>
+        <p style="margin-top:.5rem">ยืนยันแล้วว่าเป็นช่องโหว่จริง ไม่ใช่แค่ทฤษฎี — admin (ที่ผ่าน RBAC มาแล้ว) ที่สร้าง custom rule สามารถ inject ModSecurity action เข้าไปในไฟล์ rule ได้ เช่น <span class="mono">ctl:ruleRemoveById=&lt;id&gt;</span> ปิดการทำงานของ rule อื่นแบบเงียบๆ ถ้า payload ถูกออกแบบให้ syntax ถูกต้อง (payload ทดสอบนี้ตั้งใจให้ error เพื่อพิสูจน์จุดที่หลุด ไม่ใช่ payload โจมตีจริงที่ผ่าน)</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">TDD:</b> เขียนเทส 3 ตัวก่อนแก้โค้ด (<span class="mono">tests/test_rule_secrule_escape.py</span>) — round-trip ผ่าน reference decoder จำลองกติกา unescape ของ ModSecurity เอง ครอบคลุมทั้ง <span class="mono">add_rule</span> และ <span class="mono">update_rule</span> — <b style="color:var(--signal-risk)">รันแล้วเห็น FAIL จริงตามที่คาด</b> ก่อนเริ่มแก้โค้ดสักบรรทัด</p>
+      <p style="max-width:66ch"><b style="color:#fff">แก้:</b> เพิ่ม <span class="mono">escape_secrule_string(value, quote_char)</span> (escape backslash ก่อน quote — เหมือน <span class="mono">escape_like_value</span> ของ §6 เป๊ะ) ใช้แทนทั้ง <span class="mono">add_rule</span> และ <span class="mono">update_rule</span> → เทสผ่านหมด 3/3, full suite <b style="color:var(--signal-ok)">61 passed</b> (เดิม 58)</p>
+      <p style="max-width:66ch"><b style="color:#fff">พิสูจน์ซ้ำกับเครื่องมือจริง:</b> เอา payload เดิม มาสร้างด้วย escaping ใหม่ deploy ทดสอบ + <span class="mono">nginx -t</span> อีกครั้ง → <span class="mono">syntax is ok</span> / <span class="mono">test is successful</span> — ปิดช่องโหว่จริง ไม่ใช่แค่ผ่าน unit test <b style="color:#fff">Deploy:</b> restart <span class="mono">waf-dashboard.service</span>, สอบผ่าน smoke test 22+6, sanity check ว่า custom rule จริงที่มี backslash ใน regex operator ปกติ (เช่น <span class="mono">\s+</span>) ยังพาร์สผ่าน <span class="mono">nginx -t</span> เหมือนเดิม ไม่กระทบ</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§8</span> FRP_ADMIN_PASS — ตัดสินใจคงไว้ตามเดิม</h2>
+      <div class="callout">
+        <span class="cap">Ruling จากผู้ใช้ — accepted risk</span>
+        <p>เตรียม password ใหม่แล้ว (สุ่ม 32 ตัวอักษร) แต่ผู้ใช้ตัดสินใจ<b style="color:#fff">ไม่เปลี่ยน</b> — เหตุผล: ตอนนี้ยังเป็นขั้นตอนพัฒนา (dev stage) ไม่ใช่ production จริง ยอมรับความเสี่ยงนี้ชั่วคราว ลบ password ที่ generate ไว้ทิ้งแล้วก่อนหน้านี้ ไม่มี artifact ค้าง</p>
+      </div>
+      <p style="max-width:66ch">ไม่เผยค่า default ปัจจุบันบนหน้านี้ (ยังใช้งานอยู่จริง) — ตามนโยบายเดียวกับ credential อื่นบนไซต์นี้: บอกตำแหน่ง/ความเสี่ยง ไม่บอกค่าที่ยังใช้งานได้จริง</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§9</span> คุณค่าเชิง thesis</h2>
+      <div class="callout ok">
+        <span class="cap">ประโยคที่ป้องกันได้ตอน defense</span>
+        <p>"ปิด WAF bypass ที่ระบุไว้เป็นความเสี่ยงสูงสุดของโปรเจกต์ได้จริงหลังพิสูจน์ด้วยข้อมูล network-level (DNS/TCP/UDP) ไม่ใช่แค่อ่านสถานะ systemd — และใช้ TDD (RED→GREEN→verify กับเครื่องมือจริง) หาช่องโหว่ inject เข้าไฟล์ config ที่ไม่มีใครเคยพิสูจน์มาก่อนจนเจอและปิดได้"</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">ข้อจำกัดที่ต้องพูดตรงๆ:</b> FRP_ADMIN_PASS ยังเป็นค่า default อ่อน (ตัดสินใจรับความเสี่ยงไว้ระดับ dev stage) · หน้า Tunnels frontend ยังไม่รวมสถานะ tunnel ใหม่เข้ากับของเดิม · เหตุขัดข้องเครือข่ายของมหาวิทยาลัย (KKU NAC) เป็นความเสี่ยงภายนอกที่ทีมนี้ควบคุมไม่ได้ — บทเรียนคือต้องแยกให้ออกระหว่าง "ระบบพัง" กับ "โครงสร้างพื้นฐานภายนอกที่ระบบพึ่งพาไม่พร้อมใช้งานชั่วคราว"</p>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./16-explainability-completion.html"><span class="dir">← ก่อนหน้า</span><strong>16 · Explainability Ships</strong></a>
+      <a class="next" href="./index.html"><span class="dir">ถัดไป →</span><strong>กลับหน้าแรก</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>

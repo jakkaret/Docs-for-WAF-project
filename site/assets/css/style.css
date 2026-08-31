@@ -289,9 +289,11 @@ td code, .mono{ font-family: var(--font-mono); font-size: .85em; color: var(--si
 /* ---------- callouts ---------- */
 .callout{ border-left: 3px solid var(--signal-warn); background: var(--signal-warn-dim); padding: 1rem 1.2rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 1.2rem 0; }
 .callout.risk{ border-color: var(--signal-risk); background: var(--signal-risk-dim); }
+.callout.ok{ border-color: var(--signal-ok); background: var(--signal-ok-dim); }
 .callout p{ margin:0; color: var(--text); font-size:.92rem; }
 .callout .cap{ font-family: var(--font-mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color: var(--signal-warn); margin-bottom:.4rem; display:block;}
 .callout.risk .cap{ color: var(--signal-risk); }
+.callout.ok .cap{ color: var(--signal-ok); }
 
 /* ---------- inline lists ---------- */
 .check-list{ list-style:none; margin: 1rem 0; padding:0; display:flex; flex-direction:column; gap:.55rem; }
