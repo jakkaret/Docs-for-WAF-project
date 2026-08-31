@@ -19,6 +19,24 @@
     });
   }
 
+  /* ---- collapsible sidebar groups (accordion) ---- */
+  var navGroups = document.querySelectorAll(".nav-group");
+  navGroups.forEach(function(group){
+    var toggleBtn = group.querySelector(".nav-group-toggle");
+    var list = group.querySelector(".nav-list");
+    if (!toggleBtn || !list) return;
+    var hasCurrent = !!list.querySelector('a[aria-current="page"]');
+    setGroupExpanded(hasCurrent);
+    toggleBtn.addEventListener("click", function(){
+      setGroupExpanded(toggleBtn.getAttribute("aria-expanded") !== "true");
+    });
+    function setGroupExpanded(expanded){
+      toggleBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+      if (expanded) list.removeAttribute("hidden");
+      else list.setAttribute("hidden", "");
+    }
+  });
+
   /* ---- scroll reveal ---- */
   var revealEls = document.querySelectorAll(".reveal");
   if (reduceMotion || !("IntersectionObserver" in window)) {

@@ -26,15 +26,21 @@
       <strong>WAF + CDN Platform</strong>
       <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
     </a>
-    <div>
-      <p class="nav-group-label">ภาพรวม</p>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="true">
+        <span class="nav-group-label">ภาพรวม</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
       <ul class="nav-list">
         <li><a href="./index.html" aria-current="page"><span class="no">00</span> ภาพรวมระบบ</a></li>
       </ul>
     </div>
-    <div>
-      <p class="nav-group-label">สถาปัตยกรรมระบบ</p>
-      <ul class="nav-list">
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">สถาปัตยกรรมระบบ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
         <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
         <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
         <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
@@ -44,9 +50,12 @@
         <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
       </ul>
     </div>
-    <div>
-      <p class="nav-group-label">ตรวจสอบและแก้ไข</p>
-      <ul class="nav-list">
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ตรวจสอบและแก้ไข</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
         <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
         <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
         <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
@@ -55,22 +64,31 @@
         <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
       </ul>
     </div>
-    <div>
-      <p class="nav-group-label">แผนพัฒนาต่อ</p>
-      <ul class="nav-list">
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">แผนพัฒนาต่อ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
         <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
       </ul>
     </div>
-    <div>
-      <p class="nav-group-label">FAQ</p>
-      <ul class="nav-list">
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">FAQ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
         <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
         <li><a href="./18-waf-generation-assessment.html"><span class="no">18</span> WAF Generation Assessment</a></li>
       </ul>
     </div>
-    <div>
-      <p class="nav-group-label">บริบทภายนอก</p>
-      <ul class="nav-list">
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">บริบทภายนอก</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
         <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
       </ul>
     </div>
@@ -134,6 +152,51 @@
         <div class="stat"><span class="num"><span data-count="98.39" data-decimals="2" data-suffix="%">0</span></span><span class="lbl">Attack precision ของโมเดล ML</span></div>
         <div class="stat"><span class="num"><span data-count="4" data-suffix="">0</span></span><span class="lbl">ช่องโหว่ความปลอดภัยที่พบและยังเปิดอยู่</span></div>
         <div class="stat"><span class="num"><span data-count="7" data-suffix="">0</span></span><span class="lbl">ฟีเจอร์เขียนเสร็จแล้วแต่ยังไม่ต่อสาย</span></div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section class="block reveal">
+      <h2>อ่านตามหมวดที่สนใจ</h2>
+      <p style="max-width:66ch">เลือกหมวดที่ต้องการ — แต่ละใบพาไปหน้าแรกของหมวดนั้น (สารบัญเต็มของแต่ละหมวดอยู่ใน sidebar ด้านซ้าย กดหัวข้อหมวดเพื่อขยาย)</p>
+      <div class="grid cols-3 category-grid">
+        <a class="card category-card" href="./01-waf-engine.html">
+          <span class="cat-icon">🏗️</span>
+          <h3>สถาปัตยกรรมระบบ</h3>
+          <p>WAF Engine, CDN, Dashboard Backend, ML, Tunnel, Data Storage, Web Origin Testbed</p>
+          <span class="cat-count">7 หน้า</span>
+        </a>
+        <a class="card category-card" href="./08-testing-approach.html">
+          <span class="cat-icon">🛡️</span>
+          <h3>ตรวจสอบและแก้ไข</h3>
+          <p>แนวทางทดสอบ, audit เต็มระบบ, และไทม์ไลน์การปิดช่องโหว่ทุกรอบจนถึงปัจจุบัน</p>
+          <span class="cat-count">6 หน้า</span>
+        </a>
+        <a class="card category-card" href="./12-development-guide.html">
+          <span class="cat-icon">🗺️</span>
+          <h3>แผนพัฒนาต่อ</h3>
+          <p>แผน 5 สัปดาห์ + task card พร้อม acceptance criteria และกฎตัดสินใจเมื่อเวลาไม่พอ</p>
+          <span class="cat-count">1 หน้า</span>
+        </a>
+        <a class="card category-card" href="./10-cdn-verdict.html">
+          <span class="cat-icon">❓</span>
+          <h3>FAQ</h3>
+          <p>ตอบคำถามที่ถูกถามบ่อยตรงๆ ด้วยหลักฐานจริง — เป็น CDN จริงไหม, WAF อยู่ Gen ไหน</p>
+          <span class="cat-count">2 หน้า</span>
+        </a>
+        <a class="card category-card" href="./09-attack-landscape.html">
+          <span class="cat-icon">🌐</span>
+          <h3>บริบทภายนอก</h3>
+          <p>งานวิจัยภูมิทัศน์การโจมตี 2025–26 จาก 120+ แหล่งอ้างอิง — ไม่ใช่ของโปรเจกต์นี้เอง</p>
+          <span class="cat-count">1 หน้า</span>
+        </a>
+        <a class="card category-card" href="#capabilities">
+          <span class="cat-icon">📋</span>
+          <h3>ภาพรวมระบบ (หน้านี้)</h3>
+          <p>สถานะความสามารถทั้งหมด, journey จำลอง, และสรุปแต่ละหมวดด้านล่าง</p>
+          <span class="cat-count">อยู่หน้านี้</span>
+        </a>
       </div>
     </section>
 

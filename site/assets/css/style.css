@@ -139,11 +139,25 @@ code, pre, kbd{ font-family: var(--font-mono); }
   display:block; font-style: normal; color: var(--signal-ok); font-size:.68rem; margin-top:.35rem; letter-spacing:.08em;
 }
 
+.nav-group{ margin-bottom: .2rem; }
+.nav-group-toggle{
+  all: unset; box-sizing: border-box; cursor: pointer; width: 100%;
+  display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+  padding: .3rem .3rem .3rem 0; border-radius: var(--radius);
+}
+.nav-group-toggle:hover{ background: var(--panel); }
+.nav-group-toggle:hover .nav-group-label{ color: #fff; }
 .nav-group-label{
   font-family: var(--font-mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase;
-  color: var(--muted); margin: 0 0 .5rem;
+  color: var(--muted); margin: 0;
 }
-.nav-list{ list-style: none; margin: 0 0 1.2rem; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.nav-group-chevron{
+  font-family: var(--font-mono); font-size: .65rem; color: var(--muted);
+  transition: transform .15s; flex-shrink: 0;
+}
+.nav-group-toggle[aria-expanded="true"] .nav-group-chevron{ transform: rotate(90deg); }
+.nav-list{ list-style: none; margin: .4rem 0 1.2rem; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.nav-list[hidden]{ display: none; }
 .nav-list a{
   display: flex; align-items: baseline; gap: .55rem;
   text-decoration: none; color: var(--text-dim);
@@ -407,6 +421,21 @@ hr.rule{ border:none; border-top:1px solid var(--line); margin: 2.6rem 0; }
 .doc-card h3{ margin: .5rem 0 .4rem; font-size: 1.05rem; }
 .doc-card p{ font-size: .87rem; margin: 0; }
 .doc-card .stats{ margin-top:.8rem; display:flex; gap:.5rem; flex-wrap:wrap; }
+
+/* top-level category hub (Cloudflare-style landing grid) */
+.category-grid{ margin-top: 1.2rem; }
+.category-card{
+  display:flex; flex-direction:column; gap:.5rem; text-decoration:none;
+  padding: 1.5rem 1.5rem 1.4rem; transition: border-color .15s, transform .12s;
+}
+.category-card:hover{ border-color: var(--signal-ok); transform: translateY(-2px); }
+.category-card .cat-icon{ font-size: 1.5rem; line-height: 1; }
+.category-card h3{ margin: .2rem 0 0; font-size: 1.08rem; color: #fff; }
+.category-card p{ margin: 0; font-size: .87rem; color: var(--text-dim); }
+.category-card .cat-count{
+  margin-top: auto; padding-top: .6rem; font-family: var(--font-mono); font-size: .72rem;
+  color: var(--signal-ok); letter-spacing: .04em;
+}
 
 footer.site-foot{
   border-top: 1px solid var(--line); padding: 2.2rem 0; margin-top: 3rem;
