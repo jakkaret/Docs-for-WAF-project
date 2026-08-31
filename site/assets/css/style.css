@@ -34,12 +34,18 @@
   --font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
 
   --radius: 3px;
-  --shell-max: clamp(1180px, 78vw, 1600px);
-  --sidebar-w: 268px;
+  --shell-max: clamp(1180px, 94vw, 2200px);
+  --sidebar-w: 280px;
 }
 
 *, *::before, *::after{ box-sizing: border-box; }
-html{ scroll-behavior: smooth; }
+html{
+  scroll-behavior: smooth;
+  /* base for every rem-sized value on the site — was left at the 16px
+     browser default, which read small given how much of the type scale
+     sits at .82-.93rem; bumping the root scales all of it proportionally */
+  font-size: clamp(17px, 0.55vw + 15.5px, 19px);
+}
 @media (prefers-reduced-motion: reduce){
   html{ scroll-behavior: auto; }
   *, *::before, *::after{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
@@ -50,7 +56,7 @@ body{
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
