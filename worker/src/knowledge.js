@@ -39,7 +39,8 @@ FastAPI backend เดียวเสิร์ฟทั้ง REST API (60+ endp
 
 [04 · ML + AI Detection]
 Random Forest + Isolation Forest เทรนจากข้อมูลจริง ~60,000 samples (CSIC 2010 + augmented) ผลจริง: accuracy 80.47%, benign recall 98.97%, attack recall 62.26% (พลาดจับ ~38%), attack precision 98.39% ML ไม่ auto-block เสนอกฎเท่านั้น ต้องผ่าน admin approve เสมอ (human-in-the-loop)
-AI layer ใช้ Google Gemini: อธิบายเหตุการณ์บล็อกเป็นไทย, AI Copilot chat ที่ดึง telemetry สดจาก ClickHouse, สรุปรายงานตามช่วงเวลา — มี fallback ไม่พึ่ง AI 100% เสมอ Explainability engine เป็น regex signature-matching ไม่ใช่ SHAP/LIME
+AI layer ใช้ Google Gemini: อธิบายเหตุการณ์บล็อกเป็นไทย, AI Copilot chat ที่ดึง telemetry สดจาก ClickHouse, สรุปรายงานตามช่วงเวลา — มี fallback ไม่พึ่ง AI 100% เสมอ
+อัปเดต 31 ส.ค. 2026 (หน้า 16): Explainability engine ไม่ใช่ regex signature-matching อีกแล้ว — เปลี่ยนเป็น feature attribution จริงที่คำนวณจาก tree path ของ Random Forest เอง (ไม่ใช้ shap เพราะข้อจำกัด RAM บน Main) ความถูกต้องพิสูจน์ด้วยคณิตศาสตร์ (bias + ผลรวม contribution ต้องเท่ากับ predict_proba เป๊ะ) แล้วส่งต่อให้ Gemini แปลเป็นภาษาไทยที่อ้างชื่อ feature จริง deploy ขึ้น production แล้วและพิสูจน์ด้วย user journey บนเบราว์เซอร์จริง
 ช่องว่าง: entropy feature เขียนไว้แต่ไม่ได้ใช้จริง (dead code), ไม่มี closed-loop retraining, ไม่มี daily-cron cost control ตามแผนเดิม
 
 [05 · Tunnel System]
@@ -80,5 +81,9 @@ Polyglot persistence 5 ระบบ: ClickHouse (access log, 113,336 แถว�
 [14 · Private Tunnel — 30 ส.ค. 2026]
 ค้นพบว่าหน้า 11 สรุป root cause ของ tunnel ที่ตายผิด (คิดว่า network ถูกบล็อก แต่จริงๆ คือ token ไม่ตรงกันหลังหมุน token ตอน T5) — เป็นบทเรียนเรื่องอย่าสรุปสาเหตุจากหลักฐานฝั่งเดียว หลังแก้ token FRP กลับมาทำงานปกติ จากนั้นเขียน private tunnel ใหม่ทั้งหมด (795 บรรทัด Python stdlib ล้วน) ทดแทน custom tunnel เดิมที่ deploy ไม่ได้เพราะมีปัญหาเชิงสถาปัตยกรรม 7 ข้อ (token ไม่ใช่ความลับ, host hardcode, ไม่มี TLS จริง, port ชนกัน, ไม่มีอะไร route ไปหาทำให้ traffic ไม่ผ่าน WAF, ไม่ reconnect, โค้ดเปราะ) สถาปัตยกรรมใหม่ใช้ hostname-based routing (เหมือน FRP vhost) ทำให้ traffic ผ่าน ModSecurity ก่อนเข้า tunnel เสมอ, credential แยกต่อ origin (เก็บเฉพาะ SHA-256 hash ไม่ใช่ shared token แบบ FRP), TLS พร้อม certificate pinning ผลทดสอบ 31/31 เคสผ่าน ไม่มี regression กับ smoke test เดิม
 พบใหม่ที่ยังไม่ได้แก้: เข้าถึง Lab node ได้แล้วยืนยันว่า Cloudflare Tunnel bypass (dvwa-tunnel.service, waf-tunnel.service) เปิดเว็บทดสอบสู่อินเทอร์เน็ตตรงๆ ไม่ผ่าน WAF จริง — ตรงกับ priority สูงสุดของโปรเจกต์ที่ยังค้างอยู่
+
+[16 · Explainability Ships — 31 ส.ค. 2026]
+งานหลักของ thesis (T7-T11 ตามแผนหน้า 12) deploy ขึ้น production จริงครบ 3 ชั้น (ML service, backend, frontend) พิสูจน์ด้วย User Journey 13/13 บนเบราว์เซอร์จริงกับระบบที่ deploy แล้ว ไม่ใช่ mock T7 สร้างชุดทดสอบจริงที่ pytest เก็บได้ (55 ผ่าน จาก 0 เดิม) + แก้ CI ให้ fail ได้จริง T9 สร้าง feature attribution จากการคำนวณ tree path ของ Random Forest เอง (ไม่ใช้ shap เพราะข้อจำกัด RAM) ความถูกต้องพิสูจน์ด้วยคณิตศาสตร์ T10 ให้ Gemini แปล attribution เป็นภาษาไทยที่อ้างชื่อ feature จริง T11 แสดงผลบนหน้าเว็บ + ปลดล็อก endpoint ที่ 404 มาตลอด (mount router ที่ลืม mount) + ลบคำโฆษณาปลอม 2 จุด
+ระหว่างทางเจอ Critical เพิ่ม 2 ข้อ แก้ก่อน deploy: (1) bug ที่ทำให้คำอธิบาย crash การตรวจจับทั้งระบบ ถ้า Gemini คืนค่าผิดรูปแบบ (2) cross-tenant SQL injection ผ่าน endpoint สมัคร domain ที่ไม่มี validation เลย — พิสูจน์ exploit ได้จริง แก้ด้วย entry validation แต่**ยังไม่ใช่การปิดช่องโหว่เต็มรูป** ตัว SQL sink (การต่อ string แบบไม่ parameterize) ยังอ่อนอยู่และเข้าถึงได้จากทางอื่น (origin.label, query param search/origin) ที่ยังไม่ได้แตะ — ห้ามพูดว่า "ปิด SQL injection แล้ว" ทางแก้ที่ถูกต้องคือ parameterized query ทั้งหมด (finding H4 ในหน้า 11)
 
 ===== จบฐานความรู้ =====`;
