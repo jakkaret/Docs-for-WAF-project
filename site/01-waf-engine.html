@@ -60,6 +60,7 @@
         <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
         <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
         <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./19-main-server-analysis.html"><span class="no">19</span> Main Server Analysis</a></li>
       </ul>
     </div>
     <div class="nav-group">
@@ -149,8 +150,9 @@
           <p><span class="mono">POST/DELETE /api/blocklist</span> (auth ด้วย <span class="mono">X-Control-Token</span>) เก็บ IP ใน SQLite แล้ว auto-generate <span class="mono">@ipMatchFromFile</span> rule</p>
         </div>
         <div class="card finding" data-status="ok">
-          <div class="finding-head"><strong>BOLA/IDOR Guard</strong><span class="status-pill ok">ทำงานจริง</span></div>
+          <div class="finding-head"><strong>BOLA/IDOR Guard</strong><span class="status-pill warn">เครื่องมือตรวจ — ไม่ได้อยู่ใน request path</span></div>
           <p><span class="mono">bola_guard.py</span> (684 บรรทัด) — ตรวจ JWT signature จริง, path canonicalization กัน traversal desync, เช็ค header spoofing (<span class="mono">X-User-ID</span>/<span class="mono">X-Tenant-ID</span>) ให้ตรงกับ claim ที่ verify แล้ว</p>
+          <p style="margin-top:.6rem"><b style="color:var(--signal-warn)">แก้คำอธิบาย 2 ก.ย. 2026:</b> ตรวจซ้ำด้วยการไล่ import graph พบว่าโมดูลนี้ถูกเรียกจาก <span class="mono">api/rules.py</span> เท่านั้น และ <span class="mono">main.py</span> มี middleware แค่ <span class="mono">CORSMiddleware</span> ตัวเดียว — แปลว่าเป็น <b style="color:#fff">เครื่องมือตรวจแบบเรียกเอง (on-demand)</b> ผ่าน <span class="mono">POST /api/rules/bola/inspect</span> <b style="color:var(--signal-risk)">ไม่ใช่ยามที่ยืนเฝ้า traffic จริง</b> ดูหลักฐานที่ <a href="./19-main-server-analysis.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 19 §5.1</a></p>
         </div>
         <div class="card finding" data-status="ok">
           <div class="finding-head"><strong>Payload Normalization</strong><span class="status-pill ok">ทำงานจริง</span></div>

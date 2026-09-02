@@ -62,6 +62,7 @@
         <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
         <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
         <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./19-main-server-analysis.html"><span class="no">19</span> Main Server Analysis</a></li>
       </ul>
     </div>
     <div class="nav-group">
@@ -123,7 +124,7 @@
         <div class="pipeline-nodes">
           <div class="pipeline-node"><div class="ring"></div><div class="name">Client</div><div class="sub">อินเทอร์เน็ต</div></div>
           <div class="pipeline-node"><div class="ring"></div><div class="name">ModSecurity CRS</div><div class="sub">Edge / Main Node</div></div>
-          <div class="pipeline-node"><div class="ring"></div><div class="name">BOLA Guard</div><div class="sub">Dashboard Backend</div></div>
+          <div class="pipeline-node"><div class="ring"></div><div class="name">Rate Limiter</div><div class="sub">auth_request → Redis</div></div>
           <div class="pipeline-node"><div class="ring"></div><div class="name">Web Origin</div><div class="sub">DVWA / Juice Shop</div></div>
         </div>
         <div class="pipeline-log" aria-live="polite"></div>
@@ -171,7 +172,7 @@
           <span class="cat-icon">🛡️</span>
           <h3>ตรวจสอบและแก้ไข</h3>
           <p>แนวทางทดสอบ, audit เต็มระบบ, และไทม์ไลน์การปิดช่องโหว่ทุกรอบจนถึงปัจจุบัน</p>
-          <span class="cat-count">6 หน้า</span>
+          <span class="cat-count">7 หน้า</span>
         </a>
         <a class="card category-card" href="./12-development-guide.html">
           <span class="cat-icon">🗺️</span>
@@ -398,6 +399,7 @@
         <a class="card doc-card" href="./14-tunnel-implementation.html"><span class="no">14</span><h3>Private Tunnel</h3><p>เขียน tunnel ใหม่แทน custom tunnel เดิมที่ deploy ไม่ได้ — hostname-based routing, credential แยกต่อ origin, TLS + cert pinning</p><div class="stats"><span class="status-pill ok">31/31 test ผ่าน</span></div></a>
         <a class="card doc-card" href="./16-explainability-completion.html"><span class="no">16</span><h3>Explainability Ships</h3><p>Feature attribution + คำอธิบายภาษาไทย deploy ขึ้น production จริง พิสูจน์ด้วย User Journey บนเบราว์เซอร์จริง</p><div class="stats"><span class="status-pill ok">13/13 journey</span><span class="status-pill warn">2 critical ใหม่</span></div></a>
         <a class="card doc-card" href="./17-post-stabilization-hardening.html"><span class="no">17</span><h3>Post-Stabilization Hardening</h3><p>ปิด Cloudflare Tunnel bypass (priority สูงสุด), RAM leak, ClickHouse+SecRule injection 8 จุด, และเลข ML ที่ README ตกยุคอ้าง</p><div class="stats"><span class="status-pill ok">P0 ปิดแล้ว</span><span class="status-pill ok">61 tests</span></div></a>
+        <a class="card doc-card" href="./19-main-server-analysis.html"><span class="no">19</span><h3>Main Server Analysis</h3><p>ผ่าเครื่อง Main ทีละฟีเจอร์ — 5 service, 6 container, 98 endpoint พร้อมสิ่งที่ไม่ตรงกับที่เอกสารเคยอ้าง 4 ข้อ</p><div class="stats"><span class="status-pill ok">98 endpoint</span><span class="status-pill risk">พบใหม่ 4</span></div></a>
       </div>
 
       <h3 style="margin-top:2rem"><span class="idx">C</span> แผนพัฒนาต่อ</h3>

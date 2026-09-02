@@ -144,10 +144,10 @@
         risk: false
       },
       {
-        path: "POST /api/users/2/records (BOLA probe)",
+        path: "GET /login × 61 ครั้งใน 1 นาที",
         blockAt: 2,
-        rule: "bola_guard.py — object ownership mismatch",
-        verdict: "403 BLOCKED",
+        rule: "rate limiter — เกินโควตา sliding window (Redis ZSET)",
+        verdict: "429 TOO MANY REQUESTS",
         risk: true
       }
     ];
