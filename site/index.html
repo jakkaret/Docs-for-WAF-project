@@ -63,6 +63,8 @@
         <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
         <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
         <li><a href="./19-main-server-analysis.html"><span class="no">19</span> Main Server Analysis</a></li>
+        <li><a href="./20-waf-attack-test.html"><span class="no">20</span> WAF Attack Test</a></li>
+        <li><a href="./21-log-completeness.html"><span class="no">21</span> Log Completeness</a></li>
       </ul>
     </div>
     <div class="nav-group">
@@ -72,6 +74,7 @@
       </button>
       <ul class="nav-list" hidden>
         <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+        <li><a href="./22-n8n-integration-options.html"><span class="no">22</span> n8n Integration Options</a></li>
       </ul>
     </div>
     <div class="nav-group">
@@ -138,6 +141,11 @@
         </div>
       </div>
 
+      <div class="callout reveal" style="max-width:66ch">
+        <span class="cap">อัปเดต 4 ก.ย. 2026 — ยิง WAF จริง 20 payload + ตรวจ log ทั้งระบบ</span>
+        <p>ยิง payload โจมตีจริงเข้า WAF: <b style="color:var(--signal-ok)">SQLi / XSS / SSRF / Path Traversal บล็อกครบ 100%</b> รวมบล็อกได้ 15 จาก 20 — เหลือช่องว่าง signature 5 จุด (command injection, SSTI, NoSQLi) ที่กฎจับได้บางรูปแบบแต่ไม่ครบชุด · ตรวจ log พบว่า <b style="color:var(--signal-risk)">ตัวเลขบน dashboard บางตัวผิดอยู่</b> (edge_node ผิด 72%, latency เป็นศูนย์ปลอม 68%) อ่านที่ <a href="./20-waf-attack-test.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 20</a> และ <a href="./21-log-completeness.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 21</a></p>
+      </div>
+
       <div class="callout ok reveal" style="max-width:66ch">
         <span class="cap">อัปเดต 1 ก.ย. 2026 — ปิด WAF bypass ที่เป็น priority สูงสุดแล้ว</span>
         <p>Lab node เคยมี Cloudflare tunnel 2 ตัวเปิดเว็บทดสอบสู่อินเทอร์เน็ตตรงๆ ข้าม ModSecurity — <b style="color:var(--signal-ok)">ปิดถาวรแล้ว ยืนยันด้วยหลักฐาน network-level</b> พร้อมปิดช่องโหว่ ClickHouse injection 6 จุด และ SecRule injection ที่เพิ่งพบผ่าน TDD อ่านที่ <a href="./17-post-stabilization-hardening.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 17</a></p>
@@ -171,14 +179,14 @@
         <a class="card category-card" href="./08-testing-approach.html">
           <span class="cat-icon">🛡️</span>
           <h3>ตรวจสอบและแก้ไข</h3>
-          <p>แนวทางทดสอบ, audit เต็มระบบ, และไทม์ไลน์การปิดช่องโหว่ทุกรอบจนถึงปัจจุบัน</p>
-          <span class="cat-count">7 หน้า</span>
+          <p>แนวทางทดสอบ, audit เต็มระบบ, ผลยิง payload จริง และไทม์ไลน์การปิดช่องโหว่ทุกรอบ</p>
+          <span class="cat-count">9 หน้า</span>
         </a>
         <a class="card category-card" href="./12-development-guide.html">
           <span class="cat-icon">🗺️</span>
           <h3>แผนพัฒนาต่อ</h3>
-          <p>แผน 5 สัปดาห์ + task card พร้อม acceptance criteria และกฎตัดสินใจเมื่อเวลาไม่พอ</p>
-          <span class="cat-count">1 หน้า</span>
+          <p>แผน 5 สัปดาห์ + task card พร้อม acceptance criteria และตัวเลือกต่อยอดด้วย n8n</p>
+          <span class="cat-count">2 หน้า</span>
         </a>
         <a class="card category-card" href="./10-cdn-verdict.html">
           <span class="cat-icon">❓</span>
@@ -390,7 +398,7 @@
         <a class="card doc-card" href="./07-web-origin-testbed.html"><span class="no">07</span><h3>Web Origin Testbed</h3><p>DVWA, Juice Shop, vAmPI, bWAPP หลัง KKU VPN — testbed 4-in-1</p><div class="stats"><span class="status-pill ok">4 containers healthy</span></div></a>
       </div>
 
-      <h3 style="margin-top:2rem"><span class="idx">B</span> ตรวจสอบและแก้ไข — 27 ส.ค.–1 ก.ย. 2026</h3>
+      <h3 style="margin-top:2rem"><span class="idx">B</span> ตรวจสอบและแก้ไข — 27 ส.ค.–4 ก.ย. 2026</h3>
       <p style="max-width:66ch;opacity:.75;margin:.3rem 0 1rem">เรียงตามเวลาจริง: วิธีทดสอบ → ผลตรวจพบ → ปิดทีละรอบ</p>
       <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./08-testing-approach.html"><span class="no">08</span><h3>แนวทางการทดสอบระบบ</h3><p>8 หมวดทดสอบ WAF พร้อมคำสั่งจริงที่ใช้และผลจริงที่ได้ ลองรันชุดทดสอบเองได้ในหน้า</p><div class="stats"><span class="status-pill ok">4 หมวดผ่าน</span><span class="status-pill risk">3 หมวดพบปัญหา</span></div></a>
@@ -400,11 +408,14 @@
         <a class="card doc-card" href="./16-explainability-completion.html"><span class="no">16</span><h3>Explainability Ships</h3><p>Feature attribution + คำอธิบายภาษาไทย deploy ขึ้น production จริง พิสูจน์ด้วย User Journey บนเบราว์เซอร์จริง</p><div class="stats"><span class="status-pill ok">13/13 journey</span><span class="status-pill warn">2 critical ใหม่</span></div></a>
         <a class="card doc-card" href="./17-post-stabilization-hardening.html"><span class="no">17</span><h3>Post-Stabilization Hardening</h3><p>ปิด Cloudflare Tunnel bypass (priority สูงสุด), RAM leak, ClickHouse+SecRule injection 8 จุด, และเลข ML ที่ README ตกยุคอ้าง</p><div class="stats"><span class="status-pill ok">P0 ปิดแล้ว</span><span class="status-pill ok">61 tests</span></div></a>
         <a class="card doc-card" href="./19-main-server-analysis.html"><span class="no">19</span><h3>Main Server Analysis</h3><p>ผ่าเครื่อง Main ทีละฟีเจอร์ — 5 service, 6 container, 98 endpoint พร้อมสิ่งที่ไม่ตรงกับที่เอกสารเคยอ้าง 4 ข้อ</p><div class="stats"><span class="status-pill ok">98 endpoint</span><span class="status-pill risk">พบใหม่ 4</span></div></a>
+        <a class="card doc-card" href="./20-waf-attack-test.html"><span class="no">20</span><h3>WAF Attack Test</h3><p>ยิง payload โจมตีจริง 20 ตัวเข้า WAF — SQLi/XSS/SSRF บล็อกครบ 100% แต่พบช่องว่าง signature 5 จุด</p><div class="stats"><span class="status-pill ok">บล็อก 15/20</span><span class="status-pill warn">5 detection gap</span></div></a>
+        <a class="card doc-card" href="./21-log-completeness.html"><span class="no">21</span><h3>Log Completeness</h3><p>ตรวจ log ทุกชั้นจาก artifact จริง — edge_node ผิด 72%, latency เป็น 0 ถึง 68%, audit log 319MB ไม่มี rotation</p><div class="stats"><span class="status-pill risk">ตัวเลข dashboard ผิดอยู่</span></div></a>
       </div>
 
       <h3 style="margin-top:2rem"><span class="idx">C</span> แผนพัฒนาต่อ</h3>
       <div class="grid cols-3 doc-index">
         <a class="card doc-card" href="./12-development-guide.html"><span class="no">12</span><h3>Development Guide</h3><p>แผน 5 สัปดาห์จากผล audit จริง + task card 14 รายการ พร้อม acceptance criteria และกฎตัดสินใจเมื่อเวลาไม่พอ</p><div class="stats"><span class="status-pill risk">6 งานด่วน</span></div></a>
+        <a class="card doc-card" href="./22-n8n-integration-options.html"><span class="no">22</span><h3>n8n Integration Options</h3><p>เอา n8n มาต่อยอดได้ตรงไหน — แยก 3 บริบท พร้อมจุดที่ห้ามเอาเข้าไปแทนเด็ดขาด (hot path ของ WAF)</p><div class="stats"><span class="status-pill ok">เริ่มที่ continuous validation</span></div></a>
       </div>
 
       <h3 style="margin-top:2rem"><span class="idx">D</span> FAQ</h3>

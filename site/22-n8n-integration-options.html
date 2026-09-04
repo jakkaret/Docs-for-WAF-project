@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>n8n Integration Options — WAF + CDN Platform Docs</title>
+<meta name="description" content="เอา n8n มาต่อยอดระบบ WAF+CDN ได้ตรงไหน — แยก 3 บริบท (พัฒนา/ทดสอบ/อยู่ในระบบ) พร้อมจุดที่ห้ามเอาเข้าไปแทนเด็ดขาด และข้อจำกัด RAM ที่ต้องคิดก่อนติดตั้ง">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ภาพรวม</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">สถาปัตยกรรมระบบ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ตรวจสอบและแก้ไข</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./19-main-server-analysis.html"><span class="no">19</span> Main Server Analysis</a></li>
+        <li><a href="./20-waf-attack-test.html"><span class="no">20</span> WAF Attack Test</a></li>
+        <li><a href="./21-log-completeness.html"><span class="no">21</span> Log Completeness</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="true">
+        <span class="nav-group-label">แผนพัฒนาต่อ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list">
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+        <li><a href="./22-n8n-integration-options.html" aria-current="page"><span class="no">22</span> n8n Integration Options</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">FAQ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+        <li><a href="./18-waf-generation-assessment.html"><span class="no">18</span> WAF Generation Assessment</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">บริบทภายนอก</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>22 · n8n INTEGRATION OPTIONS — 4 ก.ย. 2026</p>
+      <h1>เอา n8n มาต่อยอดระบบได้ตรงไหน — และตรงไหนที่ห้ามเอาเข้าไปเด็ดขาด</h1>
+      <p class="lede">n8n คือเครื่องมือต่อสายงานอัตโนมัติแบบลากวาง (คล้าย Zapier แต่ self-host ได้) — ประเมินว่าเข้ากับระบบนี้ตรงไหนบ้าง แยกเป็น 3 บริบทที่ความคุ้มค่าต่างกันมาก พร้อมข้อจำกัดที่ต้องรู้ก่อนตัดสินใจ</p>
+      <div class="meta-line">
+        <span><b>แนะนำให้เริ่ม</b> บริบท B — continuous validation (effort ต่ำสุด value สูงสุด)</span>
+        <span><b>ห้ามแตะ</b> hot path ของ WAF และ ML inference</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> หลักการเลือก — กันไว้ก่อนว่าอะไรห้ามแตะ</h2>
+      <div class="callout risk">
+        <span class="cap">ข้อจำกัดที่ต้องเข้าใจก่อนอย่างอื่น</span>
+        <p>n8n คือ workflow ที่เรียกผ่าน HTTP มี latency <b style="color:#fff">เป็นวินาทีขึ้นไป</b> (เรียก API ข้ามระบบ + มี queue) — <b style="color:var(--signal-risk)">ใช้แทนโค้ดที่ต้องตัดสินใจเร็ว (บล็อก request หรือไม่) ไม่ได้เด็ดขาด</b></p>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ส่วนที่ห้ามเอา n8n เข้าไปแทน</th><th>เหตุผล</th></tr></thead>
+        <tbody>
+          <tr><td>ModSecurity block decision</td><td>อยู่ hot path จริง (ตัดสินใจใน millisecond) — n8n ช้ากว่าเป็นพันเท่า เอาเข้าไปแทรก = ระบบพังทันที</td></tr>
+          <tr><td>ML inference (<span class="mono">ml_api.py</span>)</td><td>เหตุผลเดียวกัน ต้องอยู่ใน process เดียวกับที่ตัดสินใจ</td></tr>
+          <tr><td>Rule engine sync ไป Edge</td><td>ต้อง atomic + เร็ว มีกลไก poll 5 วิ + SHA-256 อยู่แล้วและทำงานได้ดี ไม่มีเหตุผลต้องเปลี่ยน</td></tr>
+          <tr><td>Auth / JWT flow</td><td>security-critical ไม่ควรมี hop ผ่านระบบที่สาม</td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:66ch"><b style="color:var(--signal-ok)">หลักที่ใช้ได้:</b> n8n เหมาะกับงานที่เป็น <b style="color:#fff">"เหตุการณ์เกิดแล้ว → ทำอะไรบางอย่างหลังจากนั้น"</b> (post-event) หรือ <b style="color:#fff">"ตามเวลา → เช็ค/ทำอะไรสักอย่าง"</b> (scheduled) — ไม่ใช่ path ที่ WAF ใช้ตัดสินใจ real-time</p>
+      <p style="max-width:66ch"><b style="color:var(--signal-warn)">ข้อควรระวังสำหรับ thesis:</b> อย่าให้ business logic กระจายไป 2 ที่ (บางส่วน Python บางส่วน n8n) — ถ้ากรรมการถามว่า "logic การตัดสินใจอยู่ตรงไหน" แล้วต้องตอบว่า "บางส่วนอยู่ n8n" จะอธิบายยากขึ้นโดยไม่จำเป็น</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> 3 บริบท — ความคุ้มค่าต่างกันมาก</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>บริบท</th><th>ตัวอย่างงาน</th><th>Effort</th><th>Value</th><th>ควรเริ่มไหม</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">B — ทดสอบ</b></td><td>continuous validation, regression harness</td><td>ต่ำ</td><td>สูง (จุดขาย defense)</td><td><span class="status-pill ok">✅ เริ่มที่นี่</span></td></tr>
+          <tr><td><b style="color:#fff">C — อยู่ในระบบ</b></td><td>T12 self-tuning, DNS verify, alert fan-out</td><td>กลาง</td><td>สูง (ฟีเจอร์จริง)</td><td><span class="status-pill ok">✅ ลำดับ 2</span></td></tr>
+          <tr><td><b style="color:#fff">A — พัฒนา</b></td><td>deploy automation</td><td>กลาง</td><td>ต่ำ (Actions ทำแทนได้)</td><td><span class="status-pill warn">⚠️ เฉพาะถ้าอยากได้ approval บนมือถือ</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> บริบท B — ทดสอบ (คุ้มสุดต่อ effort) ⭐</h2>
+      <p style="max-width:66ch"><b style="color:#fff">Continuous validation — เอา payload battery มายิงซ้ำตามเวลา</b></p>
+      <p style="max-width:66ch">ชุดทดสอบ 20 payload ที่ยิงเข้า juice ใน <a href="./20-waf-attack-test.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 20</a> ตอนนี้เป็นการเทส<b style="color:#fff">ครั้งเดียว</b> — n8n ตั้งเวลายิงชุดเดิมซ้ำ แล้วเก็บ block rate ไปเทียบย้อนหลังได้</p>
+      <div class="diagram">
+        <pre>[ตั้งเวลาทุกวัน] → [ยิง payload 20 ตัวเข้า juice/dvwa/vampi/bwapp]
+   → [นับ block rate] → [เทียบกับ baseline เดิม]
+   → [ตกลงจากเดิม? → เตือน Telegram ทันที "WAF coverage regression!"]</pre>
+      </div>
+      <div class="callout ok">
+        <span class="cap">ทำไมนี่คือจุดที่คุ้มที่สุด</span>
+        <p>effort ต่ำมาก (payload ชุดมีอยู่แล้ว n8n แค่ schedule + HTTP call + เทียบเลข) แต่ได้ <b style="color:#fff">จุดขายตอน defense ที่ตอบได้ดี</b> — "เราไม่ได้เทส WAF แค่ครั้งเดียวตอนทำเล่ม แต่มี continuous validation ที่จับ regression อัตโนมัติ ถ้าใครแก้ rule แล้ว coverage ตก ระบบเตือนทันที"</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> บริบท C — เข้าไปอยู่ในระบบจริง (เรียงตาม ROI)</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>C.1 · T12 Self-tuning threshold ⭐</h4>
+          <p>จุดที่ n8n เข้ากับระบบดีที่สุด เพราะ pattern ตรงกับที่ n8n ถนัดพอดี — <span class="mono">settings_service.py</span> มีตัวเขียน override + reload nginx อยู่แล้ว <b style="color:#fff">เหลือแค่ logic ตัดสินใจ + human approval</b> ที่ n8n ทำได้โดยไม่ต้องเขียน Python เพิ่ม</p>
+        </div>
+        <div class="card">
+          <h4>C.2 · แทน dns_verification_worker ที่ตายอยู่</h4>
+          <p>โค้ดเขียนครบแล้วแต่ไม่เคยถูกเรียกจาก <span class="mono">main.py</span> — n8n workflow แบบ scheduled (poll โดเมน pending → เช็ค DNS → เรียก verify endpoint) ทำแทนได้ทั้งหมด <b style="color:#fff">ง่ายกว่าไล่ debug ว่าทำไมโค้ดเดิมไม่เคยถูกเรียก</b></p>
+        </div>
+        <div class="card">
+          <h4>C.3 · Daily AI summary scheduler</h4>
+          <p>ตอนนี้ <span class="mono">/api/ai/summarize-range</span> เป็น on-demand ล้วน ไม่มี scheduler จริง — n8n Cron trigger เรียกตามเวลาแทนเขียน cron เอง</p>
+        </div>
+        <div class="card">
+          <h4>C.4 · Alert fan-out</h4>
+          <p><span class="mono">telegram_listener.py</span> ส่งช่องทางเดียว — n8n รับ webhook แล้วแตกสายตาม severity (สูง → Telegram + Email, ต่ำ → เก็บ log) โดยไม่ต้องเขียน if/else เพิ่มใน Python ทุกครั้ง</p>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="cap">C.5 · Log/retention monitor — จุดที่ต้องแยกให้ชัด</span>
+        <p>audit log 319 MB โตไม่หยุด (ดู <a href="./21-log-completeness.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 21</a>) — <b style="color:var(--signal-warn)">การแก้ที่ถูกต้องยังเป็น logrotate/TTL native ไม่ใช่ n8n</b> แต่ n8n <b style="color:#fff">มอนิเตอร์</b>ได้ดี: เช็คขนาด/จำนวนแถวทุกวันแล้วเตือนก่อน disk เต็ม</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:var(--signal-warn)">น้ำหนักที่ต้องรับ:</b> บริบท C ได้ value สูงสุดแต่<b style="color:#fff">มี weight ที่สุด</b> — กลายเป็นส่วนที่ระบบพึ่งพา ถ้า n8n ล่ม ฟีเจอร์เหล่านี้หยุดทำงาน</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> ข้อจำกัดจริงที่ต้องคิดก่อนติดตั้ง</h2>
+      <div class="callout risk">
+        <span class="cap">RAM — ห้ามติดตั้งบน Main โดยตรง</span>
+        <p>Main RAM ตึงอยู่แล้ว (เพิ่งแก้ RAM leak ที่กิน 1 GB ไปเมื่อไม่กี่วันก่อน ดูหน้า 17) — n8n เป็น Node.js app กิน RAM <b style="color:#fff">ขั้นต่ำ ~200-400 MB</b> ต่อ instance</p>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ทางเลือกที่ติดตั้ง</th><th>ข้อดี / ข้อเสีย</th></tr></thead>
+        <tbody>
+          <tr><td>Edge node</td><td>RAM เหลือกว่า Main แต่เองก็แค่ 1 vCPU / 2 GB ต้องเช็คก่อนจริงจัง</td></tr>
+          <tr><td>n8n cloud (hosted)</td><td>ไม่ต้องดูแลเซิร์ฟเวอร์ แต่ traffic วิ่งออกนอกประเทศ — <b style="color:var(--signal-warn)">ขัดกับจุดขาย data residency</b> ต้องแยกให้ชัดว่า n8n เป็น control-plane tool ไม่ใช่ที่เก็บ traffic จริง</td></tr>
+          <tr><td>เครื่องแยกต่างหาก</td><td><b style="color:var(--signal-ok)">สะอาดสุด</b> ไม่กระทบ resource ของ 3 เครื่องหลักเลย — เหมาะสุดถ้าทำได้จริงในเวลาที่เหลือ</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3 style="margin-top:1.6rem">ความเสี่ยงด้าน security ที่ต้องระวัง</h3>
+      <ul class="check-list">
+        <li>workflow ที่เรียก internal API ต้องใช้ credential — <b style="color:var(--signal-risk)">ห้าม hardcode ใน workflow JSON</b> (บทเรียนเดียวกับเรื่อง FRP token ที่เคยรั่วเข้า JS bundle) ต้องใช้ credential store ที่เข้ารหัส</li>
+        <li>webhook ที่เปิดรับ event จากภายนอกต้องมี auth/token — ไม่งั้นใครก็ยิง fake event เข้ามาได้</li>
+        <li>เพิ่ม n8n = <b style="color:#fff">เพิ่ม attack surface อีก 1 จุด</b> ต้องอยู่ใน scope การป้องกันเดียวกับระบบหลัก ไม่ใช่ช่องโหว่ที่ลืมนึกถึง</li>
+      </ul>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> ลำดับที่แนะนำถ้าเวลาจำกัด</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ลำดับ</th><th>งาน</th><th>เหตุผล</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td><b style="color:#fff">Continuous validation</b> (บริบท B)</td><td>effort ต่ำสุด value สูง — payload ชุดมีอยู่แล้วในหน้า 20 แค่เอามา schedule ได้จุดขาย defense ทันทีโดยแทบไม่ต้องเขียนโค้ด</td></tr>
+          <tr><td class="mono">2</td><td><b style="color:#fff">T12 self-tuning ผ่าน n8n</b> (บริบท C.1)</td><td>ตรงกับ priority อันดับ 2 ที่วางไว้ ได้ฟีเจอร์หัวใจ thesis โดยเขียน Python ใหม่น้อยกว่าทำเองทั้งหมด — แต่ weight มากกว่าข้อ 1</td></tr>
+          <tr><td class="mono">3</td><td>Deploy orchestration (บริบท A)</td><td><b style="color:var(--signal-warn)">ไม่ใช่ priority</b> — GitHub Actions ที่มีอยู่แล้วทำแทนได้ ทำก็ต่อเมื่ออยากได้ approval-before-deploy บนมือถือ</td></tr>
+          <tr><td class="mono">4</td><td>alert fan-out, DNS verify, log monitor</td><td>ทำถ้ามีเวลาเหลือจริง ๆ</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout">
+        <span class="cap">คำเตือนสุดท้าย</span>
+        <p><b style="color:#fff">อย่าเริ่มจากการ "เอา n8n มาแทนทุกอย่าง"</b> — เลือกจุดที่เป็นช่องว่างจริง (T12, continuous validation) ก่อน แล้วค่อยขยาย และอย่าเอามาเพราะมันดูเท่: สำหรับงาน dev ล้วน ๆ shell script หรือ GitHub Actions มักง่ายและเหมาะกว่า</p>
+      </div>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./21-log-completeness.html"><span class="dir">← ก่อนหน้า</span><strong>21 · Log Completeness</strong></a>
+      <a class="next" href="./index.html"><span class="dir">กลับหน้าแรก →</span><strong>00 · ภาพรวมระบบ</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>

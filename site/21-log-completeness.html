@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log Completeness Analysis — WAF + CDN Platform Docs</title>
+<meta name="description" content="ตรวจความครบถ้วนของ log ทั้งระบบจาก artifact จริง — พบ edge_node ผิด 71.9%, request_time เป็น 0 ถึง 68%, และ ModSecurity audit log 319MB ที่บันทึก body ทุก request โดยไม่มี rotation">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ภาพรวม</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">สถาปัตยกรรมระบบ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="true">
+        <span class="nav-group-label">ตรวจสอบและแก้ไข</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list">
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./19-main-server-analysis.html"><span class="no">19</span> Main Server Analysis</a></li>
+        <li><a href="./20-waf-attack-test.html"><span class="no">20</span> WAF Attack Test</a></li>
+        <li><a href="./21-log-completeness.html" aria-current="page"><span class="no">21</span> Log Completeness</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">แผนพัฒนาต่อ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+        <li><a href="./22-n8n-integration-options.html"><span class="no">22</span> n8n Integration Options</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">FAQ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+        <li><a href="./18-waf-generation-assessment.html"><span class="no">18</span> WAF Generation Assessment</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">บริบทภายนอก</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>21 · LOG COMPLETENESS — 4 ก.ย. 2026</p>
+      <h1>ข้อมูล log ครบไหม มากเกินไปไหม — ตรวจจาก artifact จริงทุกชั้น</h1>
+      <p class="lede">ตรวจ schema จริงจาก ClickHouse, นับ population rate ของทุก field, อ่าน config ModSecurity/nginx ในคอนเทนเนอร์ที่รันอยู่, ไล่โค้ด ingestion pipeline จนถึงจุดที่ field หายไป — ไม่ได้เดาจากเอกสารเก่า</p>
+      <div class="meta-line">
+        <span><b>คำตอบสั้น</b> ไม่ครบในหลายจุด และมากเกินจำเป็นในจุดเดียวที่ชัดมาก</span>
+        <span><b>ข้อมูลจริง</b> access_logs 175,084 แถว · audit.json 319 MB</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> สรุปสำหรับผู้บริหาร</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>คำถาม</th><th>คำตอบ</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:#fff">ครบถ้วนไหม?</b></td><td><span class="status-pill risk">ไม่ครบ</span> มี field ที่ nginx จับได้จริงแต่หายก่อนถึง ClickHouse (referer, ssl info, body size) และ field ที่มีอยู่แต่ค่าใช้ไม่ได้จริง (<span class="mono">request_time_ms</span> เป็น 0 ถึง 68%, <span class="mono">edge_node</span> ผิดค่าจริง 72%)</td></tr>
+          <tr><td><b style="color:#fff">มากเกินจำเป็นไหม?</b></td><td><span class="status-pill warn">มากเกินในจุดเดียวที่ชัดมาก</span> ModSecurity บันทึก request+response body <b style="color:#fff">ของทุก request ทุกสถานะ</b> ลงไฟล์เดียวไม่มี rotation — ตอนนี้ <b style="color:var(--signal-risk)">319 MB</b> และโตต่อเนื่องไม่มีเพดาน</td></tr>
+          <tr><td><b style="color:#fff">สาเหตุหลัก</b></td><td>มี ingestion pipeline คู่ขนาน <b style="color:#fff">2 เส้นทาง</b> ที่ map field ไม่เหมือนกัน — เส้นทางหนึ่งใส่ <span class="mono">edge_node</span>/<span class="mono">request_time</span> ถูก อีกเส้นทางไม่ใส่เลย ตกไปใช้ default ที่เขียนผิดไว้</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> Schema จริงที่ dashboard ใช้อยู่</h2>
+      <div class="diagram">
+        <pre>CREATE TABLE default.access_logs
+(
+    `id` UUID, `timestamp` DateTime, `client_ip` String, `method` String,
+    `url` String, `status_code` UInt16, `request_time_ms` Float32,
+    `user_agent` String, `country` String, `edge_node` String,
+    `alert` UInt8, `attack_type` String, `rule_id` String
+)
+ENGINE = MergeTree ORDER BY (timestamp, client_ip)</pre>
+        <div class="cap">13 คอลัมน์ · ไม่มี TTL clause เลย (เก็บถาวรไม่มีเพดาน) · ข้อมูลตั้งแต่ 20 ส.ค. ถึงปัจจุบัน 175,084 แถว</div>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">ที่ไม่มีเลยแต่ควรมีสำหรับ WAF analytics จริงจัง:</b> <span class="mono">request_id</span> (ไว้ correlate กับ audit log), <span class="mono">http_referer</span>, <span class="mono">response_size</span>, <span class="mono">ssl_protocol</span>/<span class="mono">ssl_cipher</span>, และ <span class="mono">origin_id</span>/<span class="mono">tenant_id</span> — ตอนนี้แยก tenant ด้วยการ pattern-match บน <span class="mono">url</span>/<span class="mono">client_ip</span> เท่านั้น <b style="color:var(--signal-warn)">ไม่มี foreign key ตรง ๆ</b></p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> ตกหล่น — ข้อมูลถูกดึงมาแล้ว แต่ถูกทิ้งตอน insert</h2>
+      <p style="max-width:66ch">nginx <span class="mono">log_format json_combined</span> จับ field เหล่านี้จริง: <span class="mono">request_id, remote_addr, request, status, body_bytes_sent, http_referer, http_user_agent, request_time, ssl_protocol, ssl_cipher</span></p>
+      <p style="max-width:66ch">แต่ <span class="mono">clickhouse_service.py</span> ตอน insert <b style="color:var(--signal-risk)">ไม่ใส่ referer / body_bytes_sent / ssl_* ลง row เลย</b> เพราะ schema ไม่มีคอลัมน์รองรับ — ข้อมูลถูกดึงมาแล้วแต่ตกหล่นตอนเขียน</p>
+      <div class="callout ok">
+        <span class="cap">ข่าวดีที่ต้องพูดให้ครบ</span>
+        <p>DynamoDB (<span class="mono">save_log()</span>) เก็บ event dict ทั้งก้อนแบบ schemaless ไม่ตัดทิ้ง — แปลว่าข้อมูลพวกนี้ <b style="color:var(--signal-ok)">ยังไม่หายไปจริง</b> แค่ไม่อยู่ในตัวที่ dashboard ใช้ query/ทำกราฟ (ClickHouse) เท่านั้น เป็นปัญหาเรื่อง <b style="color:#fff">"เอามาใช้ไม่ได้" มากกว่า "หายตลอดกาล"</b></p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> ผิด — field ที่มีอยู่แต่ค่าใช้การไม่ได้</h2>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>4.1 · <span class="mono">edge_node</span> ผิดค่าจริง 71.9%</strong><span class="status-pill risk">ยังไม่แก้</span></div>
+        <div class="diagram">
+          <pre>SELECT edge_node, count() FROM access_logs GROUP BY edge_node
+→ sg       125,850   (71.9%)
+→ edge-th   49,233   (28.1%)</pre>
+        </div>
+        <p>ระบบมี <b style="color:#fff">Edge node จริงแค่ 1 ตัว</b> (ประเทศไทย) — <b style="color:var(--signal-risk)">ไม่มี Singapore edge เลย</b> แต่ 71.9% ของ log ถูก tag ว่า <span class="mono">"sg"</span></p>
+        <p><b style="color:#fff">Root cause:</b> <span class="mono">data.get('edge_node') or 'sg'</span> — hardcode fallback เป็น <span class="mono">'sg'</span> ทุกครั้งที่ upstream ไม่ส่งมา และเส้นทางที่ Main อ่าน log ตัวเอง (<span class="mono">log_forward.py</span>) <b style="color:#fff">ไม่เคยใส่ <span class="mono">edge_node</span> เลย</b> จึงตกไปโดน default ผิดทุกครั้ง</p>
+        <p><b style="color:#fff">ผลกระทบ:</b> กราฟ/รายงานที่ break down ตาม edge node ผิดทันที — บอกว่า 72% ของ traffic มาจาก edge ที่ไม่มีอยู่จริง</p>
+        <p><b style="color:var(--signal-warn)">แถมอีกชั้น:</b> DynamoDB มี <span class="mono">"Edge-TH"</span> กับ <span class="mono">"edge-th"</span> ปนกัน — <b style="color:#fff">รวมทั้งระบบมีอย่างน้อย 3 รูปแบบสตริงสำหรับ node เดียวกัน</b> (<span class="mono">sg</span>, <span class="mono">edge-th</span>, <span class="mono">Edge-TH</span>) ไม่มี canonical value เลย</p>
+      </div>
+
+      <div class="card finding" data-status="risk">
+        <div class="finding-head"><strong>4.2 · <span class="mono">request_time_ms</span> เป็น 0 ถึง 68.4%</strong><span class="status-pill risk">ยังไม่แก้</span></div>
+        <div class="diagram">
+          <pre>119,765 zero | 55,318 nonzero | 175,083 total</pre>
+        </div>
+        <p>nginx จับ <span class="mono">$request_time</span> จริงในทุก request แต่ <span class="mono">normalize_access()</span> <b style="color:#fff">ไม่ดึงค่านี้มาเลย</b> จึงตกไปใช้ default <span class="mono">0.0</span></p>
+        <p><b style="color:var(--signal-risk)">ผลกระทบที่ต้องระวังที่สุด:</b> ตัวเลข latency เฉลี่ยที่ dashboard และ AI Copilot อ้างอิงคำนวณจากข้อมูลที่ <b style="color:#fff">68% เป็นศูนย์ปลอม</b> — ค่าเฉลี่ยที่ได้ต่ำกว่าความจริงมาก <b style="color:#fff">ห้ามเชื่อตัวเลขนี้จนกว่าจะแก้</b></p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> มากเกินจำเป็น — ModSecurity audit log</h2>
+      <div class="diagram">
+        <pre>SecAuditEngine On
+SecAuditLogRelevantStatus ".*"      ← ทุกสถานะ ไม่ใช่แค่ที่ถูกบล็อก
+SecAuditLogParts ABIJDEFHZ           ← "I"/"E" = request+response body เต็ม
+SecAuditLogType Serial
+SecAuditLog /var/log/modsecurity/audit.json</pre>
+        <div class="cap">config จริงที่รันอยู่ในคอนเทนเนอร์ waf-nginx</div>
+      </div>
+      <p style="max-width:66ch"><span class="mono">".*"</span> = จับทุกสถานะ (200 ก็โดน) รวมกับ Parts ที่มี body ทั้ง 2 ทิศทาง = <b style="color:#fff">บันทึก body เต็มของทุก request ที่เข้าระบบ ไม่ใช่แค่ตัวที่ถูกบล็อก</b></p>
+      <div class="stat-row" style="margin:1.2rem 0">
+        <div class="stat"><span class="num">319 MB</span><span class="lbl">ไฟล์เดียว ใน 15 วัน</span></div>
+        <div class="stat"><span class="num">~21 MB</span><span class="lbl">โตต่อวัน</span></div>
+        <div class="stat"><span class="num">~7.7 GB</span><span class="lbl">ประมาณการต่อปี บน host เดียว</span></div>
+        <div class="stat"><span class="num">0</span><span class="lbl">logrotate config ที่มี</span></div>
+      </div>
+      <div class="callout risk">
+        <span class="cap">ทำไมนี่คือ "เกินจำเป็น" ไม่ใช่แค่ "เยอะ"</span>
+        <p>การบันทึก body เต็มของ traffic ปกติ (status 200) <b style="color:#fff">ไม่มีประโยชน์เชิงความปลอดภัยเพิ่ม</b>จากที่ ClickHouse บันทึกไว้แล้ว (URL/method/status) — สิ่งที่มีค่าจริงคือ body ของ request ที่ <b style="color:var(--signal-ok)">ถูกบล็อกหรือ flag เท่านั้น</b> ตอนนี้เก็บทุกอย่างปนกัน ทั้งเปลืองพื้นที่และ<b style="color:var(--signal-risk)">เพิ่มความเสี่ยง privacy/PDPA</b> (ตรงกับที่หน้า 12 T14 เตือนไว้แล้ว — ยืนยันว่ายังไม่แก้)</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">ไม่มี retention/TTL ที่ชั้นไหนเลย</b> — ClickHouse ไม่มี TTL clause · DynamoDB ไม่มี TTL attribute · ModSecurity audit log ไม่มี rotation — <b style="color:var(--signal-risk)">ทั้ง 3 ชั้นเก็บถาวรไม่มีเพดานเหมือนกันหมด</b></p>
+      <div class="diagram">
+        <pre>/root/waf_project/logs/               397 MB
+  ├── modsecurity/audit.json          319 MB  (ทุก request ทุกสถานะ มี body)
+  └── nginx/                           46 MB  (access log ปกติ)</pre>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> Root cause ที่แท้จริง — ไม่ใช่บั๊กเดี่ยว ๆ 5 จุด</h2>
+      <p style="max-width:66ch">ทั้งหมดเป็น<b style="color:#fff">รูปแบบเดียวที่เกิดซ้ำ</b>: ระบบมี ingestion pipeline คู่ขนาน 2 เส้นทางที่ไม่ได้ทำให้ field mapping ตรงกัน</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>เส้นทาง</th><th>ไฟล์</th><th><span class="mono">edge_node</span></th><th><span class="mono">request_time</span></th></tr></thead>
+        <tbody>
+          <tr><td>Edge → Main (HTTP push)</td><td class="mono">cdn_log_forward.py</td><td><span class="status-pill ok">✅ ใส่ถูก</span></td><td><span class="status-pill ok">✅ ใส่</span></td></tr>
+          <tr><td>Main อ่าน log ตัวเอง</td><td class="mono">log_forward.py</td><td><span class="status-pill risk">❌ ไม่ใส่เลย</span></td><td><span class="status-pill risk">❌ ไม่ใส่เลย</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout risk">
+        <span class="cap">บทเรียนที่สำคัญกว่าตัวบั๊ก</span>
+        <p>ทั้งสองเส้นทางเรียก <span class="mono">save_log()</span> ตัวเดียวกัน ซึ่งมี default fallback ที่<b style="color:#fff">เดาค่าแทนที่จะบอกว่าไม่รู้</b> — เมื่อ default ผิด ทุกครั้งที่ pipeline ที่สองทำงาน ข้อมูลจะผิด <b style="color:var(--signal-risk)">โดยไม่มีใครรู้ เพราะไม่มี error ปรากฏที่ไหนเลย</b> การเดาเงียบ ๆ อันตรายกว่าการ fail ดัง ๆ</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§7</span> แนวทางแก้ เรียงตามความคุ้ม</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>งาน</th><th>ทำอะไร</th><th>ความเสี่ยง</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>แก้ default <span class="mono">'sg'</span></td><td>เปลี่ยนเป็น <span class="mono">'unknown'</span> + log warning ว่าเส้นทางไหนไม่ส่งมา — เลิกเดาเงียบ ๆ</td><td><span class="status-pill ok">แทบไม่มี</span></td></tr>
+          <tr><td class="mono">2</td><td>เติม <span class="mono">request_time</span>/<span class="mono">edge_node</span></td><td>ให้ <span class="mono">normalize_access()</span> ดึงค่าที่ nginx จับไว้แล้วมาใช้จริง (<span class="mono">request_time</span> เป็นวินาที ต้อง ×1000)</td><td><span class="status-pill ok">ต่ำ</span></td></tr>
+          <tr><td class="mono">3</td><td>เพิ่มคอลัมน์ที่ขาด</td><td><span class="mono">http_referer</span>, <span class="mono">request_id</span>, <span class="mono">body_bytes_sent</span> เข้า schema ClickHouse</td><td><span class="status-pill warn">กลาง — แก้ schema</span></td></tr>
+          <tr><td class="mono">4</td><td>ลดขอบเขต audit log</td><td><span class="mono">SecAuditLogRelevantStatus "^(?:5|4[03])"</span> — เก็บเฉพาะที่ถูกบล็อก/error</td><td><span class="status-pill warn">กลาง — กระทบ forensics</span></td></tr>
+          <tr><td class="mono">5</td><td>ใส่ TTL/rotation ทั้ง 3 ชั้น</td><td>logrotate + ClickHouse TTL + DynamoDB TTL attribute</td><td><span class="status-pill warn">กลาง</span></td></tr>
+          <tr><td class="mono">6</td><td>canonical <span class="mono">edge_node</span></td><td>enum เดียวทั้งระบบ เลิกมี 3 รูปแบบสตริง</td><td><span class="status-pill ok">ต่ำ</span></td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:66ch"><b style="color:#fff">ข้อ 1-2 คือจุดที่ควรทำก่อน</b> — ต้นทุนต่ำมาก (แก้ไม่กี่บรรทัด) แต่ปิดปัญหาที่ทำให้ <b style="color:var(--signal-risk)">ตัวเลขบน dashboard ผิดอยู่ตอนนี้</b> ซึ่งเป็นความเสี่ยงตรงกับกฎของโปรเจกต์เรื่อง "แยก vendor claim ออกจาก measured ground truth"</p>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./20-waf-attack-test.html"><span class="dir">← ก่อนหน้า</span><strong>20 · WAF Attack Test</strong></a>
+      <a class="next" href="./22-n8n-integration-options.html"><span class="dir">ถัดไป →</span><strong>22 · n8n Integration Options</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>

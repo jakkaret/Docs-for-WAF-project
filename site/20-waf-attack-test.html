@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WAF Attack Test — WAF + CDN Platform Docs</title>
+<meta name="description" content="ยิง payload โจมตี 20 ตัวเข้า juice.waf-it-kku.online ผ่าน WAF จริง — บล็อกได้ 15 (75%) SQLi/XSS/SSRF ครบ 100% แต่พบช่องว่าง signature 5 จุดที่ต้องปิด">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ภาพรวม</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">สถาปัตยกรรมระบบ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="true">
+        <span class="nav-group-label">ตรวจสอบและแก้ไข</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list">
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./19-main-server-analysis.html"><span class="no">19</span> Main Server Analysis</a></li>
+        <li><a href="./20-waf-attack-test.html" aria-current="page"><span class="no">20</span> WAF Attack Test</a></li>
+        <li><a href="./21-log-completeness.html"><span class="no">21</span> Log Completeness</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">แผนพัฒนาต่อ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+        <li><a href="./22-n8n-integration-options.html"><span class="no">22</span> n8n Integration Options</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">FAQ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+        <li><a href="./18-waf-generation-assessment.html"><span class="no">18</span> WAF Generation Assessment</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">บริบทภายนอก</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>20 · WAF ATTACK TEST — 4 ก.ย. 2026</p>
+      <h1>ยิงจริง 20 payload เข้า WAF — บล็อกได้ 15 เหลือช่องว่าง 5 จุดที่ต้องปิด</h1>
+      <p class="lede">ทดสอบ <span class="mono">juice.waf-it-kku.online</span> (OWASP Juice Shop หลัง WAF จริง) ด้วย payload โจมตีจริงตาม OWASP Top 10 — ยิงตรงเข้า endpoint จริง อ่าน HTTP status และ response body จริง ไม่ได้จำลอง</p>
+      <div class="meta-line">
+        <span><b>ผลรวม</b> บล็อก 15/20 (75%) · baseline 2/2 ไม่ false-positive</span>
+        <span><b>บล็อกครบ 100%</b> SQLi ตัวรุนแรง · XSS · SSRF · Path Traversal</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> สรุปผล</h2>
+      <div class="stat-row" style="margin:1.2rem 0">
+        <div class="stat"><span class="num">20</span><span class="lbl">payload ที่ยิงจริง</span></div>
+        <div class="stat"><span class="num">15</span><span class="lbl">บล็อกด้วย 403</span></div>
+        <div class="stat"><span class="num">5</span><span class="lbl">ผ่าน WAF (detection gap)</span></div>
+        <div class="stat"><span class="num">2/2</span><span class="lbl">baseline ปกติ ไม่โดนบล็อกผิด</span></div>
+      </div>
+      <div class="callout ok">
+        <span class="cap">ยืนยันว่าคนบล็อกคือ ModSecurity จริง ไม่ใช่ origin</span>
+        <p>response body ของทุก request ที่ได้ 403 คือหน้า <span class="mono">403 Forbidden - WAF Protection</span> ที่เรา custom ไว้เอง — ไม่ใช่ 403 ที่แอป Juice Shop ตอบกลับมา แปลว่าการบล็อกเกิดที่ชั้น WAF ตามที่ออกแบบ</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">ขอบเขตที่ต้องเข้าใจก่อนอ่านต่อ:</b> นี่คือการวัด <b style="color:#fff">WAF signature coverage</b> เท่านั้น ไม่ใช่ full pentest ของ Juice Shop เอง (แอปตัวนี้ตั้งใจให้มีช่องโหว่อยู่แล้วโดยดีไซน์) — เป้าหมายคือวัดว่า WAF ชั้นหน้าทำหน้าที่ตามที่ออกแบบไว้แค่ไหน</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> ผลทั้ง 20 เคส — กรองดูตามผลลัพธ์</h2>
+      <div class="legend" data-filter-target="[data-status]">
+        <button class="status-pill ok" data-status="ok">บล็อกได้ (15)</button>
+        <button class="status-pill risk" data-status="risk">ผ่าน WAF (5)</button>
+        <button class="status-pill debt" data-status="debt">Baseline (2)</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>หมวด</th><th>Payload</th><th>Endpoint</th><th>Status</th><th>ผล</th></tr></thead>
+        <tbody>
+          <tr data-status="risk"><td>SQLi</td><td class="mono">' (quote เดี่ยว)</td><td class="mono">/rest/products/search?q=</td><td>200</td><td><span class="status-pill risk">ผ่าน</span></td></tr>
+          <tr data-status="ok"><td>SQLi</td><td class="mono">' OR '1'='1</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>SQLi</td><td class="mono">' UNION SELECT 1,2,3-- -</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>SQLi</td><td class="mono">' UNION SELECT 1,2,3-- -</td><td class="mono">/?id= (root)</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>SQLi</td><td>error-based (<span class="mono">extractvalue</span>)</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>SQLi</td><td class="mono">'; DROP TABLE users;--</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>XSS</td><td class="mono">&lt;script&gt;alert(1)&lt;/script&gt;</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>XSS</td><td class="mono">&lt;img src=x onerror=…&gt;</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>XSS</td><td class="mono">&lt;svg onload=alert(1)&gt;</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="risk"><td>Command Injection</td><td class="mono">;id</td><td class="mono">/rest/products/search?q=</td><td>200</td><td><span class="status-pill risk">ผ่าน</span></td></tr>
+          <tr data-status="risk"><td>Command Injection</td><td class="mono">`id` (backtick)</td><td class="mono">/rest/products/search?q=</td><td>200</td><td><span class="status-pill risk">ผ่าน</span></td></tr>
+          <tr data-status="ok"><td>Command Injection</td><td class="mono">$(id)</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="risk"><td>SSTI</td><td class="mono">{{7*7}} (Jinja2)</td><td class="mono">/rest/products/search?q=</td><td>200</td><td><span class="status-pill risk">ผ่าน</span></td></tr>
+          <tr data-status="ok"><td>SSTI</td><td class="mono">${7*7} (FreeMarker)</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>Path Traversal</td><td class="mono">../../../etc/passwd</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>Path Traversal</td><td>double-encoded (<span class="mono">%252f</span>)</td><td>path โดยตรง</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>SSRF</td><td>AWS metadata (<span class="mono">169.254.169.254</span>)</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="ok"><td>SSRF</td><td class="mono">http://127.0.0.1/</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="risk"><td>NoSQLi</td><td class="mono">{"$ne":null}</td><td class="mono">/rest/products/search?q=</td><td>200</td><td><span class="status-pill risk">ผ่าน</span></td></tr>
+          <tr data-status="ok"><td>NoSQLi</td><td class="mono">[$gt]=</td><td class="mono">/rest/products/search?q=</td><td>403</td><td><span class="status-pill ok">บล็อก</span></td></tr>
+          <tr data-status="debt"><td>Baseline</td><td class="mono">apple (คำค้นปกติ)</td><td class="mono">/rest/products/search?q=</td><td>200</td><td><span class="status-pill ok">✅ ถูกต้อง</span></td></tr>
+          <tr data-status="debt"><td>Baseline</td><td>root page</td><td class="mono">/</td><td>200</td><td><span class="status-pill ok">✅ ถูกต้อง</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> 5 จุดที่ผ่าน WAF — และทำไมยัง "ไม่ใช่ช่องโหว่ที่ถูก exploit"</h2>
+      <div class="callout">
+        <span class="cap">ข้อสำคัญที่ต้องพูดให้ตรง อย่าตีความเกิน</span>
+        <p>ทุก payload ในหัวข้อนี้ทดสอบแล้วว่า <b style="color:#fff">ไม่ถูกเอนจิน execute จริง</b> — response ทุกตัวคือ <span class="mono">{"status":"success","data":[]}</span> (ค้นแล้วไม่เจอผลลัพธ์ตามปกติ ไม่มี error ไม่มี data leak ไม่มี output ของคำสั่ง) จึงเป็น <b style="color:var(--signal-warn)">WAF detection gap ไม่ใช่ confirmed exploit</b> — endpoint นี้ของ Juice Shop ใช้ NeDB/array filter ธรรมดา ไม่มี raw SQL หรือ shell ให้ inject ได้จริงที่จุดนี้</p>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>หมวด</th><th>Payload</th><th>Severity</th><th>เหตุผล</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">WEB-01</td><td>SQL Injection</td><td class="mono">' (quote เดี่ยว)</td><td><span class="status-pill debt">Low</span></td><td>CRS ปกติจะ flag ที่ paranoia level สูงกว่านี้ — ถ้า quote เดี่ยวไม่ trigger เลย แปลว่า PARANOIA level ปัจจุบันต่ำเกินจะจับ probe เบื้องต้น ซึ่งเป็นสัญญาณเตือนล่วงหน้าก่อน payload จริง</td></tr>
+          <tr><td class="mono">WEB-02</td><td>Command Injection</td><td class="mono">;id</td><td><span class="status-pill warn">Medium</span></td><td><span class="mono">;</span> เป็น separator มาตรฐานของ command injection แต่ไม่ถูกจับเลย</td></tr>
+          <tr><td class="mono">WEB-03</td><td>Command Injection</td><td class="mono">`id`</td><td><span class="status-pill warn">Medium</span></td><td>backtick command substitution ไม่ถูกจับ — ถ้ามี endpoint อื่นที่ shell out จริงจะเสี่ยงกว่านี้มาก</td></tr>
+          <tr><td class="mono">WEB-04</td><td>SSTI</td><td class="mono">{{7*7}}</td><td><span class="status-pill warn">Medium</span></td><td>pattern มาตรฐานของ Jinja2 ไม่ถูกจับ ทั้งที่ <span class="mono">${...}</span> ถูกจับ — <b style="color:#fff">ไม่ consistent กันเอง</b></td></tr>
+          <tr><td class="mono">WEB-05</td><td>NoSQL Injection</td><td class="mono">{"$ne":null}</td><td><span class="status-pill warn">Medium</span></td><td>Juice Shop มีช่องโหว่ NoSQLi ที่รู้จักในบาง endpoint (เช่น login) — pattern <span class="mono">$ne</span>/<span class="mono">$gt</span> ควรถูกจับให้ครบทุกจุดที่รับ JSON-like input ไม่ใช่แค่บางรูปแบบ</td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:66ch"><b style="color:#fff">รูปแบบที่เห็นชัด:</b> ทั้ง WEB-03/04/05 คือเรื่องเดียวกัน — <b style="color:var(--signal-warn)">กฎจับ pattern ได้บางรูปแบบแต่ไม่ครบชุด</b> (<span class="mono">$(…)</span> จับแต่ <span class="mono">;</span>/backtick ไม่จับ · <span class="mono">${…}</span> จับแต่ <span class="mono">{{…}}</span> ไม่จับ · <span class="mono">$gt</span> จับแต่ <span class="mono">$ne</span> ไม่จับ) เป็นปัญหา coverage ของ pattern ไม่ใช่ WAF ล่ม</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> ข้อสังเกตจากการตรวจแบบ passive</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>Security headers</h4>
+          <p>มี <span class="mono">X-Content-Type-Options: nosniff</span> และ <span class="mono">X-Frame-Options: SAMEORIGIN</span> ✅<br><br><b style="color:var(--signal-risk)">ไม่มี</b> <span class="mono">Strict-Transport-Security</span> (HSTS) และ <span class="mono">Content-Security-Policy</span> เลย — งานเบา แก้ที่ชั้น Caddy/nginx ได้ ไม่กระทบ logic อื่น</p>
+        </div>
+        <div class="card">
+          <h4>CORS</h4>
+          <p><span class="mono">Access-Control-Allow-Origin: *</span> บน API search โดยไม่มี <span class="mono">Allow-Credentials</span> คู่กัน — <b style="color:#fff">ไม่ใช่ misconfiguration อันตราย</b> (ไม่ใช่ wildcard+credentials) เพราะเป็น public read-only data แต่ยังเปิดกว้างเกินจำเป็น</p>
+        </div>
+        <div class="card">
+          <h4>Server banner</h4>
+          <p><span class="mono">Server: nginx</span> ไม่มีเลขเวอร์ชัน — <span class="mono">server_tokens off</span> ทำงานถูกต้องแล้ว <span class="status-pill ok">ไม่ใช่ปัญหา</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> คำแนะนำ</h2>
+      <ul class="check-list">
+        <li><b style="color:#fff">WEB-02/03</b> — ปรับ CRS rule group 932xxx (Unix command injection) ให้ครอบคลุม <span class="mono">;</span> และ backtick โดยไม่ต้องรอ <span class="mono">$()</span> · <b style="color:var(--signal-warn)">ต้องทดสอบ false positive ก่อน</b> เพราะ <span class="mono">;</span>/backtick พบในข้อความปกติได้</li>
+        <li><b style="color:#fff">WEB-04</b> — เพิ่ม custom rule ครอบ <span class="mono">{{…}}</span> ให้เข้าเกณฑ์เดียวกับ <span class="mono">${…}</span> ที่จับอยู่แล้ว</li>
+        <li><b style="color:#fff">WEB-05</b> — ตรวจว่ากฎปัจจุบันจับ <span class="mono">$gt</span>/<span class="mono">$lt</span> ได้แต่พลาด <span class="mono">$ne</span> เพราะเขียน pattern ไม่ครบ ควรรวม MongoDB/NoSQL operator ทั้งชุดในกฎเดียว</li>
+        <li><b style="color:#fff">HSTS + CSP</b> — เพิ่มที่ชั้น Caddy/nginx (งานเบา ไม่กระทบ logic)</li>
+      </ul>
+      <div class="callout ok">
+        <span class="cap">อย่าตื่นตระหนกเกินจริง — อ่านตัวเลขให้ตรง</span>
+        <p>block rate 75% สำหรับ payload เชิงรุกทั้งหมด โดยที่ <b style="color:var(--signal-ok)">SQLi ตัวรุนแรงบล็อกครบ 100% · XSS ครบ 100% · SSRF ครบ 100% · Path Traversal ครบ 100%</b> ถือว่า core protection ทำงานตามที่ออกแบบ ช่องโหว่ที่พบเป็น <b style="color:#fff">pattern coverage เฉพาะจุด</b> ไม่ใช่ WAF ล่มหรือถูก bypass ทั้งระบบ</p>
+      </div>
+      <p style="max-width:66ch"><b style="color:#fff">ต่อยอดได้:</b> payload ชุดนี้เอาไปตั้งเวลายิงซ้ำอัตโนมัติเพื่อจับ regression ได้ (ถ้าใครแก้ rule แล้วทำให้ coverage ตก ระบบเตือนทันที) — ดูแนวทางที่ <a href="./22-n8n-integration-options.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 22</a></p>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./19-main-server-analysis.html"><span class="dir">← ก่อนหน้า</span><strong>19 · Main Server Analysis</strong></a>
+      <a class="next" href="./21-log-completeness.html"><span class="dir">ถัดไป →</span><strong>21 · Log Completeness</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>
