@@ -46,6 +46,7 @@
         <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
         <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
         <li><a href="./07-web-origin-testbed.html" aria-current="page"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./23-lab-business-apps.html"><span class="no">23</span> Lab Node & Business Apps</a></li>
       </ul>
     </div>
     <div class="nav-group">
@@ -106,6 +107,10 @@
       <h1>เครื่องเป้าหมาย 4-in-1 สำหรับพิสูจน์ว่า WAF ทำงานจริง</h1>
       <p class="lede">ต่างจาก Edge/Main Node ที่รัน WAF engine เครื่องนี้มีหน้าที่เดียวคือโฮสต์เว็บแอปที่มีช่องโหว่ตั้งใจ ไว้เป็นเป้าหมายทดสอบ</p>
       <p class="meta-line"><span><b>เครื่อง:</b> 10.198.200.75 (private, หลัง KKU VPN)</span><span><b>สเปก:</b> Ubuntu 24.04.4 · 16 vCPU · 15 GiB RAM</span></p>
+      <div class="callout" style="margin-top:1.2rem">
+        <span class="cap">อัปเดต 6 ก.ย. 2026 — Lab ไม่ได้มีแค่ 4 เว็บแล้ว</span>
+        <p>เพิ่มเว็บธุรกิจที่เขียนขึ้นใหม่อีก <b style="color:#fff">3 ตัว</b> (ApexMart e-commerce, CarePoint Health, CloudScale SaaS) บนพอร์ต 8001-8003 — รวมเป็น <b style="color:#fff">7 เว็บบน Lab</b> ทำให้ทดสอบ false positive กับ traffic ธุรกิจจริงได้เป็นครั้งแรก รายละเอียดและผลตรวจว่า<b style="color:var(--signal-warn)">ยังไม่ถูกต่อเข้า WAF</b> อยู่ที่ <a href="./23-lab-business-apps.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 23</a></p>
+      </div>
     </header>
 
     <section class="block reveal">

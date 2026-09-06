@@ -48,6 +48,7 @@
         <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
         <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
         <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./23-lab-business-apps.html"><span class="no">23</span> Lab Node & Business Apps</a></li>
       </ul>
     </div>
     <div class="nav-group">
@@ -141,6 +142,11 @@
         </div>
       </div>
 
+      <div class="callout risk reveal" style="max-width:66ch">
+        <span class="cap">อัปเดต 6 ก.ย. 2026 — Lab เพิ่มเว็บธุรกิจ 3 ตัว + พบ tunnel ตายอยู่</span>
+        <p>Lab node เพิ่มเว็บธุรกิจสมจริงอีก 3 ตัว (ร้านค้า, โรงพยาบาล, SaaS) รวมเป็น 7 เว็บ — <b style="color:var(--signal-warn)">ตรวจแล้วยังไม่ถูกต่อเข้า WAF สักตัว</b> และระหว่างตรวจพบว่า <b style="color:var(--signal-risk)">tunnel ตายอยู่ตอนนี้ ทั้ง 4 โดเมนเดิมเข้าไม่ได้</b> สาเหตุคือ origin ถูก archive ทำให้ verify-agent ปฏิเสธ 401 ทุกครั้ง อ่านที่ <a href="./23-lab-business-apps.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 23</a></p>
+      </div>
+
       <div class="callout reveal" style="max-width:66ch">
         <span class="cap">อัปเดต 4 ก.ย. 2026 — ยิง WAF จริง 20 payload + ตรวจ log ทั้งระบบ</span>
         <p>ยิง payload โจมตีจริงเข้า WAF: <b style="color:var(--signal-ok)">SQLi / XSS / SSRF / Path Traversal บล็อกครบ 100%</b> รวมบล็อกได้ 15 จาก 20 — เหลือช่องว่าง signature 5 จุด (command injection, SSTI, NoSQLi) ที่กฎจับได้บางรูปแบบแต่ไม่ครบชุด · ตรวจ log พบว่า <b style="color:var(--signal-risk)">ตัวเลขบน dashboard บางตัวผิดอยู่</b> (edge_node ผิด 72%, latency เป็นศูนย์ปลอม 68%) อ่านที่ <a href="./20-waf-attack-test.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 20</a> และ <a href="./21-log-completeness.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 21</a></p>
@@ -173,8 +179,8 @@
         <a class="card category-card" href="./01-waf-engine.html">
           <span class="cat-icon">🏗️</span>
           <h3>สถาปัตยกรรมระบบ</h3>
-          <p>WAF Engine, CDN, Dashboard Backend, ML, Tunnel, Data Storage, Web Origin Testbed</p>
-          <span class="cat-count">7 หน้า</span>
+          <p>WAF Engine, CDN, Dashboard Backend, ML, Tunnel, Data Storage, Web Origin Testbed, Lab Business Apps</p>
+          <span class="cat-count">8 หน้า</span>
         </a>
         <a class="card category-card" href="./08-testing-approach.html">
           <span class="cat-icon">🛡️</span>
@@ -395,7 +401,8 @@
         <a class="card doc-card" href="./04-ml-ai-detection.html"><span class="no">04</span><h3>ML + AI Detection</h3><p>Random Forest + Isolation Forest, Gemini Copilot, explainability engine</p><div class="stats"><span class="status-pill ok">98.4% precision</span></div></a>
         <a class="card doc-card" href="./05-tunnel-system.html"><span class="no">05</span><h3>Tunnel System</h3><p>FRP production tunnel + 3 กลไกซ้อนอื่น — 2 เส้นทางข้าม WAF ที่ควรปิด</p><div class="stats"><span class="status-pill risk">4 กลไกซ้อนกัน</span></div></a>
         <a class="card doc-card" href="./06-data-storage.html"><span class="no">06</span><h3>Data Storage</h3><p>ClickHouse + DynamoDB + Redis + SQLite — polyglot persistence ตามลักษณะข้อมูล</p><div class="stats"><span class="status-pill ok">113,336 rows</span></div></a>
-        <a class="card doc-card" href="./07-web-origin-testbed.html"><span class="no">07</span><h3>Web Origin Testbed</h3><p>DVWA, Juice Shop, vAmPI, bWAPP หลัง KKU VPN — testbed 4-in-1</p><div class="stats"><span class="status-pill ok">4 containers healthy</span></div></a>
+        <a class="card doc-card" href="./07-web-origin-testbed.html"><span class="no">07</span><h3>Web Origin Testbed</h3><p>DVWA, Juice Shop, vAmPI, bWAPP หลัง KKU VPN — เว็บช่องโหว่โดยตั้งใจสำหรับพิสูจน์ว่า WAF บล็อกได้จริง</p><div class="stats"><span class="status-pill ok">4 containers healthy</span></div></a>
+        <a class="card doc-card" href="./23-lab-business-apps.html"><span class="no">23</span><h3>Lab Node &amp; Business Apps</h3><p>เพิ่มเว็บธุรกิจสมจริง 3 ตัว (ร้านค้า, โรงพยาบาล, SaaS) — ตรวจแล้วยังไม่ถูกต่อเข้า WAF</p><div class="stats"><span class="status-pill ok">7 เว็บบน Lab</span><span class="status-pill risk">ยังไม่ต่อ WAF</span></div></a>
       </div>
 
       <h3 style="margin-top:2rem"><span class="idx">B</span> ตรวจสอบและแก้ไข — 27 ส.ค.–4 ก.ย. 2026</h3>
