@@ -53,6 +53,19 @@
     </div>
     <div class="nav-group">
       <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">Wayfinder</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./24-wayfinder-map.html"><span class="no">24</span> System Map</a></li>
+        <li><a href="./25-wayfinder-flows.html"><span class="no">25</span> Flow Simulator</a></li>
+        <li><a href="./26-wayfinder-functions.html"><span class="no">26</span> Function Call Traces</a></li>
+        <li><a href="./27-wayfinder-data.html"><span class="no">27</span> Data & Dependency Map</a></li>
+        <li><a href="./28-wayfinder-security.html"><span class="no">28</span> Security Boundaries & Gaps</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
         <span class="nav-group-label">ตรวจสอบและแก้ไข</span>
         <span class="nav-group-chevron" aria-hidden="true">▸</span>
       </button>
@@ -98,7 +111,7 @@
       </ul>
     </div>
     <div class="sidebar-foot">
-      จัดทำ 27 ส.ค. 2026 · สำรวจจากเครื่องจริงทั้ง 3 เครื่อง<br>
+      จัดทำ 27 ส.ค. 2026 · ปรับปรุงล่าสุด 6-7 ก.ย. 2026 · สำรวจจากเครื่องจริงทั้ง 4 เครื่อง<br>
       <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
     </div>
   </nav>
@@ -142,6 +155,11 @@
         </div>
       </div>
 
+      <div class="callout ok reveal" style="max-width:66ch">
+        <span class="cap">ใหม่ — Wayfinder: สำรวจระบบแบบคลิกไล่ทีละขั้น</span>
+        <p>เพิ่มหมวด <b style="color:var(--signal-ok)">Wayfinder</b> จากการสำรวจเครื่องจริงรอบ 6-7 ก.ย. — แผนที่เครื่องจริงทั้ง 4 เครื่องแบบคลิกดูรายละเอียด, <b style="color:var(--signal-ok)">simulator 10 โฟลว์การทำงานจริงที่กดไล่ทีละขั้นได้</b>, function call trace, data/dependency map และ security boundary ครบ อ่านที่ <a href="./24-wayfinder-map.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 24</a> → <a href="./25-wayfinder-flows.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 25 (simulator)</a></p>
+      </div>
+
       <div class="callout risk reveal" style="max-width:66ch">
         <span class="cap">อัปเดต 6 ก.ย. 2026 — Lab เพิ่มเว็บธุรกิจ 3 ตัว + พบ tunnel ตายอยู่</span>
         <p>Lab node เพิ่มเว็บธุรกิจสมจริงอีก 3 ตัว (ร้านค้า, โรงพยาบาล, SaaS) รวมเป็น 7 เว็บ — <b style="color:var(--signal-warn)">ตรวจแล้วยังไม่ถูกต่อเข้า WAF สักตัว</b> และระหว่างตรวจพบว่า <b style="color:var(--signal-risk)">tunnel ตายอยู่ตอนนี้ ทั้ง 4 โดเมนเดิมเข้าไม่ได้</b> สาเหตุคือ origin ถูก archive ทำให้ verify-agent ปฏิเสธ 401 ทุกครั้ง อ่านที่ <a href="./23-lab-business-apps.html" style="color:var(--signal-ok);text-decoration:underline">หน้า 23</a></p>
@@ -181,6 +199,12 @@
           <h3>สถาปัตยกรรมระบบ</h3>
           <p>WAF Engine, CDN, Dashboard Backend, ML, Tunnel, Data Storage, Web Origin Testbed, Lab Business Apps</p>
           <span class="cat-count">8 หน้า</span>
+        </a>
+        <a class="card category-card" href="./24-wayfinder-map.html">
+          <span class="cat-icon">🧭</span>
+          <h3>Wayfinder <span style="font-size:.65em;color:var(--signal-ok);font-family:var(--font-mono);vertical-align:middle">ใหม่</span></h3>
+          <p>คลิกไล่ระบบทั้งหมดแบบ interactive — แผนที่เครื่องจริง 4 เครื่อง, simulator 10 โฟลว์การทำงาน, function call trace, data map และ security boundary</p>
+          <span class="cat-count">5 หน้า · มี simulation ให้กดเล่น</span>
         </a>
         <a class="card category-card" href="./08-testing-approach.html">
           <span class="cat-icon">🛡️</span>

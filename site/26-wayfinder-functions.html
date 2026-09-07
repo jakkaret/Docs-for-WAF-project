@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Function Call Traces — Wayfinder — WAF + CDN Platform Docs</title>
+<meta name="description" content="ไล่ 14 ฟังก์ชันสำคัญของระบบทีละบรรทัด ตั้งแต่ authentication ไปจนถึงจุดที่ทำให้ dashboard backend ค้างทั้งเครื่อง — พร้อม input/output, จุดตรวจความปลอดภัย และ sync/async">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ภาพรวม</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">สถาปัตยกรรมระบบ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./23-lab-business-apps.html"><span class="no">23</span> Lab Node & Business Apps</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="true">
+        <span class="nav-group-label">Wayfinder</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list">
+        <li><a href="./24-wayfinder-map.html"><span class="no">24</span> System Map</a></li>
+        <li><a href="./25-wayfinder-flows.html"><span class="no">25</span> Flow Simulator</a></li>
+        <li><a href="./26-wayfinder-functions.html" aria-current="page"><span class="no">26</span> Function Call Traces</a></li>
+        <li><a href="./27-wayfinder-data.html"><span class="no">27</span> Data & Dependency Map</a></li>
+        <li><a href="./28-wayfinder-security.html"><span class="no">28</span> Security Boundaries & Gaps</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ตรวจสอบและแก้ไข</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./19-main-server-analysis.html"><span class="no">19</span> Main Server Analysis</a></li>
+        <li><a href="./20-waf-attack-test.html"><span class="no">20</span> WAF Attack Test</a></li>
+        <li><a href="./21-log-completeness.html"><span class="no">21</span> Log Completeness</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">แผนพัฒนาต่อ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+        <li><a href="./22-n8n-integration-options.html"><span class="no">22</span> n8n Integration Options</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">FAQ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+        <li><a href="./18-waf-generation-assessment.html"><span class="no">18</span> WAF Generation Assessment</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">บริบทภายนอก</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · ปรับปรุงล่าสุด 6-7 ก.ย. 2026 · สำรวจจากเครื่องจริงทั้ง 4 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>WAYFINDER · 26 · FUNCTION CALL TRACES — สำรวจสด 6-7 ก.ย. 2026</p>
+      <h1>14 ฟังก์ชันสำคัญ — ไล่ทีละบรรทัดจาก source code จริง</h1>
+      <p class="lede">รูปแบบเดียวกันทุกฟังก์ชัน: caller → function → internal calls → external calls → DB/cache/queue → return พร้อมจุดตรวจความปลอดภัยและว่า sync หรือ async</p>
+    </header>
+
+    <div class="callout risk reveal" style="max-width:70ch">
+      <span class="cap">ฟังก์ชันที่ทำให้ทั้งเครื่องค้าง</span>
+      <p><code class="mono">save_hybrid_log()</code> เรียก boto3 <code class="mono">put_item</code> แบบ synchronous ไป DynamoDB ข้ามภูมิภาคตรงๆ ใน async event loop โดยไม่ผ่าน executor — ทุกครั้งที่บันทึก log 1 บรรทัด event loop จะหยุดรอทั้งก้อน รวมถึง <code class="mono">accept()</code> connection ใหม่ด้วย ดูข้อ 3 ด้านล่าง</p>
+    </div>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> get_current_user() — จุดสถาปนา authentication เพียงจุดเดียว</h2>
+      <p class="mono" style="font-size:.8rem;color:var(--muted)">dashboard/backend/services/rbac.py:18 · caller: ทุก endpoint ที่ต้อง login</p>
+      <div class="call-trace">FastAPI Depends
+  → <span class="fn">get_current_user</span>(request, credentials)
+      → _extract_token(): Authorization: Bearer &lt;token&gt; → หรือ cookie "access_token"
+            ไม่มีทั้งคู่ → 401 Not authenticated
+      → AuthService.decode_token() → jose.jwt.decode(HS256)
+            JWTError → 401 Invalid or expired token
+      → AuthService.get_user_by_id(user_id)
+            → DynamoDB waf_users.get_item()   <span class="warn">[ข้ามเครื่อง, sync, ทุกครั้ง — ไม่มี cache]</span>
+            ไม่พบ → 401 User not found
+  → return user (dict เต็ม: user_id, email, username, role, ...)</div>
+      <p style="max-width:70ch">role อ่านจาก DynamoDB สด ไม่ใช่จาก JWT claim — เพิกถอนสิทธิ์มีผลทันที แลกกับ latency DynamoDB ทุก request</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> require_admin() / require_viewer_or_above() / verify_origin_ownership()</h2>
+      <p class="mono" style="font-size:.8rem;color:var(--muted)">services/rbac.py:61,70,79</p>
+      <div class="call-trace">require_admin(user)          → role != "admin" → 403
+require_viewer_or_above(user) → role ∉ {viewer, admin} → 403
+
+<span class="fn">verify_origin_ownership</span>(origin_id, user)
+  → DynamoDBService().get_origin_by_id(origin_id)
+  → ไม่พบ / status=="deleted" → 404 Origin not found
+  → origin["admin_user_id"] != user["user_id"] → 403 You do not own this origin
+  → return origin</div>
+      <p style="max-width:70ch">มีแค่ 2 role ในระบบ: <code class="mono">admin</code>, <code class="mono">viewer</code> — ตาราง <code class="mono">waf_user_roles</code> ที่ออกแบบไว้สำหรับ role ต่อ origin มี <b style="color:#fff">0 รายการ</b> ยังไม่ถูกใช้ · <code class="mono">verify_origin_ownership</code> ตอบ 404 ต่างจาก 403 ทำให้ยืนยันได้ว่า origin id นั้นมีตัวตนอยู่จริง (information disclosure ระดับเบา)</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> log_forward_worker() — ต้นตอที่ทำให้ backend ค้างทั้งเครื่อง</h2>
+      <p class="mono" style="font-size:.8rem;color:var(--muted)">services/log_forward.py:309 · asyncio task ตอน startup</p>
+      <div class="call-trace"><span class="fn">log_forward_worker</span>()
+  └─ asyncio.gather(process_access_log(), process_audit_log(), flush_old_logs())
+
+process_access_log() → tail access.json → normalize_access()
+     is_blocked = (status==403); edge_node = "edge-th"  <span class="warn">← ฮาร์ดโค้ด</span>
+process_audit_log()  → tail audit.json → normalize_modsec()
+
+try_merge(request_id) — ต้องมีครบทั้ง access + modsec
+  → merged = {**access, **modsec}
+  → <span class="risk">save_hybrid_log(merged)</span>
+  → ถ้า status∈{403,429} หรือ severity∈{CRITICAL,HIGH} → dispatch_telegram_alert()
+
+flush_old_logs() [ทุก 1 วิ] — ค้างเกิน 5 วิ → "FALLBACK SAVE" ได้แค่ฝั่งเดียว
+
+<span class="risk">save_hybrid_log</span>(data)
+  → ch.save_log()   HTTP → ClickHouse, <span class="risk">SYNCHRONOUS</span>
+  → db.save_log()   boto3 put_item → DynamoDB ap-southeast-1, <span class="risk">SYNCHRONOUS</span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>หลักฐานที่วัดได้จริง</th><th>ค่า</th></tr></thead>
+        <tbody>
+          <tr><td><span class="mono">ss -tlnp</span></td><td>LISTEN Recv-Q <b style="color:var(--signal-risk)">2049</b> backlog 2048 — คิว accept ล้น</td></tr>
+          <tr><td>curl 127.0.0.1:8000/api/health จากบนเครื่องเอง</td><td>timeout 20 วินาที</td></tr>
+          <tr><td>journal</td><td>"⚠️ FALLBACK SAVE" สลับ "Saved log" ต่อเนื่อง</td></tr>
+          <tr><td>RSS ของ process</td><td>764 MB (19.5% ของ RAM ทั้งเครื่อง)</td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:70ch"><b style="color:#fff">ทำไมถึงมีแต่ FALLBACK:</b> nginx ถือ inode ของ <code class="mono">access.json</code> ที่ถูกลบไปแล้วตั้งแต่ 2026-09-01 10:16 (ไม่มีใครสั่ง <code class="mono">nginx -s reopen</code>) — <code class="mono">tail_file()</code> จึงเปิดไฟล์ใหม่ที่ไม่มีใครเขียน ทุก entry ขาดฝั่ง access เสมอ</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§4</span> frp_webhook_gatekeeper() vs verify_agent() — สองด่านตรวจ tunnel</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>frp_webhook_gatekeeper() — api/tunnels.py:212</h4>
+          <p style="font-size:.85rem">Login: ตรวจ <code class="mono">privilege_key</code> ผ่านได้ทั้ง legacy token (ฝังในซอร์ส) และ JWT · NewProxy: <code class="mono">_extract_raw_token()</code> ไม่ได้รับ identity เลย → reject เสมอ · CloseProxy: allow · op อื่น: reject (fail-closed โดยเจตนา)</p>
+          <p style="font-size:.8rem;color:var(--signal-risk)">จุดเสี่ยง: legacy static token ฝังในซอร์ส ผ่านได้ทุก domain ที่ไม่ reserved</p>
+        </div>
+        <div class="card">
+          <h4>verify_agent() — api/tunnel.py:105</h4>
+          <p style="font-size:.85rem">แยก token <code class="mono">cwt_&lt;origin_id&gt;_&lt;secret&gt;</code> → เทียบ digest ด้วย <code class="mono">hmac.compare_digest</code> → ตรวจ domain อยู่ใน <code class="mono">tunnel_domains</code></p>
+          <p style="font-size:.8rem;color:var(--signal-ok)">ออกแบบดีกว่า: เก็บเฉพาะ digest, credential ผูก origin เดียว, ทุก error คืน 401 เดียวกัน, fail-closed เมื่อ verifier ต่อไม่ได้</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§5</span> handle_vhost() — ส่ง request ที่ผ่าน WAF แล้วลง tunnel</h2>
+      <p class="mono" style="font-size:.8rem;color:var(--muted)">/opt/cloudwaf-tunnel/server.py:350 · caller: waf-nginx</p>
+      <div class="call-trace"><span class="fn">handle_vhost</span>(reader, writer)
+  → _read_head() อ่านจนเจอ \r\n\r\n (สูงสุด 32 KB) → _extract_host()
+        ไม่มี Host → 400
+  → registry.lookup(host)
+        ไม่พบ agent → 502 "No tunnel agent is connected for &lt;host&gt;"
+  → agent.send(MSG_CONNECT) → รอ ≤10 วิ
+        timeout → 504 · ok=False → 502
+  → agent.send(MSG_DATA, head) → loop: reader.read(4096) → ส่งต่อ
+  finally: ลบ conn, ส่ง MSG_CLOSE, ปิด writer</div>
+      <p style="max-width:70ch"><code class="mono">Agent.send()</code> ใช้ <code class="mono">asyncio.Lock</code> ครอบ writer เดียวที่ทุก connection ใช้ร่วมกัน — ถ้าไม่ล็อก frame จะสลับกันจนสตรีมพัง (ทำถูก)</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§6</span> predict_anomaly() — ML และ attribution จริง (ไม่ใช่ mock)</h2>
+      <p class="mono" style="font-size:.8rem;color:var(--muted)">ml/ml_api.py:102</p>
+      <div class="call-trace"><span class="fn">predict_anomaly</span>({url, method, body})
+  → extract_features_from_request() → 13 ฟีเจอร์
+  → rf_model.predict() + predict_proba() → attack_prob
+  → iso_model.decision_function() → anomaly_score
+  → is_anomaly = (rf_pred==1) or (attack_prob &gt; 0.5)
+  → build_attribution_response(rf_model, df)
+        treeinterpreter เขียนเอง: เดิน root→leaf ทุกต้น สะสมส่วนต่าง P(class=1) ต่อฟีเจอร์
+        invariant: mean_bias + Σ contribution[f] == predict_proba()[1]
+        except → พิมพ์ log แล้วคืนผลเดิม (attribution ห้ามทำให้ detection ล้ม)</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>input ทดสอบสด</th><th>ผล</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">/product?id=1 UNION SELECT password FROM users</td><td>is_anomaly: true, prob 1.0 — attribution สูงสุด keyword_matches +0.3996</td></tr>
+          <tr><td class="mono">/index.html</td><td>is_anomaly: false, prob 0.2479 — attribution สูงสุด is_clean_structure −0.0652</td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:70ch"><b>ไม่มี auto-block</b>: ผลลัพธ์ใช้สร้าง pending rule เท่านั้น ไม่มี code path ใดสั่ง deny ตรงๆ</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§7</span> check_rate_limit() — auth_request ที่อยู่บนเส้นทางวิกฤต</h2>
+      <p class="mono" style="font-size:.8rem;color:var(--muted)">api/limiter.py:28 · caller: waf-nginx auth_request</p>
+      <div class="call-trace"><span class="fn">check_rate_limit</span>(request, response)
+  → client_ip = X-Forwarded-For[0] → X-Real-IP → request.client.host
+  → is_static_asset(uri) → allow ทันที
+  → rule_service.list_rules()   <span class="warn">[SQLite, SYNC — บล็อก loop]</span>
+  → rate_limiter.is_allowed(ip, limit, window)   [Redis, SYNC]
+  → เกิน → 401 + Retry-After (nginx แปลงเป็น 429)</div>
+      <p style="max-width:70ch"><b style="color:var(--signal-warn)">ปัญหาความน่าเชื่อถือ:</b> เชื่อ <code class="mono">X-Forwarded-For</code> ตัวแรกโดยไม่ตรวจว่า hop ก่อนหน้าเป็น trusted proxy — ผู้ที่ยิงตรงมาที่ <code class="mono">waf-nginx:8080</code> ปลอม IP เพื่อหลบ rate limit ได้</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§8</span> get_user_origins_and_domains() — จุดสถาปนา tenant identity</h2>
+      <p class="mono" style="font-size:.8rem;color:var(--muted)">services/tenant_service.py:21</p>
+      <div class="call-trace"><span class="fn">get_user_origins_and_domains</span>(user_id)
+  → cache ในหน่วยความจำ TTL 3 วินาที
+  → db.get_origins_by_user(user_id)   [GSI admin_user_id-index]
+  → db.domains_table.scan()   <span class="warn">← สแกนทั้งตารางแล้วกรองใน Python</span>
+  → return (origin_ids, active_origins, domain_keywords)</div>
+      <p style="max-width:70ch">tenant identity มาจาก <code class="mono">origin.admin_user_id</code> เท่านั้น — ไม่มี tenant id แยก การแยก tenant ในการ query log ทำด้วยการเทียบ<b>สตริง</b> (<code class="mono">url LIKE '%juice%'</code>) ไม่ใช่คีย์ฐานข้อมูล ผู้ใช้ที่มี origin ชื่อเป็นคำทั่วไปจะเห็น log ปนกับผู้เช่าอื่น</p>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§9</span> copilot_chat() — จุดที่ tenant isolation ไม่ถูกบังคับ</h2>
+      <p class="mono" style="font-size:.8rem;color:var(--muted)">api/copilot.py:63</p>
+      <div class="call-trace"><span class="fn">copilot_chat</span>(req, user)
+  → get_user_origins_and_domains() → user_domains  <span class="risk">← ใช้แค่แสดงผล</span>
+  → stats_q / attack_q / ip_q  → ClickHouse
+        <span class="risk">ไม่มี WHERE ที่ผูก tenant เลยสักคิวเดียว</span>
+  → ส่ง context (รวม client_ip ผู้โจมตี) ไป Google Gemini API</div>
+      <div class="callout risk">
+        <span class="cap">รั่วข้ามผู้เช่า — ยืนยันจากโค้ด</span>
+        <p>viewer คนใดก็ได้เห็นยอดทราฟฟิกรวมทั้งระบบ, ประเภทการโจมตียอดนิยม และ <b>IP ผู้โจมตี</b> ของผู้เช่ารายอื่น — และข้อมูลนี้ถูกส่งต่อออกไปยัง Gemini API โดยไม่ผ่าน PII masker (ประเด็น PDPA)</p>
+      </div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§10</span> RuleManager, dispatch_telegram_alert, threshold proposal, escape_like_value</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>RuleManager — เขียน SecRule แล้ว reload nginx</h4>
+          <p style="font-size:.85rem"><code class="mono">escape_secrule_string()</code> escape backslash ก่อน quote → เขียนไฟล์ → <code class="mono">_run_docker_exec()</code> จำกัด allowlist <code class="mono">{("nginx","-t"),("nginx","-s","reload")}</code> ไม่ใช้ shell=True — ป้องกัน command injection ได้จริง</p>
+        </div>
+        <div class="card">
+          <h4>dispatch_telegram_alert() — fire-and-forget</h4>
+          <p style="font-size:.85rem">trigger เมื่อ status∈{403,429} หรือ severity สูง — <b style="color:var(--signal-warn)">ไม่มี deduplication/throttle</b> สอดคล้องกับที่ <code class="mono">waf_alerts</code> มีถึง 73,927 แถว</p>
+        </div>
+        <div class="card">
+          <h4>generate_threshold_proposal() — self-tuning ที่ต้องมีคนอนุมัติ</h4>
+          <p style="font-size:.85rem">มี guard ครบ: MIN_SAMPLES=200, MIN_ORIGINS=2, MAX_STEP=2 — แต่ <code class="mono">waf_threshold_proposals</code> มี <b>0 รายการ</b> ยังไม่เคยถูกใช้จริง</p>
+        </div>
+        <div class="card">
+          <h4>escape_like_value() — ClickHouse</h4>
+          <p style="font-size:.85rem"><code class="mono">.replace("\\","\\\\").replace("'","\\'")</code> — escape backslash ก่อน quote (เหตุผลมีคอมเมนต์ในโค้ด) ยังเป็นการต่อสตริงเข้า SQL ไม่ใช่ parameterized query แต่ปลอดภัยเท่าที่ escape ถูกต้อง</p>
+        </div>
+      </div>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./25-wayfinder-flows.html"><span class="dir">← ก่อนหน้า</span><strong>25 · Flow Simulator</strong></a>
+      <a class="next" href="./27-wayfinder-data.html"><span class="dir">ถัดไป →</span><strong>27 · Data &amp; Dependency Map</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>

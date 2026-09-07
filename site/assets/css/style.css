@@ -623,3 +623,123 @@ footer.site-foot a:hover{ text-decoration:underline; }
   .page-nav{ flex-direction:column; }
   .page-nav a{ max-width:100%; }
 }
+
+/* ==========================================================================
+   Wayfinder — interactive flow simulator + infra map explorer
+   ========================================================================== */
+
+/* ---- flow simulator (click-through, 10 named flows A–J) ---- */
+.flowsim{ padding: 1.5rem 1.6rem 1.7rem; margin: 1.6rem 0; }
+.flowsim-cap{
+  font-family: var(--font-mono); font-size:.68rem; color: var(--muted); text-transform:uppercase;
+  letter-spacing:.1em; margin-bottom:1.3rem; display:flex; justify-content:space-between; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.flowsim-cap .live{ color: var(--signal-ok); display:flex; align-items:center; gap:.4rem; white-space:nowrap; }
+.flowsim-cap .live .dot{ width:6px;height:6px;border-radius:50%;background:var(--signal-ok); animation: pulse 1.6s infinite; }
+
+.flowsim-tabs{ display:flex; flex-wrap:wrap; gap:.45rem; margin-bottom:1.3rem; }
+.flowsim-tab{
+  font-family: var(--font-mono); font-size:.74rem; padding:.42rem .85rem; border-radius:999px;
+  border:1px solid var(--line); background: transparent; color: var(--text-dim); cursor:pointer;
+  transition: border-color .15s, color .15s, background .15s; display:flex; align-items:center; gap:.4rem;
+}
+.flowsim-tab:hover{ border-color: var(--signal-ok); color:#fff; }
+.flowsim-tab .letter{ color: var(--muted); font-weight:600; }
+.flowsim-tab.is-active{ border-color: var(--signal-ok); background: var(--signal-ok-dim); color: var(--signal-ok); }
+.flowsim-tab.is-active .letter{ color: var(--signal-ok); }
+.flowsim-tab.tag-risk.is-active{ border-color: var(--signal-risk); background: var(--signal-risk-dim); color: var(--signal-risk); }
+.flowsim-tab.tag-risk.is-active .letter{ color: var(--signal-risk); }
+.flowsim-tab.tag-warn.is-active{ border-color: var(--signal-warn); background: var(--signal-warn-dim); color: var(--signal-warn); }
+.flowsim-tab.tag-warn.is-active .letter{ color: var(--signal-warn); }
+
+.flowsim-title{ font-size:1rem; color:#fff; font-weight:600; margin-bottom:1rem; }
+
+.flowsim-lanes{ display:flex; flex-direction:column; gap:.4rem; margin-bottom:1.1rem; }
+.flow-lane{
+  border:1px solid var(--line); border-radius: var(--radius); background: var(--bg-raise);
+  padding:.55rem .8rem; font-family: var(--font-mono); font-size:.78rem; color: var(--muted);
+  display:flex; align-items:center; gap:.65rem; transition: border-color .18s, color .18s, background .18s;
+}
+.flow-lane .idx{
+  width:24px; height:24px; border-radius:50%; border:1px solid var(--line); flex:none;
+  display:flex; align-items:center; justify-content:center; font-size:.68rem; color: var(--muted);
+  transition: border-color .18s, color .18s, box-shadow .18s;
+}
+.flow-lane.is-active{ border-color: var(--signal-ok); color:#fff; background: var(--panel); }
+.flow-lane.is-active .idx{ border-color: var(--signal-ok); color: var(--signal-ok); box-shadow: 0 0 8px var(--signal-ok); }
+.flow-lane.is-active.tag-risk{ border-color: var(--signal-risk); }
+.flow-lane.is-active.tag-risk .idx{ border-color: var(--signal-risk); color: var(--signal-risk); box-shadow: 0 0 8px var(--signal-risk); }
+.flow-lane.is-active.tag-warn{ border-color: var(--signal-warn); }
+.flow-lane.is-active.tag-warn .idx{ border-color: var(--signal-warn); color: var(--signal-warn); box-shadow: 0 0 8px var(--signal-warn); }
+.flow-lane.is-done{ color: var(--text-dim); }
+.flow-lane.is-done .idx{ color: var(--signal-ok); border-color: var(--signal-ok); opacity:.55; }
+
+.flowsim-log{
+  border:1px dashed var(--line); border-radius: var(--radius); background: var(--bg-raise);
+  padding:1rem 1.15rem; min-height: 5.4em; font-family: var(--font-mono); font-size:.85rem;
+}
+.flowsim-log .step-text{ color:#fff; display:block; margin-bottom:.4rem; line-height:1.5; }
+.flowsim-log .step-detail{ color: var(--muted); font-size:.78rem; line-height:1.5; }
+.flowsim-log .verdict-ok{ color: var(--signal-ok); font-weight:600; }
+.flowsim-log .verdict-risk{ color: var(--signal-risk); font-weight:600; }
+.flowsim-log .verdict-warn{ color: var(--signal-warn); font-weight:600; }
+
+@media (max-width: 560px){
+  .flowsim{ padding: 1.2rem 1.1rem 1.4rem; }
+  .flow-lane{ font-size:.72rem; }
+}
+
+/* ---- infra map explorer (click a machine → detail panel) ---- */
+.infra-map{ margin: 1.6rem 0; }
+.infra-nodes{ display:grid; grid-template-columns: repeat(4,1fr); gap:.7rem; margin-bottom:1.2rem; }
+@media (max-width: 760px){ .infra-nodes{ grid-template-columns: repeat(2,1fr); } }
+.infra-node{
+  text-align:left; cursor:pointer; border:1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel); padding: 1rem 1.1rem; color: var(--text-dim); font: inherit;
+  transition: border-color .15s, transform .12s; position:relative;
+}
+.infra-node:hover{ border-color: var(--signal-ok); transform: translateY(-2px); }
+.infra-node.is-active{ border-color: var(--signal-ok); background: var(--signal-ok-dim); }
+.infra-node .status-dot{ width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:.4rem; }
+.infra-node .status-dot.ok{ background: var(--signal-ok); box-shadow:0 0 6px var(--signal-ok); }
+.infra-node .status-dot.risk{ background: var(--signal-risk); box-shadow:0 0 6px var(--signal-risk); }
+.infra-node .status-dot.warn{ background: var(--signal-warn); }
+.infra-node h4{ margin:.4rem 0 .15rem; font-size:.95rem; color:#fff; font-family: var(--font-display); }
+.infra-node .ip{ font-family: var(--font-mono); font-size:.72rem; color: var(--muted); }
+.infra-panel{
+  background: var(--bg-raise); border:1px solid var(--line); border-radius: var(--radius);
+  padding: 1.4rem 1.5rem;
+}
+.infra-panel h3{ font-size:1.05rem; margin-bottom:.3rem; }
+.infra-panel .sub{ font-family: var(--font-mono); font-size:.76rem; color: var(--muted); margin-bottom:1rem; display:block; }
+.infra-panel dl{ display:grid; grid-template-columns: max-content 1fr; gap:.5rem 1rem; margin:0 0 1rem; }
+.infra-panel dt{ font-family: var(--font-mono); font-size:.72rem; color: var(--muted); text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+.infra-panel dd{ margin:0; font-size:.87rem; color: var(--text-dim); }
+.infra-panel dd code{ color: var(--signal-ok); }
+@media (max-width: 560px){ .infra-panel dl{ grid-template-columns: 1fr; } .infra-panel dt{ margin-top:.4rem; } }
+
+/* ---- function call-trace block (monospace call chain) ---- */
+.call-trace{
+  background: var(--bg-raise); border:1px solid var(--line); border-left:3px solid var(--accent-2);
+  border-radius: 0 var(--radius) var(--radius) 0; padding: 1.1rem 1.3rem; margin: 1rem 0;
+  font-family: var(--font-mono); font-size:.8rem; line-height:1.75; color: var(--text-dim); overflow-x:auto; white-space:pre;
+}
+.call-trace .fn{ color: var(--signal-ok); }
+.call-trace .warn{ color: var(--signal-warn); }
+.call-trace .risk{ color: var(--signal-risk); }
+
+/* ---- ranked issue list (severity-ordered) ---- */
+.issue-rank{ list-style:none; margin:1.2rem 0; padding:0; display:flex; flex-direction:column; gap:.6rem; }
+.issue-rank li{
+  display:flex; gap:1rem; align-items:flex-start; border:1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel); padding:.9rem 1.1rem;
+}
+.issue-rank .n{
+  font-family: var(--font-mono); font-size:.78rem; color: var(--muted); flex:none; width:1.6em; padding-top:.1rem;
+}
+.issue-rank strong{ color:#fff; font-size:.9rem; display:block; margin-bottom:.15rem; }
+.issue-rank p{ margin:0; font-size:.85rem; }
+.issue-rank li.sev-top{ border-left:3px solid var(--signal-risk); }
+.issue-rank li.sev-high{ border-left:3px solid var(--signal-risk); opacity:.92; }
+.issue-rank li.sev-mid{ border-left:3px solid var(--signal-warn); }
+.issue-rank li.sev-low{ border-left:3px solid var(--signal-debt); }

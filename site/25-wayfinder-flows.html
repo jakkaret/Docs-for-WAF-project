@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flow Simulator — Wayfinder — WAF + CDN Platform Docs</title>
+<meta name="description" content="จำลอง 10 โฟลว์การทำงานจริงของระบบแบบคลิกทีละขั้น A-J ตั้งแต่ request ปกติ, login, rate limit, tunnel ทั้งสองระบบ, log forwarding, rule sync, ML analysis ไปจนถึงการถูกใช้ผิดของ on-demand TLS">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ภาพรวม</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">สถาปัตยกรรมระบบ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./23-lab-business-apps.html"><span class="no">23</span> Lab Node & Business Apps</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="true">
+        <span class="nav-group-label">Wayfinder</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list">
+        <li><a href="./24-wayfinder-map.html"><span class="no">24</span> System Map</a></li>
+        <li><a href="./25-wayfinder-flows.html" aria-current="page"><span class="no">25</span> Flow Simulator</a></li>
+        <li><a href="./26-wayfinder-functions.html"><span class="no">26</span> Function Call Traces</a></li>
+        <li><a href="./27-wayfinder-data.html"><span class="no">27</span> Data & Dependency Map</a></li>
+        <li><a href="./28-wayfinder-security.html"><span class="no">28</span> Security Boundaries & Gaps</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ตรวจสอบและแก้ไข</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./19-main-server-analysis.html"><span class="no">19</span> Main Server Analysis</a></li>
+        <li><a href="./20-waf-attack-test.html"><span class="no">20</span> WAF Attack Test</a></li>
+        <li><a href="./21-log-completeness.html"><span class="no">21</span> Log Completeness</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">แผนพัฒนาต่อ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+        <li><a href="./22-n8n-integration-options.html"><span class="no">22</span> n8n Integration Options</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">FAQ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+        <li><a href="./18-waf-generation-assessment.html"><span class="no">18</span> WAF Generation Assessment</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">บริบทภายนอก</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · ปรับปรุงล่าสุด 6-7 ก.ย. 2026 · สำรวจจากเครื่องจริงทั้ง 4 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>WAYFINDER · 25 · FLOW SIMULATOR — สำรวจสด 6-7 ก.ย. 2026</p>
+      <h1>10 โฟลว์การทำงานจริง — เลือกโฟลว์แล้วกดไล่ทีละขั้น</h1>
+      <p class="lede">จากคำขอปกติที่ผ่านครบทุกด่าน ไปจนถึงจุดที่พังอยู่จริงตอนนี้ — แต่ละโฟลว์ไล่จาก log และ source code จริง ไม่ใช่แผนผังตามที่ออกแบบไว้ กด "ถัดไป" หรือปล่อยให้เล่นอัตโนมัติก็ได้</p>
+      <div class="meta-line">
+        <span><b>ทำงานได้จริง</b> A · C · D · E · H · I</span>
+        <span><b>พังอยู่ตอนนี้</b> B · F · G · J</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <div class="flowsim card" data-flowsim>
+        <div class="flowsim-cap">
+          <span>Request &amp; System Flow Simulator · จำลองจาก log และ source code จริง</span>
+          <span class="live"><span class="dot"></span>10 FLOWS · A–J</span>
+        </div>
+        <div class="flowsim-tabs" data-flowsim-tabs></div>
+        <div class="flowsim-title" data-flowsim-title></div>
+        <div class="flowsim-lanes" data-flowsim-lanes></div>
+        <div class="flowsim-log" data-flowsim-log aria-live="polite"></div>
+        <div class="pipeline-steps">
+          <div>
+            <button type="button" class="step-btn" data-step-prev aria-label="ย้อนขั้นก่อนหน้า">← ก่อนหน้า</button>
+            <button type="button" class="step-btn" data-step-next aria-label="ขั้นถัดไป">ถัดไป →</button>
+            <button type="button" class="step-btn" data-step-play aria-pressed="true">⏸ พัก</button>
+          </div>
+          <div class="step-dots" data-step-dots aria-hidden="true"></div>
+        </div>
+        <script type="application/json" data-flowsim-data>
+[
+  {
+    "id": "A", "short": "คำขอปกติ", "tag": "ok",
+    "title": "Flow A — คำขอปกติเข้าเว็บ (vampi.waf-it-kku.online)",
+    "lanes": ["เบราว์เซอร์", "Edge TH", "Main waf-nginx", "Tunnel (cloudwaf)", "Lab origin"],
+    "steps": [
+      {"lane":0,"tag":"ok","text":"GET https://vampi.waf-it-kku.online/","detail":"DNS wildcard → 45.154.26.91 เสมอ ไม่ว่า user อยู่ที่ไหน"},
+      {"lane":1,"tag":"ok","text":"Caddy TLS termination","detail":"on-demand TLS ผ่าน Let's Encrypt"},
+      {"lane":1,"tag":"ok","text":"ModSecurity รอบ 1 + limit_req 50 rps","detail":"CRS ชั้น edge — ผ่าน"},
+      {"lane":1,"tag":"ok","text":"ตรวจ proxy_cache","detail":"HIT/STALE → ตอบทันที (200, X-Cache-Status: STALE) · MISS → ส่งต่อ Main"},
+      {"lane":2,"tag":"ok","text":"ModSecurity รอบ 2 (CRS 3.3.10)","detail":"ทดสอบสด: SQLi / XSS / path traversal → บล็อก 403 ทั้ง 3 payload"},
+      {"lane":3,"tag":"ok","text":"proxy_pass → cloudwaf_tunnel :8060","detail":"เฉพาะ vhost vampi เท่านั้นที่ผูกกับ tunnel นี้"},
+      {"lane":3,"tag":"ok","text":"registry.lookup(Host) → MSG_CONNECT","detail":"ส่งลงช่อง TLS ที่ agent ต่อออกมาจาก Lab"},
+      {"lane":4,"tag":"ok","text":"vampi:5000 ตอบกลับ","detail":"ย้อนเส้นทางเดิมทั้งหมด"}
+    ],
+    "verdict": {"tag":"ok","text":"200 OK — เส้นทางเดียวที่ทำงานได้ครบทุกด่านจริงวันนี้ (เฉพาะ vampi)"}
+  },
+  {
+    "id": "B", "short": "Dashboard ค้าง", "tag": "risk",
+    "title": "Flow B — ผู้ใช้เปิด Dashboard",
+    "lanes": ["เบราว์เซอร์", "Main Caddy", "waf-dashboard :8000"],
+    "steps": [
+      {"lane":0,"tag":"warn","text":"GET https://waf-it-kku.online","detail":"เข้า dashboard หลัก"},
+      {"lane":1,"tag":"warn","text":"Caddy จับคู่ waf-it-kku.online / www / main / dash","detail":"reverse_proxy → host.docker.internal:8000"},
+      {"lane":2,"tag":"risk","text":"waf-dashboard ไม่ accept() connection ใหม่","detail":"ss -tlnp: Recv-Q 2049 backlog 2048 — accept queue เต็ม ไม่ใช่ firewall"}
+    ],
+    "verdict": {"tag":"risk","text":"502 — GET /api/health ไม่ตอบ (ยืนยันสดจากบนเครื่องเอง, timeout 20s)"}
+  },
+  {
+    "id": "C", "short": "Login", "tag": "ok",
+    "title": "Flow C — Login และการได้ JWT",
+    "lanes": ["เบราว์เซอร์", "waf-dashboard", "AuthService", "DynamoDB waf_users"],
+    "steps": [
+      {"lane":0,"tag":"ok","text":"POST /api/auth/login {email, password}","detail":""},
+      {"lane":1,"tag":"ok","text":"api/auth.py: login()","detail":""},
+      {"lane":2,"tag":"ok","text":"AuthService.login_local(email, password)","detail":""},
+      {"lane":3,"tag":"ok","text":"get_user_by_email()","detail":"ลอง query GSI EmailIndex ก่อน — ไม่มี index ค่อย scan fallback"},
+      {"lane":2,"tag":"ok","text":"argon2 verify_password() → update_last_login()","detail":"time_cost=3, memory=64MB, parallelism=2"},
+      {"lane":1,"tag":"ok","text":"create_access_token() — JWT HS256","detail":"อายุ 60 นาที · ตั้ง cookie access_token"}
+    ],
+    "verdict": {"tag":"ok","text":"200 — login สำเร็จ · ทางเลือกอื่น: Google OAuth หรือ Telegram HMAC login"}
+  },
+  {
+    "id": "D", "short": "Rate limit", "tag": "warn",
+    "title": "Flow D — ตรวจ Rate Limit ก่อนถึงปลายทาง (auth_request)",
+    "lanes": ["waf-nginx", "waf-dashboard", "SQLite rules", "Redis"],
+    "steps": [
+      {"lane":0,"tag":"warn","text":"request ใดๆ ที่ต้องผ่าน auth_request","detail":"เกิดกับทุกโดเมนที่ผ่าน waf-nginx"},
+      {"lane":1,"tag":"warn","text":"check_rate_limit() — ดึง client IP","detail":"จาก X-Forwarded-For → X-Real-IP → request.client — ไม่ตรวจว่ามาจาก proxy ที่ไว้ใจได้"},
+      {"lane":2,"tag":"warn","text":"RateLimitService.list_rules()","detail":"อ่านจาก SQLite แบบ sync — บล็อก event loop ระหว่างอ่าน"},
+      {"lane":3,"tag":"ok","text":"RedisRateLimiter.is_allowed()","detail":"sliding window · DBSIZE ปัจจุบัน = 0 (ไม่มีการนับเกิดขึ้นตอนนี้)"}
+    ],
+    "verdict": {"tag":"warn","text":"ผ่าน → 200 / เกินโควตา → 429 · จุดเปราะ: ไม่มี proxy_read_timeout สั้นๆ เฉพาะจุดนี้ — ถ้า dashboard ค้าง (Flow B) เว็บลูกค้าทุกเว็บค้างตาม"}
+  },
+  {
+    "id": "E", "short": "CloudWAF tunnel", "tag": "ok",
+    "title": "Flow E — CloudWAF tunnel agent เชื่อมต่อ (ทำงานอยู่)",
+    "lanes": ["Lab agent", "cloudwaf-tunnel :8050", "waf-dashboard verify", "DynamoDB waf_origins"],
+    "steps": [
+      {"lane":0,"tag":"ok","text":"อ่าน agent.conf → TLS connect ไป Main:8050","detail":"pin SERVER_FINGERPRINT กัน MITM"},
+      {"lane":0,"tag":"ok","text":"ส่ง MSG_AUTH{token, routes}","detail":"token รูปแบบ cwt_<origin_id>_<secret>"},
+      {"lane":1,"tag":"ok","text":"handle_agent() → POST 127.0.0.1:8000/api/tunnel/verify-agent","detail":""},
+      {"lane":2,"tag":"ok","text":"verify_agent(): แยก token, อ่าน origin","detail":"จาก DynamoDB waf_origins"},
+      {"lane":3,"tag":"ok","text":"hmac.compare_digest(stored_hash, sha256(secret))","detail":"เทียบเวลาคงที่ กัน timing attack — ตรง"},
+      {"lane":1,"tag":"ok","text":"MSG_AUTH_RESP{status: accepted, domains, keepalive: 30s}","detail":""}
+    ],
+    "verdict": {"tag":"ok","text":"tunnel established over TLS — serving 4 domain (bwapp / dvwa / juice / vampi) — CONFIRMED สด"}
+  },
+  {
+    "id": "F", "short": "FRP tunnel", "tag": "risk",
+    "title": "Flow F — FRP tunnel agent เชื่อมต่อ (ล้มเหลวทุกเส้น)",
+    "lanes": ["Lab frpc", "frps", "gatekeeper (waf-dashboard)"],
+    "steps": [
+      {"lane":0,"tag":"ok","text":"Login: privilege_key = md5(token + timestamp)","detail":""},
+      {"lane":2,"tag":"ok","text":"_resolve_frp_identity() วนหา delta ±5 วิ → ตรง","detail":"kind=\"legacy\" → ผ่าน ✅"},
+      {"lane":0,"tag":"risk","text":"NewProxy: frpc ไม่ส่ง token/identity ซ้ำในอีเวนต์นี้","detail":"FRP ไม่ mirror ค่า auth.token มาให้ NewProxy โดยดีไซน์"},
+      {"lane":2,"tag":"risk","text":"_extract_raw_token() ได้ค่าว่าง","detail":"_resolve_frp_identity(\"\", \"\") → (\"none\", None)"},
+      {"lane":2,"tag":"risk","text":"reject: \"Blocked NewProxy with no valid identity\"","detail":"Lab เห็น: \"Authentication failed: Invalid or expired WAF Tunnel Token\""}
+    ],
+    "verdict": {"tag":"risk","text":"proxy ทุกตัว offline — Login ผ่านเสมอ, NewProxy ถูกปฏิเสธเสมอ (สาเหตุคือ webhook gatekeeper เอง ไม่ใช่ token ผิด)"}
+  },
+  {
+    "id": "G", "short": "Log forwarding", "tag": "risk",
+    "title": "Flow G — Edge ส่ง log กลับ Main (พัง 2 ชั้นอิสระกัน)",
+    "lanes": ["Edge TH forwarder", "PII sanitizer", "waf-dashboard :8000"],
+    "steps": [
+      {"lane":0,"tag":"ok","text":"อ่าน access.json → ต่อคิว ring buffer (สูงสุด 5000)","detail":""},
+      {"lane":1,"tag":"ok","text":"EdgePIISanitizer.sanitize_text()","detail":"mask เลขบัตร ปชช./บัตรเครดิต/เบอร์/อีเมล/token — ก่อนออกจากเครื่อง edge"},
+      {"lane":0,"tag":"risk","text":"POST /api/cdn/logs/ingest","detail":"endpoint นี้ไม่มีอยู่ในโค้ดที่ deploy จริง (cdn.py มีแค่ /nodes /stats /latency /purge /logs)"},
+      {"lane":2,"tag":"risk","text":"ต่อไม่ติดซ้ำอีกชั้น","detail":"backend ค้างอยู่แล้ว (Flow B) — ต่อให้มี endpoint ก็ยิงไม่ถึง"}
+    ],
+    "verdict": {"tag":"risk","text":"Buffer overflow — ทิ้ง log ไปแล้ว 884,500 รายการ (ตัวเลขจาก log ของ forwarder เอง)"}
+  },
+  {
+    "id": "H", "short": "Rule sync", "tag": "ok",
+    "title": "Flow H — Rule sync ไป edge",
+    "lanes": ["ตัวจับเวลา (5 วิ)", "waf-control-api :8070", "Edge TH entrypoint"],
+    "steps": [
+      {"lane":0,"tag":"ok","text":"ทุก 5 วินาที: GET :8070/api/sync/bundle","detail":"ทำงานอิสระ ไม่ต้องมีคนสั่ง"},
+      {"lane":1,"tag":"ok","text":"เทียบ sha256 กับรอบก่อน","detail":""},
+      {"lane":2,"tag":"ok","text":"sha256 ต่าง → แตก tar เข้า /opt/custom-rules","detail":"ลบ .conf/.txt เดิมทั้งหมดก่อนแตกใหม่"},
+      {"lane":2,"tag":"ok","text":"nginx -t ผ่านจึง nginx -s reload","detail":"ไม่ผ่าน = ไม่ reload (ปลอดภัย โดยดีไซน์)"}
+    ],
+    "verdict": {"tag":"ok","text":"ใช้ได้เฉพาะ Edge TH — Azure ถูกกฎ DOCKER-USER ดรอปที่พอร์ต 8070 (ยังไม่กระทบเพราะ Azure ไม่มีทราฟฟิก)"}
+  },
+  {
+    "id": "I", "short": "ML analysis", "tag": "ok",
+    "title": "Flow I — ML วิเคราะห์ log แบบเรียลไทม์ (ไม่บล็อกเอง)",
+    "lanes": ["log-analyzer", "waf-ml :5000", "pending rule store"],
+    "steps": [
+      {"lane":0,"tag":"ok","text":"tail 4 log channel → POST /predict","detail":"timeout 1.5 วินาที ผ่าน executor"},
+      {"lane":1,"tag":"ok","text":"extract 13 feature → RandomForest + IsolationForest","detail":"attack_prob จาก predict_proba"},
+      {"lane":1,"tag":"ok","text":"is_anomaly → build_attribution_response()","detail":"tree-path attribution ที่เขียนเอง ไม่ใช้ shap — ไม่ใช่ค่าสุ่ม"},
+      {"lane":2,"tag":"warn","text":"generate_pending_rule() → เขียน pending rule","detail":"บันทึกลง DynamoDB waf_pending_rules (273 รายการ) รอ admin อนุมัติ"}
+    ],
+    "verdict": {"tag":"warn","text":"ไม่มี code path ใดที่ ML สั่ง deny ตรงๆ — ตรงกับกฎ CLAUDE.md ที่ยังห้ามเปิด ML auto-block"}
+  },
+  {
+    "id": "J", "short": "TLS ถูกใช้ผิด", "tag": "risk",
+    "title": "Flow J — On-demand TLS ถูกใช้ในทางที่ผิดอยู่จริง",
+    "lanes": ["ผู้แอบอ้าง", "Caddy on_demand_tls ask", "Let's Encrypt"],
+    "steps": [
+      {"lane":0,"tag":"risk","text":"ต่อ HTTPS ด้วย SNI แปลก","detail":"เช่น pochtabank.pay.sberbank...waf-it-kku.online, youla.sbermegamarket..., blablacar..."},
+      {"lane":1,"tag":"risk","text":"Main /api/health และ Edge TH /healthz ตอบ 200 เสมอ","detail":"ask endpoint ไม่ได้ตรวจว่า domain ลงทะเบียนจริงหรือไม่"},
+      {"lane":2,"tag":"risk","text":"ได้ 200 → ออก cert จริงจาก Let's Encrypt","detail":"ยืนยันจาก audit.json และ frps log — cert ออกไปแล้วจริง"}
+    ],
+    "verdict": {"tag":"risk","text":"โดเมนโปรเจกต์ถูกยืมไปทำเพจปลอมของบริการรัสเซีย — Edge Azure ทำถูกอยู่แล้ว (เช็ค DynamoDB) ใช้เป็นต้นแบบแก้ Main/Edge TH ได้"}
+  }
+]
+        </script>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> เกิดอะไรขึ้นเมื่อแต่ละชั้นล้ม — fail-open หรือ fail-closed</h2>
+      <p style="max-width:70ch">ตารางนี้สำคัญกว่าที่คิด: ระบบที่ "fail-closed" (ปฏิเสธเมื่อไม่แน่ใจ) ปลอดภัยกว่าระบบที่ "fail-open" (ปล่อยผ่านเมื่อไม่แน่ใจ) เสมอในบริบทความปลอดภัย — แต่ที่แย่ที่สุดคือ "fail-closed แบบแขวน" ซึ่งไม่ปฏิเสธและไม่ปล่อยผ่าน แค่ค้างจนกว่า client จะ timeout เอง</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ชั้นที่ล้ม</th><th>พฤติกรรมที่สังเกตได้</th><th>ประเภท</th></tr></thead>
+        <tbody>
+          <tr><td>Dashboard <span class="mono">/api/limiter/check</span> ไม่ตอบ</td><td>nginx auth_request ค้าง → request ค้างจนหมด timeout (วัดได้ 40 วินาที)</td><td><span class="status-pill risk">fail-closed แบบแขวน — แย่ที่สุด</span></td></tr>
+          <tr><td>Redis ล่ม</td><td>RedisRateLimiter จับ exception → ปล่อยผ่าน</td><td><span class="status-pill warn">fail-open</span></td></tr>
+          <tr><td>ClickHouse ล่ม</td><td>ข้ามการเขียน, query คืนค่าว่าง</td><td><span class="status-pill warn">fail-open — ข้อมูลหายเงียบๆ</span></td></tr>
+          <tr><td>DynamoDB ล่ม</td><td>save_log จับ exception พิมพ์ log</td><td><span class="status-pill warn">fail-open</span></td></tr>
+          <tr><td>tunnel agent หลุด (CloudWAF)</td><td>502 "No tunnel agent" / ไม่ตอบใน 10 วิ → 504</td><td><span class="status-pill ok">fail-closed ชัดเจน (ดี)</span></td></tr>
+          <tr><td>verifier ต่อไม่ได้</td><td>tunnel server ปฏิเสธ agent</td><td><span class="status-pill ok">fail-closed — มีคอมเมนต์ระบุเจตนา</span></td></tr>
+          <tr><td>frps httpPlugin ไม่ตอบ</td><td>frps ปฏิเสธ proxy</td><td><span class="status-pill ok">fail-closed</span></td></tr>
+          <tr><td>edge → main:8000 ไม่ได้</td><td>retry exponential backoff, buffer 5000, ล้นแล้วทิ้งตัวเก่า</td><td><span class="status-pill risk">fail-open + ข้อมูลหาย</span></td></tr>
+          <tr><td>origin ล่มแต่ edge มี cache</td><td>ตอบ X-Cache-Status: STALE</td><td><span class="status-pill debt">fail-open โดยตั้งใจ</span></td></tr>
+          <tr><td>gatekeeper เจอ op ที่ไม่รู้จัก</td><td>reject พร้อมเหตุผล</td><td><span class="status-pill ok">fail-closed — ตั้งใจ</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./24-wayfinder-map.html"><span class="dir">← ก่อนหน้า</span><strong>24 · System Map</strong></a>
+      <a class="next" href="./26-wayfinder-functions.html"><span class="dir">ถัดไป →</span><strong>26 · Function Call Traces</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>

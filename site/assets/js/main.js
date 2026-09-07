@@ -349,6 +349,160 @@
     });
   });
 
+  /* ---- Wayfinder: flow simulator (click-through, N named flows, variable lanes) ---- */
+  var flowSims = document.querySelectorAll("[data-flowsim]");
+  flowSims.forEach(function (box) {
+    var dataScript = box.querySelector('script[data-flowsim-data]') ||
+      (box.nextElementSibling && box.nextElementSibling.matches('script[data-flowsim-data]') ? box.nextElementSibling : null);
+    if (!dataScript) return;
+    var flows;
+    try { flows = JSON.parse(dataScript.textContent); } catch (e) { return; }
+    if (!flows || !flows.length) return;
+
+    var tabsWrap = box.querySelector('[data-flowsim-tabs]');
+    var titleEl = box.querySelector('[data-flowsim-title]');
+    var lanesWrap = box.querySelector('[data-flowsim-lanes]');
+    var logEl = box.querySelector('[data-flowsim-log]');
+    var prevBtn = box.querySelector('[data-step-prev]');
+    var nextBtn = box.querySelector('[data-step-next]');
+    var playBtn = box.querySelector('[data-step-play]');
+    var dotsWrap = box.querySelector('[data-step-dots]');
+
+    var fi = 0;   // active flow index
+    var hop = 0;  // 0..steps.length-1 = step N, steps.length = verdict
+    var playing = !reduceMotion;
+    var timer = null;
+
+    tabsWrap.innerHTML = flows.map(function (f, i) {
+      var tagClass = f.tag ? " tag-" + f.tag : "";
+      return '<button type="button" class="flowsim-tab' + tagClass + '" data-fi="' + i + '">' +
+        '<span class="letter">' + f.id + '</span>' + f.short + '</button>';
+    }).join("");
+    var tabBtns = tabsWrap.querySelectorAll('.flowsim-tab');
+
+    function renderTabs(){
+      tabBtns.forEach(function (b, i) { b.classList.toggle('is-active', i === fi); });
+    }
+
+    function renderLanes(){
+      var f = flows[fi];
+      lanesWrap.innerHTML = f.lanes.map(function (name, i) {
+        return '<div class="flow-lane" data-lane="' + i + '"><span class="idx">' + (i + 1) + '</span><span>' + name + '</span></div>';
+      }).join("");
+    }
+
+    function laneEls(){ return lanesWrap.querySelectorAll('.flow-lane'); }
+
+    function renderDots(){
+      var f = flows[fi];
+      var total = f.steps.length + 1; // + verdict
+      var html = "";
+      for (var d = 0; d < total; d++) {
+        html += '<span class="step-dot' + (d === hop ? " is-active" : d < hop ? " is-done" : "") + '"></span>';
+      }
+      dotsWrap.innerHTML = html;
+    }
+
+    function renderHop(){
+      var f = flows[fi];
+      titleEl.textContent = f.title;
+      var lanes = laneEls();
+      lanes.forEach(function (l) { l.classList.remove('is-active', 'is-done', 'tag-risk', 'tag-warn'); });
+
+      if (hop >= f.steps.length) {
+        // verdict step: mark all lanes visited done, keep last touched lane highlighted
+        var lastStep = f.steps[f.steps.length - 1];
+        lanes.forEach(function (l, i) { if (i <= lastStep.lane) l.classList.add('is-done'); });
+        var vtag = f.verdict.tag || 'ok';
+        logEl.innerHTML =
+          '<span class="step-text">' + f.title + '</span>' +
+          '<span class="verdict-' + vtag + '">' + f.verdict.text + '</span>';
+      } else {
+        var s = f.steps[hop];
+        for (var i = 0; i < s.lane; i++) { if (lanes[i]) lanes[i].classList.add('is-done'); }
+        var active = lanes[s.lane];
+        if (active) {
+          active.classList.add('is-active');
+          if (s.tag === 'risk') active.classList.add('tag-risk');
+          if (s.tag === 'warn') active.classList.add('tag-warn');
+        }
+        logEl.innerHTML =
+          '<span class="step-text">' + (hop + 1) + '/' + f.steps.length + ' — ' + s.text + '</span>' +
+          (s.detail ? '<span class="step-detail">' + s.detail + '</span>' : '');
+      }
+      renderDots();
+      renderTabs();
+      if (prevBtn) prevBtn.disabled = (fi === 0 && hop === 0);
+    }
+
+    function pickFlow(i){
+      fi = i; hop = 0; renderLanes(); renderHop();
+    }
+
+    function advance(){
+      var f = flows[fi];
+      if (hop > f.steps.length) { pickFlow((fi + 1) % flows.length); return; }
+      if (hop === f.steps.length) { fi = (fi + 1) % flows.length; hop = 0; renderLanes(); renderHop(); return; }
+      hop++; renderHop();
+    }
+    function retreat(){
+      if (hop > 0) { hop--; renderHop(); return; }
+      fi = (fi - 1 + flows.length) % flows.length;
+      hop = flows[fi].steps.length;
+      renderLanes(); renderHop();
+    }
+    function setPlaying(on){
+      playing = on;
+      if (playBtn) { playBtn.textContent = playing ? "⏸ พัก" : "▶ เล่นอัตโนมัติ"; playBtn.setAttribute("aria-pressed", playing ? "true" : "false"); }
+      clearTimeout(timer);
+      if (playing) scheduleNext();
+    }
+    function scheduleNext(){
+      clearTimeout(timer);
+      var f = flows[fi];
+      var onVerdict = hop >= f.steps.length;
+      timer = setTimeout(function () { advance(); if (playing) scheduleNext(); }, onVerdict ? 2600 : 1500);
+    }
+
+    tabBtns.forEach(function (b) {
+      b.addEventListener('click', function () { setPlaying(false); pickFlow(parseInt(b.getAttribute('data-fi'), 10)); });
+    });
+    if (nextBtn) nextBtn.addEventListener("click", function(){ setPlaying(false); advance(); });
+    if (prevBtn) prevBtn.addEventListener("click", function(){ setPlaying(false); retreat(); });
+    if (playBtn) playBtn.addEventListener("click", function(){ setPlaying(!playing); });
+
+    renderLanes();
+    renderHop();
+    setPlaying(playing);
+  });
+
+  /* ---- Wayfinder: infra map explorer (click a machine → detail panel) ---- */
+  var infraMap = document.querySelector("[data-infra-map]");
+  if (infraMap) {
+    var infraDataScript = infraMap.querySelector('script[data-infra-data]');
+    var infraData = {};
+    try { infraData = JSON.parse(infraDataScript.textContent); } catch (e) { /* noop */ }
+    var infraNodes = infraMap.querySelectorAll('.infra-node');
+    var infraPanel = infraMap.querySelector('[data-infra-panel]');
+
+    function renderInfra(key){
+      var d = infraData[key];
+      if (!d || !infraPanel) return;
+      infraNodes.forEach(function (n) { n.classList.toggle('is-active', n.getAttribute('data-node') === key); });
+      var rows = d.rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join("");
+      infraPanel.innerHTML =
+        '<h3>' + d.title + '</h3><span class="sub">' + d.sub + '</span>' +
+        '<dl>' + rows + '</dl>' +
+        (d.note ? '<p style="margin:0;font-size:.85rem">' + d.note + '</p>' : '');
+    }
+
+    infraNodes.forEach(function (n) {
+      n.addEventListener('click', function () { renderInfra(n.getAttribute('data-node')); });
+    });
+    var firstKey = infraNodes.length ? infraNodes[0].getAttribute('data-node') : null;
+    if (firstKey) renderInfra(firstKey);
+  }
+
   /* set current year */
   document.querySelectorAll("[data-year]").forEach(function(el){
     el.textContent = new Date().getFullYear();

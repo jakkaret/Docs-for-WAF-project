@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System Map — Wayfinder — WAF + CDN Platform Docs</title>
+<meta name="description" content="แผนที่เครื่องจริงทั้ง 4 (Main, Edge TH, Edge Azure, Lab) แบบคลิกดูรายละเอียด บวกตาราง routing ของทุก service — สำรวจสด 6-7 ก.ย. 2026">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230c1420%22/><path d=%22M50 15 L82 30 V52 C82 72 68 85 50 90 C32 85 18 72 18 52 V30 Z%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%225%22/><path d=%22M36 50 L46 60 L66 38%22 fill=%22none%22 stroke=%22%2349d6ad%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<div class="topbar">
+  <span class="brand"><strong>WAF/CDN</strong> Verification Ledger</span>
+  <button class="nav-toggle" aria-label="เปิดเมนู"><span></span><span></span><span></span></button>
+</div>
+<div class="shell">
+  <nav class="sidebar" aria-label="สารบัญเอกสาร">
+    <a class="brand" href="./index.html">Verification Ledger
+      <strong>WAF + CDN Platform</strong>
+      <em>● ตรวจสอบจากเครื่องจริง — ไม่ใช่การเดา</em>
+    </a>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ภาพรวม</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./index.html"><span class="no">00</span> ภาพรวมระบบ</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">สถาปัตยกรรมระบบ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./01-waf-engine.html"><span class="no">01</span> WAF Engine</a></li>
+        <li><a href="./02-cdn-geodns.html"><span class="no">02</span> CDN + GeoDNS</a></li>
+        <li><a href="./03-dashboard-backend.html"><span class="no">03</span> Dashboard Backend + API</a></li>
+        <li><a href="./04-ml-ai-detection.html"><span class="no">04</span> ML + AI Detection</a></li>
+        <li><a href="./05-tunnel-system.html"><span class="no">05</span> Tunnel System</a></li>
+        <li><a href="./06-data-storage.html"><span class="no">06</span> Data Storage</a></li>
+        <li><a href="./07-web-origin-testbed.html"><span class="no">07</span> Web Origin Testbed</a></li>
+        <li><a href="./23-lab-business-apps.html"><span class="no">23</span> Lab Node & Business Apps</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="true">
+        <span class="nav-group-label">Wayfinder</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list">
+        <li><a href="./24-wayfinder-map.html" aria-current="page"><span class="no">24</span> System Map</a></li>
+        <li><a href="./25-wayfinder-flows.html"><span class="no">25</span> Flow Simulator</a></li>
+        <li><a href="./26-wayfinder-functions.html"><span class="no">26</span> Function Call Traces</a></li>
+        <li><a href="./27-wayfinder-data.html"><span class="no">27</span> Data & Dependency Map</a></li>
+        <li><a href="./28-wayfinder-security.html"><span class="no">28</span> Security Boundaries & Gaps</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">ตรวจสอบและแก้ไข</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./08-testing-approach.html"><span class="no">08</span> แนวทางการทดสอบระบบ</a></li>
+        <li><a href="./11-system-audit.html"><span class="no">11</span> System Audit — 29 ส.ค. 2026</a></li>
+        <li><a href="./13-week0-stabilization.html"><span class="no">13</span> Week 0 Stabilization</a></li>
+        <li><a href="./14-tunnel-implementation.html"><span class="no">14</span> Private Tunnel</a></li>
+        <li><a href="./16-explainability-completion.html"><span class="no">16</span> Explainability Ships</a></li>
+        <li><a href="./17-post-stabilization-hardening.html"><span class="no">17</span> Post-Stabilization Hardening</a></li>
+        <li><a href="./19-main-server-analysis.html"><span class="no">19</span> Main Server Analysis</a></li>
+        <li><a href="./20-waf-attack-test.html"><span class="no">20</span> WAF Attack Test</a></li>
+        <li><a href="./21-log-completeness.html"><span class="no">21</span> Log Completeness</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">แผนพัฒนาต่อ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./12-development-guide.html"><span class="no">12</span> Development Guide</a></li>
+        <li><a href="./22-n8n-integration-options.html"><span class="no">22</span> n8n Integration Options</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">FAQ</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./10-cdn-verdict.html"><span class="no">10</span> ระบบนี้เป็น CDN จริงไหม</a></li>
+        <li><a href="./18-waf-generation-assessment.html"><span class="no">18</span> WAF Generation Assessment</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <button type="button" class="nav-group-toggle" aria-expanded="false">
+        <span class="nav-group-label">บริบทภายนอก</span>
+        <span class="nav-group-chevron" aria-hidden="true">▸</span>
+      </button>
+      <ul class="nav-list" hidden>
+        <li><a href="./09-attack-landscape.html"><span class="no">09</span> ภูมิทัศน์การโจมตี 2025–26</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      จัดทำ 27 ส.ค. 2026 · ปรับปรุงล่าสุด 6-7 ก.ย. 2026 · สำรวจจากเครื่องจริงทั้ง 4 เครื่อง<br>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สเอกสารบน GitHub ↗</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="page-head reveal">
+      <p class="eyebrow"><span class="dot"></span>WAYFINDER · 24 · SYSTEM MAP — สำรวจสด 6-7 ก.ย. 2026</p>
+      <h1>แผนที่เครื่องจริงทั้ง 4 เครื่อง — กดดูรายละเอียดแต่ละเครื่อง</h1>
+      <p class="lede">สรุปจากการ SSH เข้าเครื่องจริงแบบ read-only — Main, Edge TH, Edge Azure (เครื่องใหม่ที่เพิ่งพบ) และ Lab กดที่เครื่องไหนก็ได้เพื่อดูสเปก, container, พอร์ต และสถานะจริง</p>
+      <div class="meta-line">
+        <span><b>เพิ่งพบใหม่</b> Edge Azure (57.158.25.236) — deploy แล้วแต่ไม่มี DNS ชี้มา</span>
+        <span><b>ที่มา</b> HOST_MAP.md · SERVICE_MAP.md</span>
+      </div>
+    </header>
+
+    <section class="block reveal">
+      <h2><span class="idx">§1</span> เลือกเครื่องเพื่อดูรายละเอียด</h2>
+      <div class="infra-map card" data-infra-map>
+        <div class="infra-nodes">
+          <button type="button" class="infra-node" data-node="main"><span class="status-dot warn"></span>Control Plane<h4>Main</h4><span class="ip">178.104.53.123</span></button>
+          <button type="button" class="infra-node" data-node="edge-th"><span class="status-dot ok"></span>CDN Edge (รับทราฟฟิกจริง)<h4>Edge TH</h4><span class="ip">45.154.26.91</span></button>
+          <button type="button" class="infra-node" data-node="edge-az"><span class="status-dot warn"></span>CDN Edge (ไม่มีทราฟฟิก)<h4>Edge Azure</h4><span class="ip">57.158.25.236</span></button>
+          <button type="button" class="infra-node" data-node="lab"><span class="status-dot ok"></span>Origin Testbed (หลัง VPN)<h4>Lab</h4><span class="ip">10.198.200.75</span></button>
+        </div>
+        <div class="infra-panel" data-infra-panel></div>
+        <script type="application/json" data-infra-data>
+{
+  "main": {
+    "title": "Main — 178.104.53.123",
+    "sub": "Control Plane + WAF Core + Data Tier · hostname waf-cdn-main-backend",
+    "rows": [
+      ["OS / kernel", "Ubuntu 26.04 LTS / 7.0.0-30-generic"],
+      ["RAM", "3.7 Gi total — เหลือ <b style=\"color:#fff\">1.4 Gi</b> (ตึง)"],
+      ["ดิสก์", "38 G — ใช้ไปแล้ว 69%"],
+      ["Uptime", "14 วัน 9 ชม."],
+      ["Container หลัก", "<code>caddy-ssl-termination</code> · <code>waf-nginx</code> (ModSecurity v3.0.16 + CRS 3.3.10) · <code>waf-clickhouse</code> · <code>waf-redis</code> · <code>waf-control-api</code>"],
+      ["systemd service", "<code>waf-dashboard</code> :8000 · <code>waf-ml</code> :5000 (loopback) · <code>waf-log-analyzer</code> · <code>cloudwaf-tunnel</code> :8050/:8060 · <code>frps</code> :7000/:7500/:8085"],
+      ["พอร์ตเปิดจริงจากอินเทอร์เน็ต", "80, 443, 7000 (frps control), 8050 (tunnel TLS), 8085 (frps vhost)"]
+    ],
+    "note": "<b style=\"color:var(--signal-risk)\">ตอนนี้ waf-dashboard ค้าง</b> — accept queue เต็ม (<code class=\"mono\">Recv-Q 2049/2048</code>) รายละเอียดสาเหตุอยู่ในหน้า <a href=\"./26-wayfinder-functions.html\" style=\"color:var(--signal-ok)\">Function Call Traces</a>"
+  },
+  "edge-th": {
+    "title": "Edge TH — 45.154.26.91",
+    "sub": "CDN Edge ที่รับทราฟฟิกจริงทั้งหมด · hostname ubuntu",
+    "rows": [
+      ["OS / kernel", "Ubuntu 24.04.4 LTS / 6.8.0-138"],
+      ["RAM", "1.9 Gi total — เหลือ <b style=\"color:#fff\">237 Mi</b> (ตึงกว่า Main)"],
+      ["ดิสก์", "29 G — ใช้ไป 44%"],
+      ["Container", "<code>cdn-caddy-ssl</code> (TLS + on-demand) · <code>cdn-edge-node</code> (ModSecurity + proxy_cache) · <code>cdn-log-forwarder</code>"],
+      ["cache policy", "dynamic 10 นาที / static 1 ชม. — ข้าม cache ถ้ามี Authorization, cookie session, หรือ query string ใดๆ"],
+      ["rate limit", "<code>limit_req</code> zone 50 rps, burst 100 (static 200)"],
+      ["rule sync", "poll <code>GET :8070/api/sync/bundle</code> ทุก 5 วินาที — ทำงานปกติ"]
+    ],
+    "note": "DNS wildcard <code>*.waf-it-kku.online</code> ชี้มาที่นี่ที่เดียว — ไม่มี failover จริงแม้จะมี edge node ที่สอง"
+  },
+  "edge-az": {
+    "title": "Edge Azure — 57.158.25.236",
+    "sub": "hostname waf-node-us · deploy แล้วแต่ยังไม่มีทราฟฟิก",
+    "rows": [
+      ["OS / kernel", "Ubuntu 24.04.4 LTS / 6.17.0-1022-azure"],
+      ["RAM", "893 Mi + swap 4 Gi"],
+      ["IP ภายใน", "172.16.0.4/24 (public เป็น Azure NAT)"],
+      ["Container", "<code>cdn-caddy-ssl</code> + <code>cdn-edge-node</code> เท่านั้น — <b>ไม่มี</b> <code>cdn-log-forwarder</code>"],
+      ["DNS", "ไม่มี subdomain ใดชี้มาที่นี่ (ยืนยันด้วย dig ทุก subdomain ที่ลอง)"],
+      ["on-demand TLS ask", "ชี้ <code>/api/domains/check-ssl-allowed</code> — ตรวจจริงกับ DynamoDB (ทำถูกกว่า Main และ Edge TH)"],
+      ["rule sync", "ต่อ control-api ไม่ได้ — ถูกกฎ <code>DOCKER-USER</code> บน Main ดรอปเฉพาะ IP นี้"]
+    ],
+    "note": "custom rule ปัจจุบันเป็นสำเนามือ ลงวันที่ 5 ก.ย. — ยังไม่กระทบผู้ใช้จริงเพราะไม่มีทราฟฟิกมาที่นี่เลย"
+  },
+  "lab": {
+    "title": "Lab — 10.198.200.75",
+    "sub": "Origin Testbed หลัง KKU VPN · hostname project",
+    "rows": [
+      ["OS / kernel", "Ubuntu 24.04.4 LTS / 6.8.0-49"],
+      ["RAM / ดิสก์", "15 Gi (ใช้ 1.5 Gi) / 98 G (ใช้ 15%)"],
+      ["Uptime", "321 วัน"],
+      ["เว็บทดสอบเดิม", "<code>juice</code>:3000 · <code>dvwa</code>:8080 · <code>vampi</code>:5000 · <code>bwapp</code>:8081"],
+      ["เว็บธุรกิจใหม่ (6-7 ก.ย.)", "<code>biz-ecommerce-store</code>:8001 · <code>biz-healthcare-clinic</code>:8002 · <code>biz-cloud-saas</code>:8003 — <b style=\"color:var(--signal-warn)\">ยังไม่ต่อเข้า WAF สักตัว</b>"],
+      ["tunnel agent", "<code>cloudwaf-agent</code> (ทำงาน) + <code>waf-agent</code>/frpc (login ผ่านแต่ NewProxy ถูกปฏิเสธ)"],
+      ["Cloudflare Tunnel เดิม", "<span class=\"status-pill ok\" style=\"display:inline-flex\">ปิดถาวรแล้ว</span> ไม่มี process, ไม่มี config, unit <code>disabled</code> ทั้งคู่"]
+    ],
+    "note": "routing ภายใน Lab ตั้งไว้ให้ผ่าน <code>waf-origin-proxy</code> แต่ tunnel agent ทั้งสองตัวชี้ตรงไป <code>127.0.0.1:&lt;port&gt;</code> ข้าม proxy นั้นไปเลย"
+  }
+}
+        </script>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section class="block reveal">
+      <h2><span class="idx">§2</span> ทุก service ที่รันจริง — ใครรับจากใคร ส่งต่อไปไหน</h2>
+      <p style="max-width:70ch">ตารางนี้ตอบคำถาม "request แบบไหนไปถึง service ไหน บนเครื่องไหน" อ่านจาก config ที่ deploy จริง ไม่ใช่จากเอกสารออกแบบ</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>เครื่อง</th><th>service</th><th>bind</th><th>รับจาก</th><th>ส่งต่อไป</th></tr></thead>
+        <tbody>
+          <tr><td>Edge TH</td><td class="mono">cdn-caddy-ssl</td><td class="mono">0.0.0.0:80,:443</td><td>อินเทอร์เน็ต</td><td class="mono">cdn-edge-node:80</td></tr>
+          <tr><td>Edge TH</td><td class="mono">cdn-edge-node</td><td class="mono">:80 (ภายใน)</td><td>caddy</td><td class="mono">178.104.53.123:8080</td></tr>
+          <tr><td>Edge TH</td><td class="mono">cdn-log-forwarder</td><td>—</td><td>ไฟล์ log</td><td><span class="status-pill risk">ล้มเหลว — endpoint ไม่มี + backend ค้าง</span></td></tr>
+          <tr><td>Edge Azure</td><td class="mono">cdn-caddy-ssl / cdn-edge-node</td><td class="mono">80,443 / :80</td><td>(ไม่มีทราฟฟิก)</td><td class="mono">178.104.53.123:8080</td></tr>
+          <tr><td>Main</td><td class="mono">caddy-ssl-termination</td><td class="mono">0.0.0.0:80,:443</td><td>อินเทอร์เน็ต</td><td class="mono">waf-nginx:8080 / dashboard:8000</td></tr>
+          <tr><td>Main</td><td class="mono">waf-nginx (WAF Core)</td><td class="mono">0.0.0.0:8080,:8443</td><td>caddy, edge nodes</td><td>frps vhost / cloudwaf tunnel</td></tr>
+          <tr><td>Main</td><td class="mono">waf-dashboard</td><td class="mono">0.0.0.0:8000</td><td>caddy, auth_request, tunnel, frps, forwarder</td><td>DynamoDB, ClickHouse, Redis, Gemini, Telegram</td></tr>
+          <tr><td>Main</td><td class="mono">waf-ml</td><td class="mono">127.0.0.1:5000</td><td>dashboard, log-analyzer</td><td>— (โมเดลในตัว)</td></tr>
+          <tr><td>Main</td><td class="mono">cloudwaf-tunnel</td><td class="mono">0.0.0.0:8050 (TLS), 172.18.0.1:8060</td><td>agent จาก Lab, waf-nginx</td><td>agent tunnel</td></tr>
+          <tr><td>Main</td><td class="mono">frps</td><td class="mono">:7000,:7500,:8085</td><td>frpc จาก Lab, waf-nginx</td><td>frpc tunnel</td></tr>
+          <tr><td>Main</td><td class="mono">waf-control-api</td><td class="mono">0.0.0.0:8070</td><td>Edge TH เท่านั้น</td><td>ไฟล์ rule + SQLite</td></tr>
+          <tr><td>Lab</td><td class="mono">cloudwaf-agent</td><td>outbound only</td><td>—</td><td class="mono">main:8050</td></tr>
+          <tr><td>Lab</td><td class="mono">waf-agent (frpc)</td><td>outbound only</td><td>—</td><td class="mono">main:7000</td></tr>
+          <tr><td>Lab</td><td>app containers</td><td class="mono">:3000/:5000/:8001-8003/:8080/:8081</td><td>tunnel agent</td><td>—</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="block reveal">
+      <h2><span class="idx">§3</span> เส้นทางทราฟฟิกจริง (ย่อ)</h2>
+      <div class="diagram">
+<pre>Browser
+  → DNS (*.waf-it-kku.online → 45.154.26.91)
+  → Edge TH : Caddy :443 (on-demand TLS)
+  → Edge TH : nginx + ModSecurity :80 (+ proxy_cache)
+  → Main : Caddy :443/:80  หรือ  Main :8080 ตรงจาก edge
+  → Main : waf-nginx + ModSecurity/CRS :8080
+        ├─ auth_request → Dashboard /api/limiter/check (rate limit)
+        └─ proxy_pass → tunnel router
+              ├─ frps vhost 172.18.0.1:8085   (dvwa / juice / bwapp)  ← ล่มอยู่
+              └─ cloudwaf-tunnel 172.18.0.1:8060 (vampi)              ← ทำงาน
+  → Lab 10.198.200.75 : container ปลายทาง</pre>
+        <span class="cap">ที่มา SYSTEM_OVERVIEW.md §3 — ดูโฟลว์เต็มทีละขั้นแบบคลิกได้ที่หน้า Flow Simulator</span>
+      </div>
+      <div class="actions" style="margin-top:1rem">
+        <a class="btn primary" href="./25-wayfinder-flows.html">ไปที่ Flow Simulator →</a>
+      </div>
+    </section>
+
+    <nav class="page-nav" aria-label="เอกสารก่อนหน้า/ถัดไป">
+      <a href="./index.html"><span class="dir">← ก่อนหน้า</span><strong>00 · ภาพรวมระบบ</strong></a>
+      <a class="next" href="./25-wayfinder-flows.html"><span class="dir">ถัดไป →</span><strong>25 · Flow Simulator</strong></a>
+    </nav>
+
+    <footer class="site-foot">
+      <span>© <span data-year></span> WAF + CDN Platform Docs</span>
+      <a href="https://github.com/jakkaret/Docs-for-WAF-project" target="_blank" rel="noopener">ซอร์สโค้ดเอกสารบน GitHub</a>
+    </footer>
+  </main>
+</div>
+<script src="./assets/js/main.js"></script>
+<script src="./assets/js/chat.js"></script>
+</body>
+</html>
